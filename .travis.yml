@@ -14,5 +14,6 @@ before_install:
   - source ./install-deps.sh
 
 script:
+  - ls
   - echo "CXX=${CXX}"
   - "cmake .. && make && ctest ."

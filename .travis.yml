@@ -11,10 +11,10 @@ notifications:
   email: false
 
 before_install:
-  - sudo apt-get install cmake
-  - sudo apt-get install libgtest-dev
+  - source ./install-deps.sh
 
 script:
+  - echo "CXX=${CXX}"
   - mkdir build; pushd build;
   - "cmake .. && make && ctest ."
   - popd;

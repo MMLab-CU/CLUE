@@ -14,7 +14,7 @@ before_install:
   - source ./install-deps.sh
 
 script:
-  - cd ./lindahua/stdx
+  - cd ./lindahua/cppstdx
   - mkdir build && cd build
   - echo "CXX=${CXX}"
   - "cmake .. && make && ctest ."

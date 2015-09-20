@@ -20,5 +20,7 @@ addons:
       - clang
       - libgtest-dev
 
+script: cmake
+
 notifications:
   email: false

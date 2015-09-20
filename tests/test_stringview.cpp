@@ -125,9 +125,11 @@ void test_strview_compare(const string_view& a, const string_view& b) {
     std::string as = a.to_string();
     std::string bs = b.to_string();
 
+    auto sg = [](int x) { return x == 0 ? 0 : (x < 0 ? -1 : 1); };
     int c = as.compare(bs);
-    ASSERT_EQ(c, a.compare(b));
-    ASSERT_EQ(c, a.compare(bs.c_str()));
+
+    ASSERT_EQ(sg(c), sg(a.compare(b)));
+    ASSERT_EQ(sg(c), sg(a.compare(bs.c_str())));
 
     ASSERT_EQ(c == 0, a == b);
     ASSERT_EQ(c != 0, a != b);

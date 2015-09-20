@@ -239,7 +239,7 @@ public:
     }
 
     size_type rfind(const charT* s, size_type pos, size_type n) const {
-        pos = std::min(pos + n, size());
+        pos = pos < size() ? (size() - pos > n ? pos + n : size()) : size();
         const charT *r = ::std::find_end(data(), data() + pos, s, s + n, Traits::eq);
         return (n > 0 && r == data() + pos) ? npos : static_cast<size_type>(r - data());
     }

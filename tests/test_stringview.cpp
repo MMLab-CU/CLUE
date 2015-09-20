@@ -1,5 +1,6 @@
 #include <cppstdx/string_view.hpp>
 #include <gtest/gtest.h>
+#include <sstream>
 
 namespace stdx = cppstdx;
 
@@ -237,3 +238,68 @@ TEST(StringView, RfindChars) {
 }
 
 
+TEST(StringView, FindSubstr) {
+
+    string_view s("abcdabc");
+    size_t npos = string_view::npos;
+
+    ASSERT_EQ(0,    s.find("abc"));
+    ASSERT_EQ(4,    s.find("abc", 1));
+    ASSERT_EQ(4,    s.find("abc", 3));
+    ASSERT_EQ(0,    s.find("abcd"));
+    ASSERT_EQ(npos, s.find("abcd", 1));
+    ASSERT_EQ(npos, s.find("xyz"));
+
+    ASSERT_EQ(0,    s.find(string_view("abc")));
+    ASSERT_EQ(4,    s.find(string_view("abc"), 1));
+    ASSERT_EQ(4,    s.find(string_view("abc"), 3));
+    ASSERT_EQ(0,    s.find(string_view("abcd")));
+    ASSERT_EQ(npos, s.find(string_view("abcd"), 1));
+    ASSERT_EQ(npos, s.find(string_view("xyz")));
+
+    ASSERT_EQ(0,    s.find("abc",  0, 3));
+    ASSERT_EQ(4,    s.find("abc",  1, 3));
+    ASSERT_EQ(4,    s.find("abc",  3, 3));
+    ASSERT_EQ(0,    s.find("abcd", 0, 4));
+    ASSERT_EQ(4,    s.find("abcd", 1, 3));
+    ASSERT_EQ(npos, s.find("abcd", 1, 4));
+    ASSERT_EQ(npos, s.find("xyz",  0, 3));
+}
+
+
+TEST(StringView, RfindSubstr) {
+
+    string_view s("abcdabc");
+    size_t npos = string_view::npos;
+
+    ASSERT_EQ(4,    s.rfind("abc"));
+    ASSERT_EQ(npos, s.rfind("xyz"));
+    ASSERT_EQ(3,    s.rfind("dabc"));
+    ASSERT_EQ(3,    s.rfind("dabc", 3));
+    ASSERT_EQ(npos, s.rfind("dabc", 2));
+
+    ASSERT_EQ(4,    s.rfind(string_view("abc")));
+    ASSERT_EQ(npos, s.rfind(string_view("xyz")));
+    ASSERT_EQ(3,    s.rfind(string_view("dabc")));
+    ASSERT_EQ(3,    s.rfind(string_view("dabc"), 3));
+    ASSERT_EQ(npos, s.rfind(string_view("dabc"), 2));
+
+    ASSERT_EQ(4,    s.rfind("abc",  npos, 3));
+    ASSERT_EQ(npos, s.rfind("xyz",  npos, 3));
+    ASSERT_EQ(3,    s.rfind("dabc", npos, 4));
+    ASSERT_EQ(3,    s.rfind("dabc", 3,    4));
+    ASSERT_EQ(npos, s.rfind("dabc", 2,    4));
+}
+
+
+TEST(StringView, StreamOutput) {
+
+    std::stringstream ss0;
+    ss0 << string_view();
+    ASSERT_EQ("", ss0.str());
+
+    std::stringstream ss1;
+    ss1 << string_view("abc");
+    ASSERT_EQ("abc", ss1.str());
+
+}

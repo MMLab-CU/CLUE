@@ -120,5 +120,42 @@ TEST(StringView, Substr) {
 }
 
 
+void test_strview_compare(const string_view& a, const string_view& b) {
+
+    std::string as = a.to_string();
+    std::string bs = b.to_string();
+
+    int c = as.compare(bs);
+    ASSERT_EQ(c, a.compare(b));
+    ASSERT_EQ(c, a.compare(bs.c_str()));
+
+    ASSERT_EQ(c == 0, a == b);
+    ASSERT_EQ(c != 0, a != b);
+    ASSERT_EQ(c <  0, a <  b);
+    ASSERT_EQ(c <= 0, a <= b);
+    ASSERT_EQ(c >  0, a >  b);
+    ASSERT_EQ(c >= 0, a >= b);
+
+    ASSERT_EQ((-c) == 0, b == a);
+    ASSERT_EQ((-c) != 0, b != a);
+    ASSERT_EQ((-c) <  0, b <  a);
+    ASSERT_EQ((-c) <= 0, b <= a);
+    ASSERT_EQ((-c) >  0, b >  a);
+    ASSERT_EQ((-c) >= 0, b >= a);
+}
+
+TEST(StringView, Compare) {
+
+    string_view s0;
+    string_view s1("abcd");
+    string_view s2("abcde");
+    string_view s3("xyz");
+    string_view s4("abdc");
+
+    test_strview_compare(s0, s1);
+    test_strview_compare(s1, s2);
+    test_strview_compare(s1, s3);
+    test_strview_compare(s1, s4);
+}
 
 

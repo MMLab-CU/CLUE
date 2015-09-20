@@ -20,7 +20,8 @@ addons:
       - clang
       - libgtest-dev
 
-script: cmake
+script:
+  - "cmake && make && ctest ."
 
 notifications:
   email: false

@@ -9,6 +9,8 @@ A small set of extensions to C++ standard library.
 Currently, the library contains the following:
 
 - [x] `optional`
-- [ ] `string_view`
+- [x] `string_view`
 - [ ] `any`
 - [ ] `variant`
+- [ ] `small_vector`
+- [ ] `contiguous_view`

@@ -262,11 +262,11 @@ public:
     }
 
     size_type find_first_of(basic_string_view s, size_type pos = 0) const noexcept {
-        return find_if_(in(s), pos);
+        return find_if_(in_(s), pos);
     }
 
     size_type find_first_of(const charT* s, size_type pos=0) const {
-        return find_if(in(s), pos);
+        return find_if(in_(s), pos);
     }
 
     // find_last_of
@@ -374,7 +374,7 @@ private:
         return in_rgn_pred(s, n);
     }
 
-    static constexpr in_rgn_pred in(basic_string_view s) {
+    static constexpr in_rgn_pred in_(basic_string_view s) {
         return in_rgn_pred(s.data(), s.size());
     }
 

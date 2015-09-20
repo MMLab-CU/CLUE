@@ -121,7 +121,7 @@ protected:
     }
 
     optional_base(optional_base&& x)
-        noexcept(is_nothrow_move_constructible<value_type>::value) :
+        noexcept(::std::is_nothrow_move_constructible<value_type>::value) :
         init_(x.init_) {
         if (init_)
         ::new(::std::addressof(val_)) value_type(::std::move(x.val_));
@@ -177,7 +177,7 @@ public:
     template <class U, class... Args,
               class = typename ::std::enable_if<
                   ::std::is_constructible<value_type, ::std::initializer_list<U>&, Args...>::value>::type>
-    constexpr explicit optional(in_place_t ip, initializer_list<U> ilist, Args&&... args)
+    constexpr explicit optional(in_place_t ip, ::std::initializer_list<U> ilist, Args&&... args)
         : __base(ip, ilist, ::std::forward<Args>(args)...) {}
 
 
@@ -281,7 +281,7 @@ public:
     template <class U, class... Args,
               class = typename ::std::enable_if<
               ::std::is_constructible<value_type, ::std::initializer_list<U>&, Args...>::value>::type>
-    void emplace(initializer_list<U> initl, Args&&... args) {
+    void emplace(::std::initializer_list<U> initl, Args&&... args) {
         *this = nullopt;
         ::new(::std::addressof(this->val_)) value_type(initl, ::std::forward<Args>(args)...);
         this->init_ = true;
@@ -291,22 +291,18 @@ public:
     // operator-> and operator*
 
     constexpr value_type const* operator->() const {
-        assert(this->init_);
         return ::std::addressof(this->val_);
     }
 
     value_type* operator->() {
-        assert(this->init_);
         return ::std::addressof(this->val_);
     }
 
     constexpr const value_type& operator*() const {
-        assert(this->init_);
         return this->val_;
     }
 
     value_type& operator*() {
-        assert(this->init_);
         return this->val_;
     }
 
@@ -321,9 +317,7 @@ public:
     // value and value_or
 
     constexpr value_type const& value() const {
-        if (!this->init_)
-            throw bad_optional_access();
-        return this->val_;
+        return this->init_ ? this->val_ : (throw bad_optional_access(), value_type());
     }
 
     value_type& value() {
@@ -359,9 +353,8 @@ public:
 
 template <class T>
 inline constexpr bool operator==(const optional<T>& x, const optional<T>& y) {
-    if (static_cast<bool>(x) != static_cast<bool>(y)) return false;
-    if (!static_cast<bool>(x)) return true;
-    return *x == *y;
+    return static_cast<bool>(x) != static_cast<bool>(y) ? false :
+           (static_cast<bool>(x) ? (*x == *y) : true);
 }
 
 template <class T>
@@ -371,9 +364,8 @@ inline constexpr bool operator!=(const optional<T>& x, const optional<T>& y) {
 
 template <class T>
 inline constexpr bool operator<(const optional<T>& x, const optional<T>& y) {
-    if (!static_cast<bool>(y)) return false;
-    if (!static_cast<bool>(x)) return true;
-    return *x < *y;
+    return !static_cast<bool>(y) ? false :
+           (static_cast<bool>(x) ? (*x < *y) : true);
 }
 
 template <class T>

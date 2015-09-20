@@ -16,7 +16,7 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
-#include <ostream>
+#include <iostream>
 #include <stdexcept>
 #include <limits>
 
@@ -399,9 +399,9 @@ private:
 
     template<typename Pred>
     size_type rfind_if_(Pred&& pred, size_type pos) const noexcept {
-        pos = (std::min)(pos + 1, size());
+        pos = pos < size() ? pos + 1 : size();
         for (const charT* ps = data() + pos; ps != data();) {
-            if (pred(*--ps)) {
+            if (pred(*(--ps))) {
                 return static_cast<size_type>(ps - data());
             }
         }
@@ -410,7 +410,7 @@ private:
 
     template<typename Pred>
     size_type rfind_if_not_(Pred&& pred, size_type pos) const noexcept {
-        pos = (std::min)(pos + 1, size());
+        pos = pos < size() ? pos + 1 : size();
         for (const charT* ps = data() + pos; ps != data();) {
             if (!pred(*--ps)) {
                 return static_cast<size_type>(ps - data());

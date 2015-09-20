@@ -199,5 +199,41 @@ TEST(StringView, FindChars) {
 }
 
 
+TEST(StringView, RfindChars) {
+
+    string_view s("abcdabc");
+    size_t npos = string_view::npos;
+
+    ASSERT_EQ(4, s.rfind('a'));
+    ASSERT_EQ(5, s.rfind('b'));
+    ASSERT_EQ(6, s.rfind('c'));
+    ASSERT_EQ(3, s.rfind('d'));
+
+    ASSERT_EQ(0,    s.rfind('a', 0));
+    ASSERT_EQ(npos, s.rfind('d', 0));
+    ASSERT_EQ(3,    s.rfind('d', 3));
+
+    ASSERT_EQ(6,    s.find_last_of("abc"));
+    ASSERT_EQ(npos, s.find_last_of("xyz"));
+    ASSERT_EQ(6,    s.find_last_of(string_view("abc")));
+    ASSERT_EQ(npos, s.find_last_of(string_view("xyz")));
+
+    ASSERT_EQ(2,    s.find_last_of("abc", 3));
+    ASSERT_EQ(npos, s.find_last_of("xyz", 3));
+    ASSERT_EQ(2,    s.find_last_of(string_view("abc"), 3));
+    ASSERT_EQ(npos, s.find_last_of(string_view("xyz"), 3));
+
+    ASSERT_EQ(3,    s.find_last_not_of("abc"));
+    ASSERT_EQ(6,    s.find_last_not_of("xyz"));
+    ASSERT_EQ(3,    s.find_last_not_of(string_view("abc")));
+    ASSERT_EQ(6,    s.find_last_not_of(string_view("xyz")));
+
+    ASSERT_EQ(3,    s.find_last_not_of("abc", 3));
+    ASSERT_EQ(3,    s.find_last_not_of("xyz", 3));
+    ASSERT_EQ(npos, s.find_last_not_of("abcd", 3));
+    ASSERT_EQ(3,    s.find_last_not_of(string_view("abc"), 3));
+    ASSERT_EQ(3,    s.find_last_not_of(string_view("xyz"), 3));
+    ASSERT_EQ(npos, s.find_last_not_of(string_view("abcd"), 3));
+}
 
 

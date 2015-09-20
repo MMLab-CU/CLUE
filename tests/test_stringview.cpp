@@ -161,3 +161,43 @@ TEST(StringView, Compare) {
 }
 
 
+TEST(StringView, FindChars) {
+
+    string_view s("abcdabc");
+
+    ASSERT_EQ(0, s.find('a'));
+    ASSERT_EQ(1, s.find('b'));
+    ASSERT_EQ(2, s.find('c'));
+    ASSERT_EQ(3, s.find('d'));
+    ASSERT_EQ(3, s.find('d', 3));
+
+    size_t npos = string_view::npos;
+    ASSERT_EQ(4, s.find('a', 4));
+    ASSERT_EQ(5, s.find('b', 4));
+    ASSERT_EQ(6, s.find('c', 4));
+    ASSERT_EQ(npos, s.find('d', 4));
+
+    ASSERT_EQ(0,    s.find_first_of("abc"));
+    ASSERT_EQ(npos, s.find_first_of("xyz"));
+    ASSERT_EQ(0,    s.find_first_of(string_view("abc")));
+    ASSERT_EQ(npos, s.find_first_of(string_view("xyz")));
+
+    ASSERT_EQ(4,    s.find_first_of("abc", 4));
+    ASSERT_EQ(npos, s.find_first_of("xyz", 4));
+    ASSERT_EQ(4,    s.find_first_of(string_view("abc"), 4));
+    ASSERT_EQ(npos, s.find_first_of(string_view("xyz"), 4));
+
+    ASSERT_EQ(3,    s.find_first_not_of("abc"));
+    ASSERT_EQ(0,    s.find_first_not_of("xyz"));
+    ASSERT_EQ(3,    s.find_first_not_of(string_view("abc")));
+    ASSERT_EQ(0,    s.find_first_not_of(string_view("xyz")));
+
+    ASSERT_EQ(npos, s.find_first_not_of("abc", 4));
+    ASSERT_EQ(4,    s.find_first_not_of("xyz", 4));
+    ASSERT_EQ(npos, s.find_first_not_of(string_view("abc"), 4));
+    ASSERT_EQ(4,    s.find_first_not_of(string_view("xyz"), 4));
+}
+
+
+
+

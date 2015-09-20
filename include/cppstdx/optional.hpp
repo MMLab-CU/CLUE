@@ -3,7 +3,7 @@
  *
  * The optional class.
  *
- * This implementation is adapted from akrzemi1/Optional (Boost Software License)
+ * @note The implementation is adapted from libcxx.
  */
 
 #ifndef CPPSTDX_OPTIONAL__
@@ -22,20 +22,16 @@
 
 namespace cppstdx {
 
-// 5.3, optional for object types
 template <typename T> class optional;
 
-// 5.4, In-place construction
 struct in_place_t{};
 constexpr in_place_t in_place{};
 
-// 5.5, No-value state indicator
 struct nullopt_t {
     explicit constexpr nullopt_t(int) noexcept {}
 };
 constexpr nullopt_t nullopt{0};
 
-// 5.6, Class bad_optional_access
 class bad_optional_access : public ::std::logic_error {
 public:
 	bad_optional_access() :

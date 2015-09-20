@@ -11,8 +11,8 @@
 
 #if defined __GNUC__
 #   if defined __clang_major__
-#       if CPPSTDX_CLANG_VERSION < 30500
-#           error CppStdx requires clang compiler of version 3.5.0 or above.
+#       if CPPSTDX_CLANG_VERSION < 30400
+#           error CppStdx requires clang compiler of version 3.4.0 or above.
 #       endif
 #   else
 #       if CPPSTDX_GCC_VERSION < 40801

@@ -21,7 +21,7 @@ addons:
       - libgtest-dev
 
 script:
-  - "cmake && make && ctest ."
+  - "cmake . && make && ctest ."
 
 notifications:
   email: false

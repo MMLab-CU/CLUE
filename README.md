@@ -13,4 +13,4 @@ Currently, the library contains the following:
 - [ ] `any`
 - [ ] `variant`
 - [x] `contiguous_view`
-- [ ] `reindexed_view`
+- [x] `reindexed_view`

@@ -217,11 +217,11 @@ public:
         return const_iterator(container_, indices_.end());
     }
 
-    constexpr const_iterator cbegin() const noexcept(noexcept(begin())) {
+    constexpr const_iterator cbegin() const noexcept(noexcept(indices_.begin())) {
         return begin();
     }
 
-    constexpr const_iterator cend() const noexcept(noexcept(end())) {
+    constexpr const_iterator cend() const noexcept(noexcept(indices_.end())) {
         return end();
     }
 

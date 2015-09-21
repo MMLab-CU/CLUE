@@ -18,7 +18,7 @@ addons:
       - g++-4.8
 
 before_install:
-  - "pushd && cd /home/travis/build/"
+  - "pushd . && mkdir $HOME/deps && cd $HOME/deps"
   - "wget https://github.com/google/googletest/archive/release-1.7.0.tar.gz"
   - "tar -xvf release-1.7.0.tar.gz"
   - "cd googletest-release-1.7.0 && cmake . && cmake --build . && mkdir lib && mv *.a lib/ && cd -"

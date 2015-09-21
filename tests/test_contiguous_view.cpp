@@ -1,5 +1,6 @@
 #include <cppstdx/contiguous_view.hpp>
 #include <gtest/gtest.h>
+#include <vector>
 
 using cppstdx::contiguous_view;
 
@@ -72,4 +73,30 @@ TEST(ContiguousView, ConstView) {
     ASSERT_TRUE(v.begin()  + len == v.end());
 }
 
+
+TEST(ContiguousView, Iterations) {
+
+    const size_t len = 5;
+    int s[len] = {12, 24, 36, 48, 60};
+
+    std::vector<int> v0 {12, 24, 36, 48, 60};
+    std::vector<int> vr0{60, 48, 36, 24, 12};
+
+    contiguous_view<int> cv(s, len);
+    std::vector<int> v1(cv.begin(), cv.end());
+    ASSERT_EQ(v0, v1);
+
+    std::vector<int> v1c(cv.cbegin(), cv.cend());
+    ASSERT_EQ(v0, v1c);
+
+    std::vector<int> vr1(cv.rbegin(), cv.rend());
+    ASSERT_EQ(vr0, vr1);
+
+    std::vector<int> vr1c(cv.crbegin(), cv.crend());
+    ASSERT_EQ(vr0, vr1c);
+
+    std::vector<int> v2;
+    for (auto x: cv) v2.push_back(x);
+    ASSERT_EQ(v0, v2);
+}
 

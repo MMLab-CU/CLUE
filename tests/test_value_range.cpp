@@ -70,7 +70,7 @@ void test_unit_range(const cppstdx::value_range<T>& rgn, const T& a, const T& b)
 }
 
 
-TEST(ValueRanges, IntRange) {
+TEST(ValueRanges, IntRanges) {
 
     using irange = cppstdx::value_range<int>;
     ASSERT_TRUE((std::is_same<irange::size_type, unsigned int>::value));
@@ -79,9 +79,16 @@ TEST(ValueRanges, IntRange) {
     test_unit_range(irange(0, 0), 0, 0);
     test_unit_range(irange(5, 5), 5, 5);
     test_unit_range(irange(3, 8), 3, 8);
-
 }
 
+TEST(ValueRanges, SizeRanges) {
+    using std::size_t;
+    using srange = cppstdx::value_range<std::size_t>;
+    ASSERT_TRUE((std::is_same<srange::size_type, std::size_t>::value));
+    ASSERT_TRUE((std::is_same<srange::difference_type, std::ptrdiff_t>::value));
 
-
+    test_unit_range(srange(0, 0), size_t(0), size_t(0));
+    test_unit_range(srange(5, 5), size_t(5), size_t(5));
+    test_unit_range(srange(3, 8), size_t(3), size_t(8));
+}
 

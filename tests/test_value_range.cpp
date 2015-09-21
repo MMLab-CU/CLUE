@@ -18,8 +18,10 @@ void test_unit_range(const cppstdx::value_range<T>& rgn, const T& a, const T& b)
     auto ifirst = rgn.begin();
     auto ilast  = rgn.end();
 
-    ASSERT_EQ(a, *ifirst);
-    ASSERT_EQ(b, *ilast);
+    if (!rgn.empty()) {
+        ASSERT_EQ(a, *ifirst);
+        ASSERT_EQ(b, *ilast);
+    }
     ASSERT_EQ((a == b), (ifirst == ilast));
     ASSERT_EQ((a != b), (ifirst != ilast));
     ASSERT_EQ((a <  b), (ifirst <  ilast));
@@ -32,6 +34,28 @@ void test_unit_range(const cppstdx::value_range<T>& rgn, const T& a, const T& b)
     ASSERT_EQ(ifirst, ilast - n);
     ASSERT_EQ(n, ilast - ifirst);
     ASSERT_EQ(n, std::distance(ifirst, ilast));
+
+    if (!rgn.empty()) {
+        auto i1 = ifirst;
+        ASSERT_EQ(a,   *(i1++));
+        ASSERT_EQ(a+1, *i1);
+        ASSERT_EQ(a+1, *(i1--));
+        ASSERT_EQ(a,   *i1);
+
+        auto i2 = ifirst;
+        ASSERT_EQ(a+1, *(++i2));
+        ASSERT_EQ(a+1, *i2);
+        ASSERT_EQ(a,   *(--i2));
+        ASSERT_EQ(a,   *i2);
+
+        i1 += 1;
+        ASSERT_EQ(a+1, *i1);
+        i1 -= 1;
+        ASSERT_EQ(a, *i1);
+
+        ASSERT_EQ(a+1, *(ifirst+1));
+        ASSERT_EQ(b-1, *(ilast-1));
+    }
 
     std::vector<T> v_gt;
     for (T x = a; x != b; ++x) v_gt.push_back(x);

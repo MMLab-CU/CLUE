@@ -113,7 +113,7 @@ public:
 
     value_range_iterator operator--(int) noexcept {
         T t(v_);
-        traits_.increment(v_);
+        traits_.decrement(v_);
         return value_range_iterator(t, traits_);
     }
 

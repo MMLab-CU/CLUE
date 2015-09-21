@@ -9,7 +9,11 @@ message(STATUS "CMAKE_SYSTEM_NAME: " ${CMAKE_SYSTEM_NAME})
 message(STATUS "CXX_COMPILER_ID: " ${CMAKE_CXX_COMPILER_ID})
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    set(NEWCXX_ENABLED_FLAG "-std=c++11 -stdlib=libc++ -Wall -O2")
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(NEWCXX_ENABLED_FLAG "-std=c++11 -stdlib=libc++ -Wall -O2")
+    else()
+        set(NEWCXX_ENABLED_FLAG "-std=c++11 -Wall -O2")
+    endif()
 elseif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
     set(NEWCXX_ENABLED_FLAG "-std=c++11 -Wall -O2")
 else()
@@ -17,6 +21,7 @@ else()
 endif()
 
 set(CMAKE_CXX_FLAGS ${NEWCXX_ENABLED_FLAG})
+message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 
 enable_testing()
 
@@ -63,9 +68,8 @@ set(UNIT_TESTS
 )
 
 foreach (tname ${UNIT_TESTS})
-    add_executable(${tname} ${TESTS}/${tname}.cpp)    
+    add_executable(${tname} ${TESTS}/${tname}.cpp)
     target_link_libraries(${tname} ${GTEST_BOTH_LIBRARIES})
     target_link_libraries(${tname} ${CMAKE_THREAD_LIBS_INIT})
     add_test(NAME ${tname} COMMAND ${tname})
 endforeach()
-

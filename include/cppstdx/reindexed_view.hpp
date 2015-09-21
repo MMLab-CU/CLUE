@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <type_traits>
 #include <iterator>
+#include <stdexcept>
 
 namespace cppstdx {
 

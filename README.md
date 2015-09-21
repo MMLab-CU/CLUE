@@ -13,4 +13,4 @@ Currently, the library contains the following:
 - [ ] `any`
 - [ ] `variant`
 - [ ] `small_vector`
-- [ ] `contiguous_view`
+- [x] `contiguous_view`

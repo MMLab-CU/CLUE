@@ -58,6 +58,7 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 set(UNIT_TESTS
     test_optional
     test_string_view
+    test_contiguous_view
 )
 
 foreach (tname ${UNIT_TESTS})

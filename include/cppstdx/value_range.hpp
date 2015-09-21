@@ -47,7 +47,7 @@ private:
 
 public:
     typedef T value_type;
-    typedef T&& reference;
+    typedef T reference;
     typedef const T* pointer;
     typedef typename Traits::size_type size_type;
     typedef typename Traits::difference_type difference_type;
@@ -85,11 +85,11 @@ public:
 
     // dereference
 
-    constexpr T&& operator* () const noexcept {
+    constexpr T operator* () const noexcept {
         return T(v_);
     }
 
-    constexpr T&& operator[](difference_type n) const noexcept {
+    constexpr T operator[](difference_type n) const noexcept {
         return traits_.advance(v_, n);
     }
 
@@ -195,11 +195,19 @@ public:
 
     // properties
 
-    constexpr T first() const noexcept {
+    constexpr T front() const noexcept {
         return first_;
     }
 
-    constexpr T last() const noexcept {
+    constexpr T back() const noexcept {
+        return Traits::prev(last_);
+    }
+
+    constexpr const T& first() const noexcept {
+        return first_;
+    }
+
+    constexpr const T& last() const noexcept {
         return last_;
     }
 

@@ -241,13 +241,18 @@ public:
     constexpr const_iterator end()    const { return const_iterator(last_,  Traits()); }
     constexpr const_iterator cbegin() const { return begin(); }
     constexpr const_iterator cend()   const { return end();   }
-};
+
+}; // end class value_range
 
 
 template<typename T, typename Traits>
-void swap(value_range<T,Traits>& lhs, value_range<T,Traits>& rhs) {
+inline void swap(value_range<T,Traits>& lhs, value_range<T,Traits>& rhs) {
     lhs.swap(rhs);
 }
+
+
+
+
 
 
 }

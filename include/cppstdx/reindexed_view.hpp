@@ -52,12 +52,12 @@ public:
         container_(container), iter_(iter) {}
 
     // comparison
-    constexpr bool operator <  (reindexed_iterator r) const { return iter_ <  r.iter_; }
-    constexpr bool operator <= (reindexed_iterator r) const { return iter_ <= r.iter_; }
-    constexpr bool operator >  (reindexed_iterator r) const { return iter_ >  r.iter_; }
-    constexpr bool operator >= (reindexed_iterator r) const { return iter_ >= r.iter_; }
-    constexpr bool operator == (reindexed_iterator r) const { return iter_ == r.iter_; }
-    constexpr bool operator != (reindexed_iterator r) const { return iter_ != r.iter_; }
+    constexpr bool operator <  (reindexed_iterator r) const noexcept { return iter_ <  r.iter_; }
+    constexpr bool operator <= (reindexed_iterator r) const noexcept { return iter_ <= r.iter_; }
+    constexpr bool operator >  (reindexed_iterator r) const noexcept { return iter_ >  r.iter_; }
+    constexpr bool operator >= (reindexed_iterator r) const noexcept { return iter_ >= r.iter_; }
+    constexpr bool operator == (reindexed_iterator r) const noexcept { return iter_ == r.iter_; }
+    constexpr bool operator != (reindexed_iterator r) const noexcept { return iter_ != r.iter_; }
 
     // dereference
     constexpr reference operator* () const {

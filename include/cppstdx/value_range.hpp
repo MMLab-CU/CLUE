@@ -195,21 +195,10 @@ public:
 
     // properties
 
-    constexpr T front() const noexcept {
-        return first_;
-    }
-
-    constexpr T back() const noexcept {
-        return Traits::prev(last_);
-    }
-
-    constexpr const T& first() const noexcept {
-        return first_;
-    }
-
-    constexpr const T& last() const noexcept {
-        return last_;
-    }
+    constexpr       T  front() const noexcept { return first_; }
+    constexpr       T  back()  const noexcept { return Traits::prev(last_); }
+    constexpr const T& first() const noexcept { return first_; }
+    constexpr const T& last()  const noexcept { return last_; }
 
     constexpr size_type size() const noexcept {
         return static_cast<size_type>(Traits::distance(first_, last_));
@@ -221,21 +210,10 @@ public:
 
     // iterators
 
-    constexpr const_iterator begin() const noexcept {
-        return const_iterator(first_, Traits());
-    }
-
-    constexpr const_iterator end() const noexcept {
-        return const_iterator(last_, Traits());
-    }
-
-    constexpr const_iterator cbegin() const noexcept {
-        return begin();
-    }
-
-    constexpr const_iterator cend() const noexcept {
-        return end();
-    }
+    constexpr const_iterator begin()  const noexcept { return const_iterator(first_, Traits()); }
+    constexpr const_iterator end()    const noexcept { return const_iterator(last_,  Traits()); }
+    constexpr const_iterator cbegin() const noexcept { return begin(); }
+    constexpr const_iterator cend()   const noexcept { return end();   }
 };
 
 

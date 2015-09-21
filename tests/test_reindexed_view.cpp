@@ -1,0 +1,105 @@
+#include <cppstdx/reindexed_view.hpp>
+#include <vector>
+#include <gtest/gtest.h>
+
+
+std::vector<int> S{12, 24, 36, 48, 60};
+typedef cppstdx::reindexed_view<const std::vector<int>, const std::vector<size_t>> cview_t;
+typedef cppstdx::reindexed_view<      std::vector<int>, const std::vector<size_t>>  view_t;
+
+
+TEST(ReindexedView, Empty) {
+    std::vector<size_t> inds;
+
+    view_t v0(S, inds);
+    ASSERT_EQ(0, v0.size());
+    ASSERT_EQ(true, v0.empty());
+    ASSERT_THROW(v0.at(0), std::out_of_range);
+
+    cview_t v0c(S, inds);
+    ASSERT_EQ(0, v0c.size());
+    ASSERT_EQ(true, v0c.empty());
+    ASSERT_THROW(v0c.at(0), std::out_of_range);
+}
+
+TEST(ReindexedView, ConstView) {
+    const std::vector<int>& src = S;
+    std::vector<size_t> inds{2, 1, 3};
+    cview_t v(src, inds);
+
+    ASSERT_EQ(inds.size(), v.size());
+    ASSERT_EQ(false, v.empty());
+
+    for (size_t i = 0; i < inds.size(); ++i) {
+        ASSERT_EQ(src[inds[i]], v.at(i));
+        ASSERT_EQ(src[inds[i]], v[i]);
+    }
+    ASSERT_THROW(v.at(inds.size()), std::out_of_range);
+
+    ASSERT_EQ(src[inds.front()], v.front());
+    ASSERT_EQ(src[inds.back()], v.back());
+
+    std::vector<size_t> inds_bad{100};
+    cview_t v_bad(src, inds_bad);
+    ASSERT_THROW(v_bad.at(0), std::out_of_range);
+}
+
+TEST(ReindexedView, MutableView) {
+    std::vector<int> src(S);
+    std::vector<size_t> inds{2, 1, 3};
+    view_t v(src, inds);
+
+    ASSERT_EQ(inds.size(), v.size());
+    ASSERT_EQ(false, v.empty());
+
+    for (size_t i = 0; i < inds.size(); ++i) {
+        ASSERT_EQ(src[inds[i]], v.at(i));
+        ASSERT_EQ(src[inds[i]], v[i]);
+    }
+    ASSERT_THROW(v.at(inds.size()), std::out_of_range);
+
+    ASSERT_EQ(src[inds.front()], v.front());
+    ASSERT_EQ(src[inds.back()], v.back());
+
+    view_t v2(src, inds);
+    v2[0] = -123;
+    v2[1] = -456;
+    ASSERT_EQ(-123, src[inds[0]]);
+    ASSERT_EQ(-456, src[inds[1]]);
+}
+
+TEST(ReindexedView, ReadonlyIterations) {
+    const std::vector<int>& src = S;
+    std::vector<size_t> inds{2, 1, 3};
+    std::vector<int> r0{src[2], src[1], src[3]};
+
+    cview_t v1(src, inds);
+    std::vector<int> r1(v1.begin(), v1.end());
+    ASSERT_EQ(r0, r1);
+    std::vector<int> r1c(v1.cbegin(), v1.cend());
+    ASSERT_EQ(r0, r1c);
+
+    std::vector<int> r2;
+    for (auto x: v1) r2.push_back(x);
+    ASSERT_EQ(r0, r2);
+}
+
+TEST(ReindexedView, MutatingIterations) {
+    std::vector<int> src(S);
+    std::vector<size_t> inds{2, 1, 3};
+    std::vector<int> r0{src[2], src[1], src[3]};
+
+    view_t v1(src, inds);
+    std::vector<int> r1(v1.begin(), v1.end());
+    ASSERT_EQ(r0, r1);
+    std::vector<int> r1c(v1.cbegin(), v1.cend());
+    ASSERT_EQ(r0, r1c);
+
+    std::vector<int> r2_r{src[2]+1, src[1]+1, src[3]+1};
+    for (auto& x: v1) {
+        x += 1;
+    }
+    std::vector<int> r2{src[2], src[1], src[3]};
+    ASSERT_EQ(r2_r, r2);
+}
+

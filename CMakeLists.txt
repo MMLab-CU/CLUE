@@ -59,6 +59,7 @@ set(UNIT_TESTS
     test_optional
     test_string_view
     test_contiguous_view
+    test_reindexed_view
 )
 
 foreach (tname ${UNIT_TESTS})

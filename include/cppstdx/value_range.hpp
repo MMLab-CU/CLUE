@@ -4,6 +4,7 @@
 #include <cppstdx/config.hpp>
 #include <type_traits>
 #include <algorithm>
+#include <stdexcept>
 
 namespace cppstdx {
 
@@ -225,17 +226,29 @@ public:
 
     // properties
 
-    constexpr       T  front() const noexcept { return first_; }
-    constexpr       T  back()  const noexcept { return Traits::prev(last_); }
-    constexpr const T& first() const noexcept { return first_; }
-    constexpr const T& last()  const noexcept { return last_; }
-
     constexpr size_type size() const noexcept {
         return static_cast<size_type>(Traits::difference(last_, first_));
     }
 
     constexpr bool empty() const noexcept {
         return Traits::eq(first_, last_);
+    }
+
+    // element access
+
+    constexpr       T  front() const noexcept { return first_; }
+    constexpr       T  back()  const noexcept { return Traits::prev(last_); }
+    constexpr const T& first() const noexcept { return first_; }
+    constexpr const T& last()  const noexcept { return last_; }
+
+    constexpr T operator[](size_type pos) const {
+        return first_ + pos;
+    }
+
+    constexpr T at(size_type pos) const {
+        return pos < size() ?
+                first_ + pos :
+                (throw ::std::out_of_range("value_range::at"), first_);
     }
 
     // iterators

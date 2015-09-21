@@ -1,4 +1,5 @@
 #include <cppstdx/reindexed_view.hpp>
+#include <cppstdx/value_range.hpp>
 #include <vector>
 #include <gtest/gtest.h>
 
@@ -132,5 +133,27 @@ TEST(ReindexedView, MutatingIterations) {
     }
     std::vector<int> r2{src[2], src[1], src[3]};
     ASSERT_EQ(r2_r, r2);
+}
+
+
+TEST(ReindexedView, WithValueRange) {
+    using irange = cppstdx::value_range<std::size_t>;
+    using slice_t = cppstdx::reindexed_view<std::vector<int>, irange>;
+
+    std::vector<int> src(S);
+    irange inds(1, 4);
+    slice_t v1(src, inds);
+
+    std::vector<int> r1r{src[1], src[2], src[3]};
+    std::vector<int> r1(v1.begin(), v1.end());
+    ASSERT_EQ(r1r, r1);
+
+    v1[1] = -123;
+    ASSERT_EQ(-123, src[2]);
+
+    std::vector<int> r2r{src[1], -123, src[3]};
+    std::vector<int> r2;
+    for (auto x: v1) r2.push_back(x);
+    ASSERT_EQ(r2r, r2);
 }
 

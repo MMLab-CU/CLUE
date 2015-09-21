@@ -4,6 +4,7 @@
 
 template<typename T>
 void test_unit_range(const cppstdx::value_range<T>& rgn, const T& a, const T& b) {
+    using std::size_t;
     using difference_type = typename cppstdx::value_range<T>::difference_type;
 
     ASSERT_EQ(a,   rgn.first());
@@ -11,7 +12,7 @@ void test_unit_range(const cppstdx::value_range<T>& rgn, const T& a, const T& b)
     ASSERT_EQ(a,   rgn.front());
     ASSERT_EQ(b-1, rgn.back());
 
-    ASSERT_EQ(std::size_t(b - a), rgn.size());
+    ASSERT_EQ(size_t(b - a), rgn.size());
     ASSERT_EQ((a == b), rgn.empty());
 
     auto ifirst = rgn.begin();
@@ -33,6 +34,12 @@ void test_unit_range(const cppstdx::value_range<T>& rgn, const T& a, const T& b)
     ASSERT_EQ(ifirst, ilast - n);
     ASSERT_EQ(n, ilast - ifirst);
     ASSERT_EQ(n, std::distance(ifirst, ilast));
+
+    for (size_t i = 0; i < (size_t)n; ++i) {
+        ASSERT_EQ(a + i, rgn[i]);
+        ASSERT_EQ(a + i, rgn.at(i));
+    }
+    ASSERT_THROW(rgn.at(size_t(n)), std::out_of_range);
 
     if (!rgn.empty()) {
         auto i1 = ifirst;

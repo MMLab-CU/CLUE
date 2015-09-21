@@ -37,6 +37,11 @@ TEST(ContiguousView, MutableView) {
     }
     ASSERT_THROW(v.at(len), std::out_of_range);
 
+    ASSERT_EQ(s[0],     v.front());
+    ASSERT_EQ(s[len-1], v.back());
+    ASSERT_EQ(s,         &(v.front()));
+    ASSERT_EQ(s+(len-1), &(v.back()));
+
     v[2] = -1;
     ASSERT_EQ(-1, s[2]);
 
@@ -66,6 +71,11 @@ TEST(ContiguousView, ConstView) {
         ASSERT_EQ(s[i], v.at(i));
     }
     ASSERT_THROW(v.at(len), std::out_of_range);
+
+    ASSERT_EQ(s[0],     v.front());
+    ASSERT_EQ(s[len-1], v.back());
+    ASSERT_EQ(s,         &(v.front()));
+    ASSERT_EQ(s+(len-1), &(v.back()));
 
     ASSERT_TRUE(v.cbegin() == v.begin());
     ASSERT_TRUE(v.cend()   == v.end());

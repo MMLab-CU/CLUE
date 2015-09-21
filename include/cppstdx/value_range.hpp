@@ -24,15 +24,15 @@ struct range_traits {
 
     constexpr static T next(T x) noexcept { return x + 1; }
     constexpr static T prev(T x) noexcept { return x - 1; }
-    constexpr static T advance(T x, difference_type n) noexcept { return x + n; }
-    constexpr static T retreat(T x, difference_type n) noexcept { return x - n; }
+    constexpr static T next(T x, difference_type n) noexcept { return x + n; }
+    constexpr static T prev(T x, difference_type n) noexcept { return x - n; }
 
     constexpr static bool eq(T x, T y) noexcept { return x == y; }
     constexpr static bool lt(T x, T y) noexcept { return x <  y; }
     constexpr static bool le(T x, T y) noexcept { return x <= y; }
 
-    constexpr static difference_type distance(T x, T y) noexcept {
-        return y - x;
+    constexpr static difference_type difference(T x, T y) noexcept {
+        return x - y;
     }
 };
 
@@ -119,11 +119,11 @@ public:
 
     // arithmetics
     constexpr value_range_iterator operator + (difference_type n) const noexcept {
-        return value_range_iterator(traits_.advance(v_, n), traits_);
+        return value_range_iterator(traits_.next(v_, n), traits_);
     }
 
     constexpr value_range_iterator operator - (difference_type n) const noexcept {
-        return value_range_iterator(traits_.retreat(v_, n), traits_);
+        return value_range_iterator(traits_.prev(v_, n), traits_);
     }
 
     value_range_iterator& operator += (difference_type n) noexcept {
@@ -137,7 +137,7 @@ public:
     }
 
     constexpr difference_type operator - (value_range_iterator r) const noexcept {
-        return traits_.distance(r.v_, v_);
+        return traits_.difference(v_, r.v_);
     }
 };
 
@@ -201,7 +201,7 @@ public:
     constexpr const T& last()  const noexcept { return last_; }
 
     constexpr size_type size() const noexcept {
-        return static_cast<size_type>(Traits::distance(first_, last_));
+        return static_cast<size_type>(Traits::difference(last_, first_));
     }
 
     constexpr bool empty() const noexcept {

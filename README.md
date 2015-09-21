@@ -11,7 +11,6 @@ Currently, the library contains the following:
 - [x] `optional`
 - [x] `string_view`
 - [ ] `any`
-- [ ] `variant`
 - [x] `contiguous_view`
 - [x] `reindexed_view`
 - [x] `value_range`

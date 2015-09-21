@@ -7,6 +7,37 @@ std::vector<int> S{12, 24, 36, 48, 60};
 typedef cppstdx::reindexed_view<const std::vector<int>, const std::vector<size_t>> cview_t;
 typedef cppstdx::reindexed_view<      std::vector<int>, const std::vector<size_t>>  view_t;
 
+TEST(ReindexedView, Types) {
+    ASSERT_TRUE((std::is_same<view_t::value_type, int  >::value));
+    ASSERT_TRUE((std::is_same<view_t::reference,  int& >::value));
+    ASSERT_TRUE((std::is_same<view_t::pointer,    int* >::value));
+
+    ASSERT_TRUE((std::is_same<cview_t::value_type, int        >::value));
+    ASSERT_TRUE((std::is_same<cview_t::reference,  const int& >::value));
+    ASSERT_TRUE((std::is_same<cview_t::pointer,    const int* >::value));
+
+    using cview_citerator = cview_t::const_iterator;
+    using cview_iterator  = cview_t::iterator;
+    using  view_citerator = view_t::const_iterator;
+    using  view_iterator =  view_t::iterator;
+
+    ASSERT_TRUE((std::is_same<cview_citerator::value_type, int        >::value));
+    ASSERT_TRUE((std::is_same<cview_citerator::reference,  const int& >::value));
+    ASSERT_TRUE((std::is_same<cview_citerator::pointer,    const int* >::value));
+
+    ASSERT_TRUE((std::is_same<cview_iterator::value_type, int        >::value));
+    ASSERT_TRUE((std::is_same<cview_iterator::reference,  const int& >::value));
+    ASSERT_TRUE((std::is_same<cview_iterator::pointer,    const int* >::value));
+
+    ASSERT_TRUE((std::is_same<view_citerator::value_type, int        >::value));
+    ASSERT_TRUE((std::is_same<view_citerator::reference,  const int& >::value));
+    ASSERT_TRUE((std::is_same<view_citerator::pointer,    const int* >::value));
+
+    ASSERT_TRUE((std::is_same<view_iterator::value_type, int  >::value));
+    ASSERT_TRUE((std::is_same<view_iterator::reference,  int& >::value));
+    ASSERT_TRUE((std::is_same<view_iterator::pointer,    int* >::value));
+}
+
 
 TEST(ReindexedView, Empty) {
     std::vector<size_t> inds;

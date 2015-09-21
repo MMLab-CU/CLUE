@@ -153,15 +153,15 @@ public:
 
     // size related
 
-    constexpr bool empty() const noexcept {
+    constexpr bool empty() const noexcept(noexcept(indices_.empty())) {
         return indices_.empty();
     }
 
-    constexpr size_type size() const noexcept {
+    constexpr size_type size() const noexcept(noexcept(indices_.size())) {
         return indices_.size();
     }
 
-    constexpr size_type max_size() const noexcept {
+    constexpr size_type max_size() const noexcept(noexcept(indices_.max_size())) {
         return indices_.max_size();
     }
 

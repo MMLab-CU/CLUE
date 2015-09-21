@@ -56,6 +56,19 @@ TEST(StringView, Basics) {
     test_strview_basics(string_view(sv2), sv2.data(), 3);
 }
 
+TEST(StringView, Swap) {
+
+    string_view sv0;
+    const char *sz1 = "abc";
+    string_view sv1(sz1);
+
+    swap(sv0, sv1);
+    ASSERT_EQ(sz1, sv0.data());
+    ASSERT_EQ(3, sv0.size());
+    ASSERT_EQ(nullptr, sv1.data());
+    ASSERT_EQ(0, sv1.size());
+}
+
 
 TEST(StringView, Conversion) {
 

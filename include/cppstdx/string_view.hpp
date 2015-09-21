@@ -421,37 +421,43 @@ private:
 
 }; // end class basic_string_view
 
+// External swap
+
+template<class charT, class Traits>
+inline void swap(basic_string_view<charT, Traits>& a, basic_string_view<charT, Traits>& b) noexcept {
+    a.swap(b);
+}
 
 // Comparison
 
 template<class charT, class Traits>
-bool operator==(basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
+inline bool operator==(basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
     if (lhs.size() != rhs.size()) return false;
     return lhs.compare(rhs) == 0;
 }
 
 template<class charT, class Traits>
-bool operator!=(basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
+inline bool operator!=(basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
     return !(lhs == rhs);
 }
 
 template<class charT, class Traits>
-bool operator< (basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
+inline bool operator< (basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
     return lhs.compare(rhs) < 0;
 }
 
 template<class charT, class Traits>
-bool operator> (basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
+inline bool operator> (basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
     return lhs.compare(rhs) > 0;
 }
 
 template<class charT, class Traits>
-bool operator<=(basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
+inline bool operator<=(basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
     return lhs.compare(rhs) <= 0;
 }
 
 template<class charT, class Traits>
-bool operator>=(basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
+inline bool operator>=(basic_string_view<charT, Traits> lhs, basic_string_view<charT, Traits> rhs) noexcept {
     return lhs.compare(rhs) >= 0;
 }
 
@@ -459,8 +465,9 @@ bool operator>=(basic_string_view<charT, Traits> lhs, basic_string_view<charT, T
 // stream output
 
 template<class charT, class Traits>
-::std::basic_ostream<charT, Traits>& operator<< (::std::basic_ostream<charT, Traits>& os,
-                                                 basic_string_view<charT, Traits> sv) {
+inline ::std::basic_ostream<charT, Traits>& operator<< (
+        ::std::basic_ostream<charT, Traits>& os,
+        basic_string_view<charT, Traits> sv) {
     // TODO: implement more efficient output of string_view, without first constructing a copy
     os << sv.to_string();
     return os;

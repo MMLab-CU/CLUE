@@ -17,7 +17,6 @@ addons:
       - cmake
       - gcc-4.8
       - g++-4.8
-      - libc++1
 
 before_install:
   - "pushd . && mkdir $HOME/deps && cd $HOME/deps"

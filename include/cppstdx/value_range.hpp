@@ -7,15 +7,42 @@
 
 namespace cppstdx {
 
+
+namespace details {
+
+struct generic_minus {
+    template<typename T>
+    auto operator()(const T& x, const T& y) const -> decltype(x - y) {
+        return x - y;
+    }
+};
+
+template<typename T, bool=::std::is_unsigned<T>::value>
+struct default_difference_helper {
+    typedef typename ::std::make_signed<T>::type type;
+};
+
+template<typename T>
+struct default_difference_helper<T, false> {
+    typedef T type;
+};
+
+};
+
+template<typename T>
+struct default_difference {
+private:
+    typedef typename ::std::result_of<details::generic_minus(T, T)>::type minus_ret_t;
+public:
+    typedef typename details::default_difference_helper<T>::type type;
+};
+
+
 // default range traits
 
 template<typename T>
 struct range_traits {
-    static_assert(::std::is_integral<T>::value,
-            "range_traits<T>: T must be an integral type.");
-
-    typedef typename ::std::make_unsigned<T>::type size_type;
-    typedef typename ::std::make_signed<T>::type difference_type;
+    typedef typename default_difference<T>::type difference_type;
 
     static void increment(T& x) noexcept { ++x; }
     static void decrement(T& x) noexcept { --x; }
@@ -49,7 +76,6 @@ public:
     typedef T value_type;
     typedef T reference;
     typedef const T* pointer;
-    typedef typename Traits::size_type size_type;
     typedef typename Traits::difference_type difference_type;
     typedef ::std::random_access_iterator_tag iterator_category;
 
@@ -141,7 +167,6 @@ public:
     }
 };
 
-
 }
 
 
@@ -152,15 +177,17 @@ class value_range {
     static_assert(::std::is_object<T>::value,
             "value_range<T>: T must be an object type.");
     static_assert(
-            ::std::is_nothrow_destructible<T>::value &&
-            ::std::is_nothrow_copy_constructible<T>::value &&
-            ::std::is_nothrow_assignable<T&, T>::value,
+            ::std::is_destructible<T>::value &&
+            ::std::is_copy_constructible<T>::value &&
+            ::std::is_copy_assignable<T>::value &&
+            ::std::is_nothrow_move_constructible<T>::value &&
+            ::std::is_nothrow_move_assignable<T>::value,
             "value_range<T>: bad T.");
 
 public:
     // types
     typedef T value_type;
-    typedef typename Traits::size_type size_type;
+    typedef typename ::std::size_t size_type;
     typedef typename Traits::difference_type difference_type;
 
     typedef const T& reference;
@@ -178,14 +205,14 @@ private:
 public:
     // constructor/copy/swap
 
-    constexpr value_range(const T& first, size_type last) noexcept :
+    constexpr value_range(const T& first, size_type last) :
         first_(first), last_(last) {}
 
-    constexpr value_range(const value_range& r) noexcept = default;
+    constexpr value_range(const value_range& r) = default;
 
-    ~value_range() noexcept = default;
+    ~value_range() = default;
 
-    value_range& operator=(const value_range& r) noexcept = default;
+    value_range& operator=(const value_range& r) = default;
 
     void swap(value_range& other) noexcept {
         using ::std::swap;
@@ -210,10 +237,10 @@ public:
 
     // iterators
 
-    constexpr const_iterator begin()  const noexcept { return const_iterator(first_, Traits()); }
-    constexpr const_iterator end()    const noexcept { return const_iterator(last_,  Traits()); }
-    constexpr const_iterator cbegin() const noexcept { return begin(); }
-    constexpr const_iterator cend()   const noexcept { return end();   }
+    constexpr const_iterator begin()  const { return const_iterator(first_, Traits()); }
+    constexpr const_iterator end()    const { return const_iterator(last_,  Traits()); }
+    constexpr const_iterator cbegin() const { return begin(); }
+    constexpr const_iterator cend()   const { return end();   }
 };
 
 

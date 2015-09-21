@@ -112,15 +112,19 @@ public:
 
     // iterators
 
-    constexpr const_iterator begin()  const noexcept { return cbegin(); }
-    constexpr const_iterator end()    const noexcept { return cend(); }
-    constexpr const_iterator cbegin() const noexcept { return data_; }
-    constexpr const_iterator cend()   const noexcept { return data_ + len_; }
+    iterator begin() noexcept { return data_; }
+    iterator end()   noexcept { return data_ + len_; }
+    constexpr const_iterator begin()  const noexcept { return data_; }
+    constexpr const_iterator end()    const noexcept { return data_ + len_; }
+    constexpr const_iterator cbegin() const noexcept { return begin(); }
+    constexpr const_iterator cend()   const noexcept { return end(); }
 
-    const_reverse_iterator rbegin()   const noexcept { return crbegin(); }
-    const_reverse_iterator rend()     const noexcept { return crend(); }
-    const_reverse_iterator crbegin()  const noexcept { return const_reverse_iterator(cend()); }
-    const_reverse_iterator crend()    const noexcept { return const_reverse_iterator(cbegin()); }
+    reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
+    reverse_iterator rend()   noexcept { return reverse_iterator(begin()); }
+    constexpr const_reverse_iterator rbegin()  const noexcept { return const_reverse_iterator(end()); }
+    constexpr const_reverse_iterator rend()    const noexcept { return const_reverse_iterator(begin()); }
+    constexpr const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+    constexpr const_reverse_iterator crend()   const noexcept { return rend(); }
 };
 
 template<typename T>

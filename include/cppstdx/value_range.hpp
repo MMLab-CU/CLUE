@@ -245,6 +245,17 @@ public:
     constexpr const_iterator cbegin() const { return begin(); }
     constexpr const_iterator cend()   const { return end();   }
 
+    // equality comparison
+
+    constexpr bool operator==(const value_range& r) const noexcept {
+        return Traits::eq(first_, r.first_) &&
+               Traits::eq(last_,  r.last_);
+    }
+
+    constexpr bool operator!=(const value_range& r) const noexcept {
+        return !(operator == (r));
+    }
+
 }; // end class value_range
 
 
@@ -252,6 +263,12 @@ template<typename T, typename Traits>
 inline void swap(value_range<T,Traits>& lhs, value_range<T,Traits>& rhs) {
     lhs.swap(rhs);
 }
+
+template<class Container>
+inline value_range<typename Container::size_type> indices(const Container& c) {
+    return value_range<typename Container::size_type>(0, c.size());
+}
+
 
 }
 

@@ -14,4 +14,4 @@ Currently, the library contains the following:
 - [ ] `variant`
 - [x] `contiguous_view`
 - [x] `reindexed_view`
-- [ ] `value_range`
+- [x] `value_range`

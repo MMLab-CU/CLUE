@@ -107,5 +107,30 @@ TEST(ValueRanges, CharRanges) {
     test_unit_range(crange('a', 'g'), 'a', 'g');
 }
 
+TEST(ValueRanges, Equality) {
+    using irange = cppstdx::value_range<int>;
 
+    ASSERT_EQ(true,  irange(2, 5) == irange(2, 5));
+    ASSERT_EQ(false, irange(2, 5) != irange(2, 5));
+
+    ASSERT_EQ(false, irange(2, 5) == irange(2, 6));
+    ASSERT_EQ(true,  irange(2, 5) != irange(2, 6));
+
+    ASSERT_EQ(false, irange(2, 5) == irange(3, 5));
+    ASSERT_EQ(true,  irange(2, 5) != irange(3, 5));
+
+    ASSERT_EQ(false, irange(2, 5) == irange(3, 6));
+    ASSERT_EQ(true,  irange(2, 5) != irange(3, 6));
+}
+
+TEST(ValueRanges, Indices) {
+    using srange = cppstdx::value_range<std::size_t>;
+    using cppstdx::indices;
+
+    std::vector<int> s0;
+    ASSERT_EQ(srange(0, 0), indices(s0));
+
+    std::vector<int> s1{1, 2, 3};
+    ASSERT_EQ(srange(0, 3), indices(s1));
+}
 

@@ -27,6 +27,18 @@ struct default_difference_helper<T, false> {
     typedef T type;
 };
 
+template<typename T>
+struct is_valid_range_argtype {
+    static constexpr bool value =
+        ::std::is_object<T>::value &&
+        !::std::is_const<T>::value &&
+        !::std::is_volatile<T>::value &&
+        ::std::is_copy_constructible<T>::value &&
+        ::std::is_copy_assignable<T>::value &&
+        ::std::is_nothrow_move_constructible<T>::value &&
+        ::std::is_nothrow_move_assignable<T>::value;
+};
+
 };
 
 template<typename T>
@@ -38,21 +50,21 @@ public:
 };
 
 
-// default range traits
+// range traits
 
-template<typename T>
-struct range_traits {
-    typedef typename default_difference<T>::type difference_type;
+template<typename T, typename D>
+struct value_range_traits {
+    typedef D difference_type;
 
     static void increment(T& x) noexcept { ++x; }
     static void decrement(T& x) noexcept { --x; }
-    static void increment(T& x, difference_type n) noexcept { x += n; }
-    static void decrement(T& x, difference_type n) { x -= n; }
+    static void increment(T& x, D d) noexcept { x += d; }
+    static void decrement(T& x, D d) noexcept { x -= d; }
 
     constexpr static T next(T x) noexcept { return x + 1; }
     constexpr static T prev(T x) noexcept { return x - 1; }
-    constexpr static T next(T x, difference_type n) noexcept { return x + n; }
-    constexpr static T prev(T x, difference_type n) noexcept { return x - n; }
+    constexpr static T next(T x, D d) noexcept { return x + d; }
+    constexpr static T prev(T x, D d) noexcept { return x - d; }
 
     constexpr static bool eq(T x, T y) noexcept { return x == y; }
     constexpr static bool lt(T x, T y) noexcept { return x <  y; }
@@ -63,14 +75,12 @@ struct range_traits {
     }
 };
 
-
 namespace details {
 
 template<typename T, typename Traits>
 class value_range_iterator {
 private:
     T v_;
-    Traits traits_;
 
 public:
     typedef T value_type;
@@ -80,33 +90,33 @@ public:
     typedef ::std::random_access_iterator_tag iterator_category;
 
 public:
-    constexpr value_range_iterator(const T& v, Traits traits) :
-        v_(v), traits_(traits) {}
+    constexpr value_range_iterator(const T& v) :
+        v_(v) {}
 
     // comparison
 
     constexpr bool operator <  (const value_range_iterator& r) const noexcept {
-        return traits_.lt(v_, r.v_);
+        return Traits::lt(v_, r.v_);
     }
 
     constexpr bool operator <= (const value_range_iterator& r) const noexcept {
-        return traits_.le(v_, r.v_);
+        return Traits::le(v_, r.v_);
     }
 
     constexpr bool operator >  (const value_range_iterator& r) const noexcept {
-        return traits_.lt(r.v_, v_);
+        return Traits::lt(r.v_, v_);
     }
 
     constexpr bool operator >= (const value_range_iterator& r) const noexcept {
-        return traits_.le(r.v_, v_);
+        return Traits::le(r.v_, v_);
     }
 
     constexpr bool operator == (const value_range_iterator& r) const noexcept {
-        return traits_.eq(v_, r.v_);
+        return Traits::eq(v_, r.v_);
     }
 
     constexpr bool operator != (const value_range_iterator& r) const noexcept {
-        return !traits_.eq(v_, r.v_);
+        return !Traits::eq(v_, r.v_);
     }
 
     // dereference
@@ -116,79 +126,72 @@ public:
     }
 
     constexpr T operator[](difference_type n) const noexcept {
-        return traits_.advance(v_, n);
+        return Traits::advance(v_, n);
     }
 
     // increment & decrement
 
     value_range_iterator& operator++() noexcept {
-        traits_.increment(v_);
+        Traits::increment(v_);
         return *this;
     }
 
     value_range_iterator& operator--() noexcept {
-        traits_.decrement(v_);
+        Traits::decrement(v_);
         return *this;
     }
 
     value_range_iterator operator++(int) noexcept {
         T t(v_);
-        traits_.increment(v_);
-        return value_range_iterator(t, traits_);
+        Traits::increment(v_);
+        return value_range_iterator(t);
     }
 
     value_range_iterator operator--(int) noexcept {
         T t(v_);
-        traits_.decrement(v_);
-        return value_range_iterator(t, traits_);
+        Traits::decrement(v_);
+        return value_range_iterator(t);
     }
 
     // arithmetics
     constexpr value_range_iterator operator + (difference_type n) const noexcept {
-        return value_range_iterator(traits_.next(v_, n), traits_);
+        return value_range_iterator(Traits::next(v_, n));
     }
 
     constexpr value_range_iterator operator - (difference_type n) const noexcept {
-        return value_range_iterator(traits_.prev(v_, n), traits_);
+        return value_range_iterator(Traits::prev(v_, n));
     }
 
     value_range_iterator& operator += (difference_type n) noexcept {
-        traits_.increment(v_, n);
+        Traits::increment(v_, n);
         return *this;
     }
 
     value_range_iterator& operator -= (difference_type n) noexcept {
-        traits_.decrement(v_, n);
+        Traits::decrement(v_, n);
         return *this;
     }
 
     constexpr difference_type operator - (value_range_iterator r) const noexcept {
-        return traits_.difference(v_, r.v_);
+        return Traits::difference(v_, r.v_);
     }
 };
 
-}
+} // end namespace details
 
 
-template<typename T, typename Traits=range_traits<T>>
+template<typename T,
+         typename D=typename default_difference<T>::type,
+         typename Traits=value_range_traits<T, D>>
 class value_range {
-    static_assert(!(::std::is_const<T>::value || ::std::is_volatile<T>::value),
-            "value_range<T>: T should not be with const/volatile qualifiers.");
-    static_assert(::std::is_object<T>::value,
-            "value_range<T>: T must be an object type.");
-    static_assert(
-            ::std::is_destructible<T>::value &&
-            ::std::is_copy_constructible<T>::value &&
-            ::std::is_copy_assignable<T>::value &&
-            ::std::is_nothrow_move_constructible<T>::value &&
-            ::std::is_nothrow_move_assignable<T>::value,
-            "value_range<T>: bad T.");
+    static_assert(details::is_valid_range_argtype<T>::value,
+            "value_range<T>: T is not a valid type argument.");
 
 public:
     // types
     typedef T value_type;
+    typedef D difference_type;
     typedef typename ::std::size_t size_type;
-    typedef typename Traits::difference_type difference_type;
 
     typedef const T& reference;
     typedef const T& const_reference;
@@ -205,14 +208,14 @@ private:
 public:
     // constructor/copy/swap
 
-    constexpr value_range(const T& first, size_type last) :
+    constexpr value_range(const T& first, const T& last) :
         first_(first), last_(last) {}
 
-    constexpr value_range(const value_range& r) = default;
+    constexpr value_range(const value_range&) = default;
 
     ~value_range() = default;
 
-    value_range& operator=(const value_range& r) = default;
+    value_range& operator=(const value_range&) = default;
 
     void swap(value_range& other) noexcept {
         using ::std::swap;
@@ -237,8 +240,8 @@ public:
 
     // iterators
 
-    constexpr const_iterator begin()  const { return const_iterator(first_, Traits()); }
-    constexpr const_iterator end()    const { return const_iterator(last_,  Traits()); }
+    constexpr const_iterator begin()  const { return const_iterator(first_); }
+    constexpr const_iterator end()    const { return const_iterator(last_); }
     constexpr const_iterator cbegin() const { return begin(); }
     constexpr const_iterator cend()   const { return end();   }
 
@@ -249,11 +252,6 @@ template<typename T, typename Traits>
 inline void swap(value_range<T,Traits>& lhs, value_range<T,Traits>& rhs) {
     lhs.swap(rhs);
 }
-
-
-
-
-
 
 }
 

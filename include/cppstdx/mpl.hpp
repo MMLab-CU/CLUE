@@ -208,7 +208,7 @@ template<typename A, typename... Rest>
 struct all_impl<A, Rest...> : public all_helper<A::value, Rest...> {};
 
 template<>
-struct all_impl<> : public bool_<false> {};
+struct all_impl<> : public bool_<true> {};
 
 // any
 

@@ -36,24 +36,24 @@ constexpr basic_string_view<charT, Traits> view(const ::std::basic_string<charT,
 
 template<typename charT, typename Traits>
 constexpr basic_string_view<charT, Traits>
-prefix(basic_string_view<charT, Traits> str, ::std::size_t n) {
+prefix(basic_string_view<charT, Traits> str, ::std::size_t n) noexcept {
     return str.substr(0, n);
 }
 
 template<typename charT, typename Traits, typename Allocator>
-::std::basic_string<charT, Traits, Allocator>
+inline ::std::basic_string<charT, Traits, Allocator>
 prefix(const ::std::basic_string<charT, Traits, Allocator>& str, ::std::size_t n) {
     return str.substr(0, n);
 }
 
 template<typename charT, typename Traits>
 constexpr basic_string_view<charT, Traits>
-suffix(basic_string_view<charT, Traits> str, ::std::size_t n) {
+suffix(basic_string_view<charT, Traits> str, ::std::size_t n) noexcept {
     return n > str.size() ? str : str.substr(str.size() - n, n);
 }
 
 template<typename charT, typename Traits, typename Allocator>
-::std::basic_string<charT, Traits, Allocator>
+inline ::std::basic_string<charT, Traits, Allocator>
 suffix(const ::std::basic_string<charT, Traits, Allocator>& str, ::std::size_t n) {
     return n > str.size() ? str : str.substr(str.size() - n, n);
 }
@@ -69,12 +69,12 @@ starts_with(const charT* str, charT c) noexcept {
 }
 
 template<typename charT, typename Traits>
-bool starts_with(basic_string_view<charT, Traits> str, charT c) noexcept {
+inline bool starts_with(basic_string_view<charT, Traits> str, charT c) noexcept {
     return !str.empty() && Traits::eq(str.front(), c);
 }
 
 template<typename charT, typename Traits, typename Allocator>
-bool starts_with(const ::std::basic_string<charT, Traits, Allocator>& str, charT c) noexcept {
+inline bool starts_with(const ::std::basic_string<charT, Traits, Allocator>& str, charT c) noexcept {
     return !str.empty() && Traits::eq(str.front(), c);
 }
 
@@ -153,19 +153,75 @@ ends_with(const charT* str, charT c) noexcept {
 }
 
 template<typename charT, typename Traits>
-bool ends_with(basic_string_view<charT, Traits> str, charT c) noexcept {
+inline bool ends_with(basic_string_view<charT, Traits> str, charT c) noexcept {
     return !str.empty() && Traits::eq(str.back(), c);
 }
 
 template<typename charT, typename Traits, typename Allocator>
-bool ends_with(const ::std::basic_string<charT, Traits, Allocator>& str, charT c) noexcept {
+inline bool ends_with(const ::std::basic_string<charT, Traits, Allocator>& str, charT c) noexcept {
     return !str.empty() && Traits::eq(str.back(), c);
 }
 
 
 // ends_with (string)
 
+template<typename charT, typename Traits>
+inline bool ends_with(basic_string_view<charT, Traits> str,
+               basic_string_view<charT, Traits> sub) noexcept {
+    ::std::size_t n = sub.size();
+    return str.size() >= n && str.substr(str.size() - n, n) == sub;
+}
 
+template<typename charT, typename Traits>
+inline bool ends_with(basic_string_view<charT, Traits> str,
+                      const charT *sub) noexcept {
+    using view_t = basic_string_view<charT, Traits>;
+    return ends_with(str, view_t(sub));
+}
+
+template<typename charT, typename Traits, typename Allocator>
+inline bool ends_with(basic_string_view<charT, Traits> str,
+                      const ::std::basic_string<charT, Traits, Allocator>& sub) noexcept {
+    return ends_with(str, view(sub));
+}
+
+template<typename charT>
+inline bool ends_with(const charT *str, const charT *sub) noexcept {
+    using view_t = basic_string_view<charT>;
+    return ends_with(view_t(str), view_t(sub));
+}
+
+template<typename charT, typename Traits>
+inline bool ends_with(const charT *str, basic_string_view<charT, Traits> sub) noexcept {
+    using view_t = basic_string_view<charT, Traits>;
+    return ends_with(view_t(str), sub);
+}
+
+template<typename charT, typename Traits, typename Allocator>
+inline bool ends_with(const charT *str,
+                      const ::std::basic_string<charT, Traits, Allocator>& sub) noexcept {
+    using view_t = basic_string_view<charT, Traits>;
+    return ends_with(view_t(str), view(sub));
+}
+
+template<typename charT, typename Traits, typename Allocator>
+inline bool ends_with(const ::std::basic_string<charT, Traits, Allocator>& str,
+                      const charT *sub) noexcept {
+    using view_t = basic_string_view<charT, Traits>;
+    return ends_with(view(str), view_t(sub));
+}
+
+template<typename charT, typename Traits, typename Allocator>
+inline bool ends_with(const ::std::basic_string<charT, Traits, Allocator>& str,
+                      const basic_string_view<charT, Traits> sub) noexcept {
+    return ends_with(view(str), sub);
+}
+
+template<typename charT, typename Traits, typename Allocator, typename Allocator2>
+inline bool ends_with(const ::std::basic_string<charT, Traits, Allocator>& str,
+                      const ::std::basic_string<charT, Traits, Allocator2>& sub) noexcept {
+    return ends_with(view(str), view(sub));
+}
 
 }
 

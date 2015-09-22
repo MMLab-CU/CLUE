@@ -112,3 +112,33 @@ TEST(StringEx, EndsWithChar) {
     test_ends_with_char<string>();
 }
 
+
+template<typename T, typename S>
+void test_ends_with() {
+    using cppstdx::ends_with;
+
+    ASSERT_EQ(true,  ends_with(T(""), S("")));
+    ASSERT_EQ(false, ends_with(T(""), S("a")));
+    ASSERT_EQ(false, ends_with(T(""), S("abc")));
+
+    ASSERT_EQ(true,  ends_with(T("abc"), S("")));
+    ASSERT_EQ(true,  ends_with(T("abc"), S("bc")));
+    ASSERT_EQ(true,  ends_with(T("abc"), S("abc")));
+    ASSERT_EQ(false, ends_with(T("abc"), S("x")));
+    ASSERT_EQ(false, ends_with(T("abc"), S("xbc")));
+    ASSERT_EQ(false, ends_with(T("abc"), S("xabc")));
+}
+TEST(StringEx, EndsWith) {
+    test_ends_with<const char*, const char*>();
+    test_ends_with<const char*, string_view>();
+    test_ends_with<const char*, string>();
+
+    test_ends_with<string_view, const char*>();
+    test_ends_with<string_view, string_view>();
+    test_ends_with<string_view, string>();
+
+    test_ends_with<string, const char*>();
+    test_ends_with<string, string_view>();
+    test_ends_with<string, string>();
+}
+

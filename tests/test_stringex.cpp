@@ -142,3 +142,52 @@ TEST(StringEx, EndsWith) {
     test_ends_with<string, string>();
 }
 
+
+template<typename T>
+void test_trim() {
+    using cppstdx::trim_left;
+    using cppstdx::trim_right;
+    using cppstdx::trim;
+
+    ASSERT_EQ(T(""), trim_left  (T("")));
+    ASSERT_EQ(T(""), trim_right (T("")));
+    ASSERT_EQ(T(""), trim       (T("")));
+
+    ASSERT_EQ(T(""), trim_left  (T("\t\n")));
+    ASSERT_EQ(T(""), trim_right (T("\t\n")));
+    ASSERT_EQ(T(""), trim       (T("\t\n")));
+
+    ASSERT_EQ(T("a"), trim_left  (T("a")));
+    ASSERT_EQ(T("a"), trim_right (T("a")));
+    ASSERT_EQ(T("a"), trim       (T("a")));
+
+    ASSERT_EQ(T("abc"), trim_left  (T("abc")));
+    ASSERT_EQ(T("abc"), trim_right (T("abc")));
+    ASSERT_EQ(T("abc"), trim       (T("abc")));
+
+    ASSERT_EQ(T("abc xy\n"),    trim_left  (T("abc xy\n")));
+    ASSERT_EQ(T("abc xy"),      trim_right (T("abc xy\n")));
+    ASSERT_EQ(T("abc xy"),      trim       (T("abc xy\n")));
+
+    ASSERT_EQ(T("abc xy   \n"), trim_left  (T("abc xy   \n")));
+    ASSERT_EQ(T("abc xy"),      trim_right (T("abc xy   \n")));
+    ASSERT_EQ(T("abc xy"),      trim       (T("abc xy   \n")));
+
+    ASSERT_EQ(T("abc xy"),      trim_left  (T("\t\tabc xy")));
+    ASSERT_EQ(T("\t\tabc xy"),  trim_right (T("\t\tabc xy")));
+    ASSERT_EQ(T("abc xy"),      trim       (T("\t\tabc xy")));
+
+    ASSERT_EQ(T("abc xy\n"),    trim_left  (T("\t\tabc xy\n")));
+    ASSERT_EQ(T("\t\tabc xy"),  trim_right (T("\t\tabc xy\n")));
+    ASSERT_EQ(T("abc xy"),      trim       (T("\t\tabc xy\n")));
+}
+
+
+TEST(StringEx, Trim) {
+    test_trim<string_view>();
+    test_trim<string>();
+}
+
+
+
+

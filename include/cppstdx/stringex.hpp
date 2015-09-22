@@ -9,6 +9,7 @@
 
 #include <cppstdx/config.hpp>
 #include <cppstdx/string_view.hpp>
+#include <cctype>
 
 namespace cppstdx {
 
@@ -22,6 +23,21 @@ struct is_char {
         ::std::is_same<T, char16_t>::value ||
         ::std::is_same<T, char32_t>::value;
 };
+
+template<typename T>
+struct is_cchar {
+    static constexpr bool value =
+        ::std::is_same<T, char>::value ||
+        ::std::is_same<T, wchar_t>::value;
+};
+
+inline bool is_space(char ch) {
+    return ::std::isspace(ch);
+}
+
+inline bool is_space(wchar_t ch) {
+    return ::std::iswspace(ch);
+}
 
 }
 
@@ -167,7 +183,7 @@ inline bool ends_with(const ::std::basic_string<charT, Traits, Allocator>& str, 
 
 template<typename charT, typename Traits>
 inline bool ends_with(basic_string_view<charT, Traits> str,
-               basic_string_view<charT, Traits> sub) noexcept {
+                      basic_string_view<charT, Traits> sub) noexcept {
     ::std::size_t n = sub.size();
     return str.size() >= n && str.substr(str.size() - n, n) == sub;
 }
@@ -222,6 +238,62 @@ inline bool ends_with(const ::std::basic_string<charT, Traits, Allocator>& str,
                       const ::std::basic_string<charT, Traits, Allocator2>& sub) noexcept {
     return ends_with(view(str), view(sub));
 }
+
+
+// trim functions
+
+template<typename charT, typename Traits>
+inline basic_string_view<charT, Traits>
+trim_left(basic_string_view<charT, Traits> str) {
+    if (str.empty()) return str;
+    const charT *p = str.cbegin();
+    const charT *end = str.cend();
+    while (p != end && details::is_space(*p)) ++p;
+    return basic_string_view<charT, Traits>(p, ::std::size_t(end - p));
+}
+
+template<typename charT, typename Traits>
+inline basic_string_view<charT, Traits>
+trim_right(basic_string_view<charT, Traits> str) {
+    if (str.empty()) return str;
+    const charT *begin = str.cbegin();
+    const charT *q = str.cend();
+    while (q != begin && details::is_space(*(q-1))) --q;
+    return basic_string_view<charT, Traits>(begin, ::std::size_t(q - begin));
+}
+
+template<typename charT, typename Traits>
+inline basic_string_view<charT, Traits>
+trim(basic_string_view<charT, Traits> str) {
+    if (str.empty()) return str;
+    const charT *p = str.cbegin();
+    const charT *q = str.cend();
+    while (p != q && details::is_space(*p)) ++p;  // trim left
+    while (q != p && details::is_space(*(q-1))) --q;  // trim right
+    return basic_string_view<charT, Traits>(p, ::std::size_t(q - p));
+}
+
+template<typename charT, typename Traits, typename Allocator>
+inline ::std::basic_string<charT, Traits, Allocator>
+trim_left(const ::std::basic_string<charT, Traits, Allocator>& str) {
+    basic_string_view<charT, Traits> r = trim_left(view(str));
+    return ::std::basic_string<charT, Traits, Allocator>(r.data(), r.size());
+}
+
+template<typename charT, typename Traits, typename Allocator>
+inline ::std::basic_string<charT, Traits, Allocator>
+trim_right(const ::std::basic_string<charT, Traits, Allocator>& str) {
+    basic_string_view<charT, Traits> r = trim_right(view(str));
+    return ::std::basic_string<charT, Traits, Allocator>(r.data(), r.size());
+}
+
+template<typename charT, typename Traits, typename Allocator>
+inline ::std::basic_string<charT, Traits, Allocator>
+trim(const ::std::basic_string<charT, Traits, Allocator>& str) {
+    basic_string_view<charT, Traits> r = trim(view(str));
+    return ::std::basic_string<charT, Traits, Allocator>(r.data(), r.size());
+}
+
 
 }
 

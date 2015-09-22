@@ -12,14 +12,6 @@
 
 namespace cppstdx {
 
-// make string view
-
-template<typename charT, typename Traits, typename Allocator>
-constexpr basic_string_view<charT, Traits> view(const ::std::basic_string<charT, Traits, Allocator>& s) {
-    return basic_string_view<charT, Traits>(s);
-}
-
-
 namespace details {
 
 template<typename T>
@@ -32,6 +24,40 @@ struct is_char {
 };
 
 }
+
+// make string view
+
+template<typename charT, typename Traits, typename Allocator>
+constexpr basic_string_view<charT, Traits> view(const ::std::basic_string<charT, Traits, Allocator>& s) {
+    return basic_string_view<charT, Traits>(s);
+}
+
+// prefix
+
+template<typename charT, typename Traits>
+constexpr basic_string_view<charT, Traits>
+prefix(basic_string_view<charT, Traits> str, ::std::size_t n) {
+    return str.substr(0, n);
+}
+
+template<typename charT, typename Traits, typename Allocator>
+::std::basic_string<charT, Traits, Allocator>
+prefix(const ::std::basic_string<charT, Traits, Allocator>& str, ::std::size_t n) {
+    return str.substr(0, n);
+}
+
+template<typename charT, typename Traits>
+constexpr basic_string_view<charT, Traits>
+suffix(basic_string_view<charT, Traits> str, ::std::size_t n) {
+    return n > str.size() ? str : str.substr(str.size() - n, n);
+}
+
+template<typename charT, typename Traits, typename Allocator>
+::std::basic_string<charT, Traits, Allocator>
+suffix(const ::std::basic_string<charT, Traits, Allocator>& str, ::std::size_t n) {
+    return n > str.size() ? str : str.substr(str.size() - n, n);
+}
+
 
 // starts_with (char)
 

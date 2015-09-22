@@ -17,6 +17,39 @@ TEST(StringEx, StrView) {
     ASSERT_EQ(s1.c_str(), v1.data());
 }
 
+TEST(StringEx, Prefix) {
+    using cppstdx::prefix;
+
+    ASSERT_EQ(string_view(""),    prefix(string_view("abc"), 0));
+    ASSERT_EQ(string_view("a"),   prefix(string_view("abc"), 1));
+    ASSERT_EQ(string_view("ab"),  prefix(string_view("abc"), 2));
+    ASSERT_EQ(string_view("abc"), prefix(string_view("abc"), 3));
+    ASSERT_EQ(string_view("abc"), prefix(string_view("abc"), 4));
+
+    ASSERT_EQ(string(""),    prefix(string("abc"), 0));
+    ASSERT_EQ(string("a"),   prefix(string("abc"), 1));
+    ASSERT_EQ(string("ab"),  prefix(string("abc"), 2));
+    ASSERT_EQ(string("abc"), prefix(string("abc"), 3));
+    ASSERT_EQ(string("abc"), prefix(string("abc"), 4));
+}
+
+TEST(StringEx, Suffix) {
+    using cppstdx::suffix;
+
+    ASSERT_EQ(string_view(""),    suffix(string_view("abc"), 0));
+    ASSERT_EQ(string_view("c"),   suffix(string_view("abc"), 1));
+    ASSERT_EQ(string_view("bc"),  suffix(string_view("abc"), 2));
+    ASSERT_EQ(string_view("abc"), suffix(string_view("abc"), 3));
+    ASSERT_EQ(string_view("abc"), suffix(string_view("abc"), 4));
+
+    ASSERT_EQ(string(""),    suffix(string("abc"), 0));
+    ASSERT_EQ(string("c"),   suffix(string("abc"), 1));
+    ASSERT_EQ(string("bc"),  suffix(string("abc"), 2));
+    ASSERT_EQ(string("abc"), suffix(string("abc"), 3));
+    ASSERT_EQ(string("abc"), suffix(string("abc"), 4));
+}
+
+
 template<typename T>
 void test_starts_with_char() {
     using cppstdx::starts_with;

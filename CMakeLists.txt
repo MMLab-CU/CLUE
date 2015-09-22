@@ -67,6 +67,7 @@ set(UNIT_TESTS
     test_contiguous_view
     test_reindexed_view
     test_value_range
+    test_mpl
 )
 
 foreach (tname ${UNIT_TESTS})

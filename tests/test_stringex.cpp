@@ -187,7 +187,3 @@ TEST(StringEx, Trim) {
     test_trim<string_view>();
     test_trim<string>();
 }
-
-
-
-

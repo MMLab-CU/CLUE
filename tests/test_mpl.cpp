@@ -170,8 +170,3 @@ TEST(MPL, LazyAllAny) {
     ASSERT_EQ(true,  (mpl::any<bf, bt, b0>::value));
     ASSERT_EQ(true,  (mpl::any<bt, bf, b0>::value));
 }
-
-
-
-
-

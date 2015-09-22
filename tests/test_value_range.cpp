@@ -141,3 +141,35 @@ TEST(ValueRanges, Indices) {
     ASSERT_EQ(srange(0, 3), indices(s1));
 }
 
+TEST(ValueRanges, StlAlgorithms) {
+    // verify that it works well with STL algorithms
+
+    cppstdx::value_range<int> rgn(3, 8); // 3, ..., 7
+
+    auto i_min = std::min_element(rgn.begin(), rgn.end());
+    ASSERT_EQ(3, *i_min);
+
+    auto i_max = std::max_element(rgn.begin(), rgn.end());
+    ASSERT_EQ(7, *i_max);
+
+    auto i1 = std::find(rgn.begin(), rgn.end(), 5);
+    ASSERT_EQ(5, *i1);
+
+    auto i2 = std::find(rgn.begin(), rgn.end(), 9);
+    ASSERT_TRUE(i2 == rgn.end());
+
+    auto i3 = std::find_if(rgn.begin(), rgn.end(),
+            [](int x){ return x > 5; });
+    ASSERT_EQ(6, *i3);
+
+    auto r3 = std::count_if(rgn.begin(), rgn.end(),
+            [](int x){ return x > 5; });
+    ASSERT_EQ(2, r3);
+
+    std::vector<int> tr(rgn.size(), 0);
+    std::transform(rgn.begin(), rgn.end(), tr.begin(),
+            [](int x){ return x * x; });
+    std::vector<int> tr_r{9, 16, 25, 36, 49};
+    ASSERT_EQ(tr_r, tr);
+}
+

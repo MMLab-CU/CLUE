@@ -44,12 +44,12 @@ starts_with(const charT* str, charT c) noexcept {
 
 template<typename charT, typename Traits>
 bool starts_with(basic_string_view<charT, Traits> str, charT c) noexcept {
-    return !str.empty() && str.front() == c;
+    return !str.empty() && Traits::eq(str.front(), c);
 }
 
 template<typename charT, typename Traits, typename Allocator>
 bool starts_with(const ::std::basic_string<charT, Traits, Allocator>& str, charT c) noexcept {
-    return !str.empty() && str.front() == c;
+    return !str.empty() && Traits::eq(str.front(), c);
 }
 
 
@@ -114,6 +114,32 @@ inline bool starts_with(const ::std::basic_string<charT, Traits, Allocator>& str
                         const ::std::basic_string<charT, Traits, Allocator2>& sub) noexcept {
     return starts_with(view(str), view(sub));
 }
+
+
+// ends_with (char)
+
+template<typename charT>
+inline typename ::std::enable_if<details::is_char<charT>::value, bool>::type
+ends_with(const charT* str, charT c) noexcept {
+    if (!(*str)) return false;
+    using traits_t = ::std::char_traits<charT>;
+    return traits_t::eq(str[traits_t::length(str) - 1], c);
+}
+
+template<typename charT, typename Traits>
+bool ends_with(basic_string_view<charT, Traits> str, charT c) noexcept {
+    return !str.empty() && Traits::eq(str.back(), c);
+}
+
+template<typename charT, typename Traits, typename Allocator>
+bool ends_with(const ::std::basic_string<charT, Traits, Allocator>& str, charT c) noexcept {
+    return !str.empty() && Traits::eq(str.back(), c);
+}
+
+
+// ends_with (string)
+
+
 
 }
 

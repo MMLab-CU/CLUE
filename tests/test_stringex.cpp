@@ -27,8 +27,6 @@ void test_starts_with_char() {
     ASSERT_EQ(false, starts_with(T("ba"), 'a'));
     ASSERT_EQ(false, starts_with(T("xy"), 'a'));
 }
-
-
 TEST(StringEx, StartsWithChar) {
     test_starts_with_char<const char*>();
     test_starts_with_char<string_view>();
@@ -50,8 +48,6 @@ void test_starts_with() {
     ASSERT_EQ(false, starts_with(T("abc"), S("abd")));
     ASSERT_EQ(false, starts_with(T("abc"), S("abcd")));
 }
-
-
 TEST(StringEx, StartsWith) {
     test_starts_with<const char*, const char*>();
     test_starts_with<const char*, string_view>();
@@ -65,3 +61,21 @@ TEST(StringEx, StartsWith) {
     test_starts_with<string, string_view>();
     test_starts_with<string, string>();
 }
+
+template<typename T>
+void test_ends_with_char() {
+    using cppstdx::ends_with;
+
+    ASSERT_EQ(false, ends_with(T(""),   'a'));
+    ASSERT_EQ(true,  ends_with(T("a"),  'a'));
+    ASSERT_EQ(false, ends_with(T("ab"), 'a'));
+    ASSERT_EQ(true,  ends_with(T("ba"), 'a'));
+    ASSERT_EQ(false, ends_with(T("xy"), 'a'));
+    ASSERT_EQ(true,  ends_with(T("xyza"), 'a'));
+}
+TEST(StringEx, EndsWithChar) {
+    test_ends_with_char<const char*>();
+    test_ends_with_char<string_view>();
+    test_ends_with_char<string>();
+}
+

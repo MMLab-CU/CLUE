@@ -20,33 +20,47 @@ constexpr basic_string_view<charT, Traits> view(const ::std::basic_string<charT,
 }
 
 
-// starts_with
-
 namespace details {
 
+template<typename T>
+struct is_char {
+    static constexpr bool value =
+        ::std::is_same<T, char>::value ||
+        ::std::is_same<T, wchar_t>::value ||
+        ::std::is_same<T, char16_t>::value ||
+        ::std::is_same<T, char32_t>::value;
+};
+
+}
+
+// starts_with (char)
+
 template<typename charT>
-inline bool starts_with_impl(const charT* str, const charT* sub) noexcept {
+inline typename ::std::enable_if<details::is_char<charT>::value, bool>::type
+starts_with(const charT* str, charT c) noexcept {
+    using Traits = ::std::char_traits<charT>;
+    return *str && Traits::eq(*str, c);
+}
+
+template<typename charT, typename Traits>
+bool starts_with(basic_string_view<charT, Traits> str, charT c) noexcept {
+    return !str.empty() && str.front() == c;
+}
+
+template<typename charT, typename Traits, typename Allocator>
+bool starts_with(const ::std::basic_string<charT, Traits, Allocator>& str, charT c) noexcept {
+    return !str.empty() && str.front() == c;
+}
+
+
+// starts_with (string)
+
+template<typename charT>
+inline typename ::std::enable_if<details::is_char<charT>::value, bool>::type
+starts_with(const charT* str, const charT* sub) noexcept {
     using Traits = ::std::char_traits<charT>;
     for (;(*str) && (*sub) && Traits::eq(*sub, *str); str++, sub++);
-    return static_cast<bool>(*sub);
-}
-
-}
-
-inline bool starts_with(const char *str, const char *sub) noexcept {
-    return details::starts_with_impl(str, sub);
-}
-
-inline bool starts_with(const wchar_t *str, const wchar_t *sub) noexcept {
-    return details::starts_with_impl(str, sub);
-}
-
-inline bool starts_with(const char16_t *str, const char16_t *sub) noexcept {
-    return details::starts_with_impl(str, sub);
-}
-
-inline bool starts_with(const char32_t *str, const char32_t *sub) noexcept {
-    return details::starts_with_impl(str, sub);
+    return !(*sub);
 }
 
 template<typename charT, typename Traits>
@@ -68,7 +82,7 @@ inline bool starts_with(basic_string_view<charT, Traits> str, const charT *sub) 
     auto end = str.cend();
     auto p = str.cbegin();
     for(;(p != end) && (*sub) && Traits::eq(*p, *sub); p++, sub++);
-    return static_cast<bool>(*sub);
+    return !(*sub);
 }
 
 template<typename charT, typename Traits>

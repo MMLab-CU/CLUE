@@ -10,7 +10,9 @@ Currently, the library contains the following:
 
 - [x] `optional`
 - [x] `string_view`
-- [ ] `any`
+- [x] `stringex`
 - [x] `contiguous_view`
 - [x] `reindexed_view`
 - [x] `value_range`
+- [x] `mpl`
+- [x] `mpl_list`

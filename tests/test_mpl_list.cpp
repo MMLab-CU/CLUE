@@ -138,5 +138,66 @@ TEST(MPLList, Reverse) {
     CHECK_MPL_T(l4_rv_r, l4_rv);
 }
 
+TEST(MPLList, Cat) {
+    using L0 = mpl::list<>;
+    using L1 = mpl::list<i1>;
+    using L2 = mpl::list<i1, i2>;
+    using L3 = mpl::list<i1, i2, i3>;
 
+    using cat_0_0 = mpl::cat<L0, L0>;
+    using cat_0_0_r = mpl::list<>;
+    CHECK_MPL_T(cat_0_0_r, cat_0_0);
+
+    using cat_0_1 = mpl::cat<L0, L1>;
+    using cat_0_1_r = mpl::list<i1>;
+    CHECK_MPL_T(cat_0_1_r, cat_0_1);
+
+    using cat_1_0 = mpl::cat<L1, L0>;
+    using cat_1_0_r = mpl::list<i1>;
+    CHECK_MPL_T(cat_1_0_r, cat_1_0);
+
+    using cat_2_0 = mpl::cat<L2, L0>;
+    using cat_2_0_r = mpl::list<i1, i2>;
+    CHECK_MPL_T(cat_2_0_r, cat_2_0);
+
+    using cat_0_2 = mpl::cat<L0, L2>;
+    using cat_0_2_r = mpl::list<i1, i2>;
+    CHECK_MPL_T(cat_0_2_r, cat_0_2);
+
+    using cat_1_2 = mpl::cat<L1, L2>;
+    using cat_1_2_r = mpl::list<i1, i1, i2>;
+    CHECK_MPL_T(cat_1_2_r, cat_1_2);
+
+    using cat_2_1 = mpl::cat<L2, L1>;
+    using cat_2_1_r = mpl::list<i1, i2, i1>;
+    CHECK_MPL_T(cat_2_1_r, cat_2_1);
+
+    using cat_2_3 = mpl::cat<L2, L3>;
+    using cat_2_3_r = mpl::list<i1, i2, i1, i2, i3>;
+    CHECK_MPL_T(cat_2_3_r, cat_2_3);
+}
+
+
+TEST(MPLList, Map) {
+    using L0 = mpl::list<>;
+    using L1 = mpl::list<i1>;
+    using L2 = mpl::list<i1, i2>;
+    using L3 = mpl::list<i1, i2, i3>;
+
+    using map_0 = mpl::map<mpl::next, L0>;
+    using map_0_r = mpl::list<>;
+    CHECK_MPL_T(map_0_r, map_0);
+
+    using map_1 = mpl::map<mpl::next, L1>;
+    using map_1_r = mpl::list<i2>;
+    CHECK_MPL_T(map_1_r, map_1);
+
+    using map_2 = mpl::map<mpl::next, L2>;
+    using map_2_r = mpl::list<i2, i3>;
+    CHECK_MPL_T(map_2_r, map_2);
+
+    using map_3 = mpl::map<mpl::next, L3>;
+    using map_3_r = mpl::list<i2, i3, i4>;
+    CHECK_MPL_T(map_3_r, map_3);
+}
 

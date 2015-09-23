@@ -76,6 +76,17 @@ TEST(MetaSeq, Parts) {
 }
 
 
+TEST(MetaSeq, Clear) {
+    using L1 = seq_<i1>;
+    using L2 = seq_<i1, i2>;
+    using L3 = seq_<i1, i2, i3>;
+
+    CHECK_META_T(seq_<>, meta::clear_t<L1>);
+    CHECK_META_T(seq_<>, meta::clear_t<L2>);
+    CHECK_META_T(seq_<>, meta::clear_t<L3>);
+}
+
+
 TEST(MetaSeq, PopFront) {
     using L3 = seq_<i1, i2, i3>;
 
@@ -136,34 +147,6 @@ TEST(MetaSeq, PushBack) {
     CHECK_META_T(l3_ap_r, l3_ap);
 }
 
-TEST(MetaSeq, Reverse) {
-    using L0 = seq_<>;
-    using L1 = seq_<i1>;
-    using L2 = seq_<i1, i2>;
-    using L3 = seq_<i1, i2, i3>;
-    using L4 = seq_<i1, i2, i3, i4>;
-
-    using l0_rv = meta::reverse_t<L0>;
-    using l0_rv_r = seq_<>;
-    CHECK_META_T(l0_rv_r, l0_rv);
-
-    using l1_rv = meta::reverse_t<L1>;
-    using l1_rv_r = seq_<i1>;
-    CHECK_META_T(l1_rv_r, l1_rv);
-
-    using l2_rv = meta::reverse_t<L2>;
-    using l2_rv_r = seq_<i2, i1>;
-    CHECK_META_T(l2_rv_r, l2_rv);
-
-    using l3_rv = meta::reverse_t<L3>;
-    using l3_rv_r = seq_<i3, i2, i1>;
-    CHECK_META_T(l3_rv_r, l3_rv);
-
-    using l4_rv = meta::reverse_t<L4>;
-    using l4_rv_r = seq_<i4, i3, i2, i1>;
-    CHECK_META_T(l4_rv_r, l4_rv);
-}
-
 TEST(MetaSeq, Cat) {
     using L0 = seq_<>;
     using L1 = seq_<i1>;
@@ -204,7 +187,77 @@ TEST(MetaSeq, Cat) {
 }
 
 
-TEST(MetaSeq, Map) {
+TEST(MetaSeq, Zip) {
+    using meta::pair_;
+
+    using zip_0 = meta::zip_t<seq_<>, seq_<>>;
+    using zip_0_r = seq_<>;
+    CHECK_META_T(zip_0_r, zip_0);
+
+    using zip_1 = meta::zip_t<seq_<i1>, seq_<i4>>;
+    using zip_1_r = seq_<pair_<i1, i4>>;
+    CHECK_META_T(zip_1_r, zip_1);
+
+    using zip_2 = meta::zip_t<seq_<i1, i2>, seq_<i4, i5>>;
+    using zip_2_r = seq_<pair_<i1, i4>, pair_<i2, i5>>;
+    CHECK_META_T(zip_2_r, zip_2);
+
+    using zip_3 = meta::zip_t<seq_<i1, i2, i3>, seq_<i4, i5, i6>>;
+    using zip_3_r = seq_<pair_<i1, i4>, pair_<i2, i5>, pair_<i3, i6>>;
+    CHECK_META_T(zip_3_r, zip_3);
+}
+
+
+TEST(MetaSeq, Repeat) {
+
+    using rep_0 = meta::repeat_t<int, 0>;
+    using rep_0_r = seq_<>;
+    CHECK_META_T(rep_0_r, rep_0);
+
+    using rep_1 = meta::repeat_t<int, 1>;
+    using rep_1_r = seq_<int>;
+    CHECK_META_T(rep_1_r, rep_1);
+
+    using rep_2 = meta::repeat_t<int, 2>;
+    using rep_2_r = seq_<int, int>;
+    CHECK_META_T(rep_2_r, rep_2);
+
+    using rep_3 = meta::repeat_t<int, 3>;
+    using rep_3_r = seq_<int, int, int>;
+    CHECK_META_T(rep_3_r, rep_3);
+}
+
+
+TEST(MetaSeq, Reverse) {
+    using L0 = seq_<>;
+    using L1 = seq_<i1>;
+    using L2 = seq_<i1, i2>;
+    using L3 = seq_<i1, i2, i3>;
+    using L4 = seq_<i1, i2, i3, i4>;
+
+    using l0_rv = meta::reverse_t<L0>;
+    using l0_rv_r = seq_<>;
+    CHECK_META_T(l0_rv_r, l0_rv);
+
+    using l1_rv = meta::reverse_t<L1>;
+    using l1_rv_r = seq_<i1>;
+    CHECK_META_T(l1_rv_r, l1_rv);
+
+    using l2_rv = meta::reverse_t<L2>;
+    using l2_rv_r = seq_<i2, i1>;
+    CHECK_META_T(l2_rv_r, l2_rv);
+
+    using l3_rv = meta::reverse_t<L3>;
+    using l3_rv_r = seq_<i3, i2, i1>;
+    CHECK_META_T(l3_rv_r, l3_rv);
+
+    using l4_rv = meta::reverse_t<L4>;
+    using l4_rv_r = seq_<i4, i3, i2, i1>;
+    CHECK_META_T(l4_rv_r, l4_rv);
+}
+
+
+TEST(MetaSeq, Transform) {
     using L0 = seq_<>;
     using L1 = seq_<i1>;
     using L2 = seq_<i1, i2>;
@@ -225,5 +278,79 @@ TEST(MetaSeq, Map) {
     using map_3 = meta::transform_t<meta::next, L3>;
     using map_3_r = seq_<i2, i3, i4>;
     CHECK_META_T(map_3_r, map_3);
+}
+
+
+TEST(MetaSeq, BinaryTransform) {
+    using meta::int_;
+
+    using L0 = seq_<>;
+    using L1 = seq_<i1>;
+    using L2 = seq_<i1, i2>;
+    using L3 = seq_<i1, i2, i3>;
+
+    using R0 = seq_<>;
+    using R1 = seq_<i4>;
+    using R2 = seq_<i4, i5>;
+    using R3 = seq_<i4, i5, i6>;
+
+    using map_0 = meta::transform2_t<meta::plus, L0, R0>;
+    using map_0_r = seq_<>;
+    CHECK_META_T(map_0_r, map_0);
+
+    using map_1 = meta::transform2_t<meta::plus, L1, R1>;
+    using map_1_r = seq_<int_<5>>;
+    CHECK_META_T(map_1_r, map_1);
+
+    using map_2 = meta::transform2_t<meta::plus, L2, R2>;
+    using map_2_r = seq_<int_<5>, int_<7>>;
+    CHECK_META_T(map_2_r, map_2);
+
+    using map_3 = meta::transform2_t<meta::plus, L3, R3>;
+    using map_3_r = seq_<int_<5>, int_<7>, int_<9>>;
+    CHECK_META_T(map_3_r, map_3);
+}
+
+
+template<typename X>
+struct _is_even : public meta::bool_<X::value % 2 == 0> {};
+
+TEST(MetaSeq, Filter) {
+
+    using L0   = seq_<>;
+    using L1   = seq_<i1>;
+    using L2   = seq_<i2>;
+    using L12  = seq_<i1, i2>;
+    using L23  = seq_<i2, i3>;
+    using L123 = seq_<i1, i2, i3>;
+    using L234 = seq_<i2, i3, i4>;
+
+    using L0_f = meta::filter_t<_is_even, L0>;
+    using L0_f_r = seq_<>;
+    CHECK_META_T(L0_f_r, L0_f);
+
+    using L1_f = meta::filter_t<_is_even, L1>;
+    using L1_f_r = seq_<>;
+    CHECK_META_T(L1_f_r, L1_f);
+
+    using L2_f = meta::filter_t<_is_even, L2>;
+    using L2_f_r = seq_<i2>;
+    CHECK_META_T(L2_f_r, L2_f);
+
+    using L12_f = meta::filter_t<_is_even, L12>;
+    using L12_f_r = seq_<i2>;
+    CHECK_META_T(L12_f_r, L12_f);
+
+    using L23_f = meta::filter_t<_is_even, L23>;
+    using L23_f_r = seq_<i2>;
+    CHECK_META_T(L23_f_r, L23_f);
+
+    using L123_f = meta::filter_t<_is_even, L123>;
+    using L123_f_r = seq_<i2>;
+    CHECK_META_T(L123_f_r, L123_f);
+
+    using L234_f = meta::filter_t<_is_even, L234>;
+    using L234_f_r = seq_<i2, i4>;
+    CHECK_META_T(L234_f_r, L234_f);
 }
 

@@ -210,8 +210,11 @@ template<typename X, size_t N> struct repeat;
 
 template<class Seq> struct reverse;
 
-template<template<typename X> class F, typename... Args>
+template<template<typename X> class F, class Seq>
 struct transform;
+
+template<template<typename X, typename Y> class F, class S1, class S2>
+struct transform2;
 
 template<template<typename X> class Pred, class Seq>
 struct filter;
@@ -235,8 +238,11 @@ template<typename X, size_t N> using repeat_t = typename repeat<X, N>::type;
 
 template<class Seq> using reverse_t = typename reverse<Seq>::type;
 
-template<template<typename X> class F, typename... Args>
-using transform_t = typename transform<F, Args...>::type;
+template<template<typename X> class F, class Seq>
+using transform_t = typename transform<F, Seq>::type;
+
+template<template<typename X, typename Y> class F, class S1, class S2>
+using transform2_t = typename transform2<F, S1, S2>::type;
 
 template<template<typename X> class Pred, class Seq>
 using filter_t = typename filter<Pred, Seq>::type;
@@ -264,7 +270,8 @@ struct zip<seq_<Args1...>, seq_<Args2...>> {
 
 template<typename X, size_t N>
 struct repeat {
-    using type = typename push_front<X, repeat<X, N-1>>::type;
+    using type = typename push_front<
+            typename repeat<X, N-1>::type, X>::type;
 };
 
 template<typename X>
@@ -307,6 +314,41 @@ template<template<typename X> class F, typename... Elems>
 struct transform<F, seq_<Elems...>> {
     using type = seq_<F<Elems>...>;
 };
+
+template<template<typename X, typename Y> class F,
+         typename... Elems1, typename... Elems2>
+struct transform2<F, seq_<Elems1...>, seq_<Elems2...>> {
+    using type = seq_<F<Elems1, Elems2>...>;
+};
+
+
+// filter
+
+template<template<typename> class Pred, typename X, typename... Rest>
+struct filter<Pred, seq_<X, Rest...>> {
+private:
+    using filtered_rest = typename filter<Pred, seq_<Rest...>>::type;
+public:
+    using type = typename ::std::conditional<Pred<X>::value,
+            push_front_t<filtered_rest, X>,
+            filtered_rest>::type;
+
+};
+
+template<template<typename> class Pred, typename X>
+struct filter<Pred, seq_<X>> {
+public:
+    using type = typename ::std::conditional<Pred<X>::value,
+            seq_<X>, seq_<>>::type;
+};
+
+template<template<typename> class Pred>
+struct filter<Pred, seq_<>> {
+public:
+    using type = seq_<>;
+};
+
+
 
 
 } // end namespace mpl

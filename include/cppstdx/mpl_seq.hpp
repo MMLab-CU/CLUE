@@ -1,11 +1,11 @@
 /**
- * @file mpl_list.hpp
+ * @file mpl_seq.hpp
  *
- * MPL tools for working with list of types
+ * MPL tools for working with a sequence of types
  */
 
-#ifndef CPPSTDX_MPL_LIST__
-#define CPPSTDX_MPL_LIST__
+#ifndef CPPSTDX_MPL_SEQ__
+#define CPPSTDX_MPL_SEQ__
 
 #include <cppstdx/mpl.hpp>
 
@@ -14,26 +14,26 @@ namespace mpl {
 
 //===============================================
 //
-//   list
+//   seq_
 //
 //===============================================
 
-template<typename... Args> struct list;
+template<typename... Elems> struct seq_;
 
 // length
 
-template<class L> struct length;
+template<class Seq> struct size;
 
-template<typename... Args>
-struct length<list<Args...>> :
-    public size_<sizeof...(Args)> {};
+template<typename... Elems>
+struct size<seq_<Elems...>> :
+    public size_<sizeof...(Elems)> {};
 
 // empty
 
-template<class L> struct empty;
+template<class Seq> struct empty;
 
-template<typename... Args>
-struct empty<list<Args...>> : public bool_<sizeof...(Args) == 0> {};
+template<typename... Elems>
+struct empty<seq_<Elems...>> : public bool_<sizeof...(Elems) == 0> {};
 
 
 //===============================================
@@ -42,175 +42,271 @@ struct empty<list<Args...>> : public bool_<sizeof...(Args) == 0> {};
 //
 //===============================================
 
+// forward declarations
+
+template<class Seq> struct front;
+template<class Seq> struct back;
+template<class Seq, size_t N> struct at;
+
+template<class Seq> using front_t = typename front<Seq>::type;
+template<class Seq> using back_t  = typename back<Seq>::type;
+
+template<class Seq, size_t N>
+using at_t = typename at<Seq, N>::type;
+
+
+// front
+
+template<typename X, typename... Rest>
+struct front<seq_<X, Rest...>> {
+    using type = X;
+};
+
+// back
+
+template<typename X, typename... Rest>
+struct back<seq_<X, Rest...>> {
+    using type = typename back<seq_<Rest...>>::type;
+};
+
+template<typename X>
+struct back<seq_<X>> {
+    using type = X;
+};
+
+// at
+
 namespace details {
 
-// head
+template<size_t N, typename... Elems> struct seq_at_helper;
 
-template<class L> struct head_impl;
-
-template<typename A, typename... Rest>
-struct head_impl<list<A, Rest...>> {
-    using type = A;
+template<typename X, typename... Rest>
+struct seq_at_helper<0, X, Rest...> {
+    using type = X;
 };
 
-// tail
-
-template<class L> struct tail_impl;
-
-template<typename A, typename... Rest>
-struct tail_impl<list<A, Rest...>> {
-    using type = list<Rest...>;
-};
-
-// last
-
-template<class L> struct last_impl;
-
-template<typename A, typename... Rest>
-struct last_impl<list<A, Rest...>> {
-    using type = typename last_impl<Rest...>::type;
-};
-
-template<typename A>
-struct last_impl<list<A>> {
-    using type = A;
-};
-
-// get
-
-template<size_t N, typename... Args> struct get_helper;
-
-template<typename A, typename... Rest>
-struct get_helper<0, A, Rest...> {
-    using type = A;
-};
-
-template<size_t N, typename A, typename... Rest>
-struct get_helper<N, A, Rest...> {
-    using type = typename get_helper<N-1, Rest...>::type;
-};
-
-template<class L, size_t N> struct get_impl;
-
-template<size_t N, typename... Args>
-struct get_impl<list<Args...>, N> {
-    using type = typename get_helper<N, Args...>::type;
+template<size_t N, typename X, typename... Rest>
+struct seq_at_helper<N, X, Rest...> {
+    using type = typename seq_at_helper<N-1, Rest...>::type;
 };
 
 }
 
-template<class L>
-using head = typename details::head_impl<L>::type;
-
-template<class L>
-using tail = typename details::tail_impl<L>::type;
-
-template<class L>
-using last = typename details::last_impl<L>::type;
-
-template<class L, size_t N>
-using get = typename details::get_impl<L, N>::type;
-
-
-//===============================================
-//
-//   Operations
-//
-//===============================================
-
-namespace details {
-
-// prepend
-
-template<class L, typename A> struct prepend_impl;
-
-template<typename A, typename... Args>
-struct prepend_impl<list<Args...>, A> {
-    using type = list<A, Args...>;
+template<size_t N, typename... Elems>
+struct at<seq_<Elems...>, N> {
+    using type = typename details::seq_at_helper<N, Elems...>::type;
 };
 
-// append
+// first
 
-template<class L, typename A> struct append_impl;
+template<typename X1, typename... Rest>
+struct first<seq_<X1, Rest...>> {
+    using type = X1;
+};
 
-template<typename A, typename... Args>
-struct append_impl<list<Args...>, A> {
-    using type = list<Args..., A>;
+// second
+
+template<typename X1, typename X2, typename... Rest>
+struct second<seq_<X1, X2, Rest...>> {
+    using type = X2;
+};
+
+
+//===============================================
+//
+//   Modifiers
+//
+//===============================================
+
+
+// forward declarations
+
+template<class Seq> struct clear;
+template<class Seq> struct pop_front;
+template<class Seq> struct pop_back;
+template<class Seq, typename X> struct push_front;
+template<class Seq, typename X> struct push_back;
+
+template<class Seq> using clear_t = typename clear<Seq>::type;
+template<class Seq> using pop_front_t = typename pop_front<Seq>::type;
+template<class Seq> using pop_back_t  = typename pop_back<Seq>::type;
+
+template<class Seq, typename X>
+using push_front_t = typename push_front<Seq, X>::type;
+
+template<class Seq, typename X>
+using push_back_t = typename push_back<Seq, X>::type;
+
+
+// clear
+
+template<typename... Elems>
+struct clear<seq_<Elems...>> {
+    using type = seq_<>;
+};
+
+// pop_front
+
+template<typename X, typename... Rest>
+struct pop_front<seq_<X, Rest...>> {
+    using type = seq_<Rest...>;
+};
+
+template<typename X>
+struct pop_front<seq_<X>> {
+    using type = seq_<>;
+};
+
+// pop_back
+
+template<typename X, typename... Rest>
+struct pop_back<seq_<X, Rest...>> {
+    using type = typename pop_back<seq_<Rest...>>::type;
+};
+
+template<typename X>
+struct pop_back<seq_<X>> {
+    using type = seq_<>;
+};
+
+// push_front
+
+template<typename X, typename... Elems>
+struct push_front<seq_<Elems...>, X> {
+    using type = seq_<X, Elems...>;
+};
+
+template<typename X>
+struct push_front<seq_<>, X> {
+    using type = seq_<X>;
+};
+
+// push_back
+
+template<typename X, typename... Elems>
+struct push_back<seq_<Elems...>, X> {
+    using type = seq_<Elems..., X>;
+};
+
+template<typename X>
+struct push_back<seq_<>, X> {
+    using type = seq_<X>;
+};
+
+
+
+//===============================================
+//
+//   Algorithms
+//
+//===============================================
+
+// forward declarations
+
+template<class S1, class S2> struct cat;
+template<class S1, class S2> struct zip;
+
+template<typename X, size_t N> struct repeat;
+
+template<class Seq> struct reverse;
+
+template<template<typename X> class F, typename... Args>
+struct transform;
+
+template<template<typename X> class Pred, class Seq>
+struct filter;
+
+template<typename X, class Seq>
+struct exists;
+
+template<template<typename X> class Pred, class Seq>
+struct exists_if;
+
+template<typename X, class Seq>
+struct count;
+
+template<template<typename X> class Pred, class Seq>
+struct count_if;
+
+
+template<class S1, class S2>   using cat_t    = typename cat<S1, S2>::type;
+template<class S1, class S2>   using zip_t    = typename zip<S1, S2>::type;
+template<typename X, size_t N> using repeat_t = typename repeat<X, N>::type;
+
+template<class Seq> using reverse_t = typename reverse<Seq>::type;
+
+template<template<typename X> class F, typename... Args>
+using transform_t = typename transform<F, Args...>::type;
+
+template<template<typename X> class Pred, class Seq>
+using filter_t = typename filter<Pred, Seq>::type;
+
+
+// implementations
+
+// cat
+
+template<class S1, class S2> struct cat;
+
+template<typename... Args1, typename... Args2>
+struct cat<seq_<Args1...>, seq_<Args2...>> {
+    using type = seq_<Args1..., Args2...>;
+};
+
+// zip
+
+template<typename... Args1, typename... Args2>
+struct zip<seq_<Args1...>, seq_<Args2...>> {
+    using type = seq_<pair_<Args1, Args2>...>;
+};
+
+// repeat
+
+template<typename X, size_t N>
+struct repeat {
+    using type = typename push_front<X, repeat<X, N-1>>::type;
+};
+
+template<typename X>
+struct repeat<X, 0> {
+    using type = seq_<>;
+};
+
+template<typename X>
+struct repeat<X, 1> {
+    using type = seq_<X>;
 };
 
 // reverse
 
-template<class L> struct reverse_impl;
-
-template<typename A, typename... Rest>
-struct reverse_impl<list<A, Rest...>> {
-    using type = typename append_impl<
-            typename reverse_impl<list<Rest...>>::type, A>::type;
+template<typename X, typename... Rest>
+struct reverse<seq_<X, Rest...>> {
+    using type = typename push_back<
+            typename reverse<seq_<Rest...>>::type, X>::type;
 };
 
 template<>
-struct reverse_impl<list<>> {
-    using type = list<>;
+struct reverse<seq_<>> {
+    using type = seq_<>;
 };
 
 template<typename A>
-struct reverse_impl<list<A>> {
-    using type = list<A>;
+struct reverse<seq_<A>> {
+    using type = seq_<A>;
 };
 
 template<typename A, typename B>
-struct reverse_impl<list<A, B>> {
-    using type = list<B, A>;
+struct reverse<seq_<A, B>> {
+    using type = seq_<B, A>;
 };
 
-// cat
 
-template<class L, class R> struct cat_impl;
+// transform
 
-template<typename... LArgs, typename... RArgs>
-struct cat_impl<list<LArgs...>, list<RArgs...>> {
-    using type = list<LArgs..., RArgs...>;
+template<template<typename X> class F, typename... Elems>
+struct transform<F, seq_<Elems...>> {
+    using type = seq_<F<Elems>...>;
 };
-
-// map
-
-template<template<typename X> class F, class L>
-struct map_impl;
-
-template<template<typename X> class F, typename... Args>
-struct map_impl<F, list<Args...>> {
-    using type = list<F<Args>...>;
-};
-
-// mapx
-
-template<template<typename X> class F, class L>
-struct mapx_impl;
-
-template<template<typename X> class F, typename... Args>
-struct mapx_impl<F, list<Args...>> {
-    using type = list<typename F<Args>::type...>;
-};
-
-}
-
-template<class L, typename A>
-using prepend = typename details::prepend_impl<L, A>::type;
-
-template<class L, typename A>
-using append = typename details::append_impl<L, A>::type;
-
-template<class L>
-using reverse = typename details::reverse_impl<L>::type;
-
-template<class L, class R>
-using cat = typename details::cat_impl<L, R>::type;
-
-template<template<typename X> class F, class L>
-using map = typename details::map_impl<F, L>::type;
-
-template<template<typename X> class F, class L>
-using mapx = typename details::mapx_impl<F, L>::type;
 
 
 } // end namespace mpl

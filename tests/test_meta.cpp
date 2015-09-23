@@ -3,8 +3,8 @@
 
 namespace meta = cppstdx::meta;
 
-#define CHECK_MPL_F1(R, F, A) ASSERT_EQ(R::value, (F<A>::value))
-#define CHECK_MPL_F2(R, F, A, B) ASSERT_EQ(R::value, (F<A, B>::value))
+#define CHECK_META_F1(R, F, A) ASSERT_EQ(R::value, (F<A>::value))
+#define CHECK_META_F2(R, F, A, B) ASSERT_EQ(R::value, (F<A, B>::value))
 
 using i1 = meta::int_<1>;
 using i2 = meta::int_<2>;
@@ -25,56 +25,56 @@ TEST(Meta, Pairs) {
 
 
 TEST(Meta, ArithmeticFuns) {
-    CHECK_MPL_F1(meta::int_<-3>, meta::negate, i3);
-    CHECK_MPL_F1(i4, meta::next, i3);
-    CHECK_MPL_F1(i2, meta::prev, i3);
+    CHECK_META_F1(meta::int_<-3>, meta::negate, i3);
+    CHECK_META_F1(i4, meta::next, i3);
+    CHECK_META_F1(i2, meta::prev, i3);
 
-    CHECK_MPL_F2(meta::int_<5>, meta::plus,  i2, i3);
-    CHECK_MPL_F2(meta::int_<3>, meta::minus, i5, i2);
-    CHECK_MPL_F2(meta::int_<6>, meta::mul,   i2, i3);
-    CHECK_MPL_F2(meta::int_<3>, meta::div,   i6, i2);
-    CHECK_MPL_F2(meta::int_<2>, meta::mod,   i5, i3);
+    CHECK_META_F2(meta::int_<5>, meta::plus,  i2, i3);
+    CHECK_META_F2(meta::int_<3>, meta::minus, i5, i2);
+    CHECK_META_F2(meta::int_<6>, meta::mul,   i2, i3);
+    CHECK_META_F2(meta::int_<3>, meta::div,   i6, i2);
+    CHECK_META_F2(meta::int_<2>, meta::mod,   i5, i3);
 }
 
 TEST(Meta, CompareFuns) {
-    CHECK_MPL_F2(bt, meta::eq, i2, i2);
-    CHECK_MPL_F2(bf, meta::eq, i2, i3);
-    CHECK_MPL_F2(bf, meta::eq, i3, i2);
+    CHECK_META_F2(bt, meta::eq, i2, i2);
+    CHECK_META_F2(bf, meta::eq, i2, i3);
+    CHECK_META_F2(bf, meta::eq, i3, i2);
 
-    CHECK_MPL_F2(bf, meta::ne, i2, i2);
-    CHECK_MPL_F2(bt, meta::ne, i2, i3);
-    CHECK_MPL_F2(bt, meta::ne, i3, i2);
+    CHECK_META_F2(bf, meta::ne, i2, i2);
+    CHECK_META_F2(bt, meta::ne, i2, i3);
+    CHECK_META_F2(bt, meta::ne, i3, i2);
 
-    CHECK_MPL_F2(bf, meta::lt, i2, i2);
-    CHECK_MPL_F2(bt, meta::lt, i2, i3);
-    CHECK_MPL_F2(bf, meta::lt, i3, i2);
+    CHECK_META_F2(bf, meta::lt, i2, i2);
+    CHECK_META_F2(bt, meta::lt, i2, i3);
+    CHECK_META_F2(bf, meta::lt, i3, i2);
 
-    CHECK_MPL_F2(bt, meta::le, i2, i2);
-    CHECK_MPL_F2(bt, meta::le, i2, i3);
-    CHECK_MPL_F2(bf, meta::le, i3, i2);
+    CHECK_META_F2(bt, meta::le, i2, i2);
+    CHECK_META_F2(bt, meta::le, i2, i3);
+    CHECK_META_F2(bf, meta::le, i3, i2);
 
-    CHECK_MPL_F2(bf, meta::gt, i2, i2);
-    CHECK_MPL_F2(bf, meta::gt, i2, i3);
-    CHECK_MPL_F2(bt, meta::gt, i3, i2);
+    CHECK_META_F2(bf, meta::gt, i2, i2);
+    CHECK_META_F2(bf, meta::gt, i2, i3);
+    CHECK_META_F2(bt, meta::gt, i3, i2);
 
-    CHECK_MPL_F2(bt, meta::ge, i2, i2);
-    CHECK_MPL_F2(bf, meta::ge, i2, i3);
-    CHECK_MPL_F2(bt, meta::ge, i3, i2);
+    CHECK_META_F2(bt, meta::ge, i2, i2);
+    CHECK_META_F2(bf, meta::ge, i2, i3);
+    CHECK_META_F2(bt, meta::ge, i3, i2);
 }
 
 TEST(Meta, LogicalFuns) {
-    CHECK_MPL_F1(bt, meta::not_, bf);
-    CHECK_MPL_F1(bf, meta::not_, bt);
+    CHECK_META_F1(bt, meta::not_, bf);
+    CHECK_META_F1(bf, meta::not_, bt);
 
-    CHECK_MPL_F2(bf, meta::and_, bf, bf);
-    CHECK_MPL_F2(bf, meta::and_, bf, bt);
-    CHECK_MPL_F2(bf, meta::and_, bt, bf);
-    CHECK_MPL_F2(bt, meta::and_, bt, bt);
+    CHECK_META_F2(bf, meta::and_, bf, bf);
+    CHECK_META_F2(bf, meta::and_, bf, bt);
+    CHECK_META_F2(bf, meta::and_, bt, bf);
+    CHECK_META_F2(bt, meta::and_, bt, bt);
 
-    CHECK_MPL_F2(bf, meta::or_, bf, bf);
-    CHECK_MPL_F2(bt, meta::or_, bf, bt);
-    CHECK_MPL_F2(bt, meta::or_, bt, bf);
-    CHECK_MPL_F2(bt, meta::or_, bt, bt);
+    CHECK_META_F2(bf, meta::or_, bf, bf);
+    CHECK_META_F2(bt, meta::or_, bf, bt);
+    CHECK_META_F2(bt, meta::or_, bt, bf);
+    CHECK_META_F2(bt, meta::or_, bt, bt);
 }
 
 TEST(Meta, LazyAndOr) {

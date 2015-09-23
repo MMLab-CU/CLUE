@@ -4,7 +4,7 @@
 namespace meta = cppstdx::meta;
 using meta::seq_;
 
-#define CHECK_MPL_T(R, Expr) ASSERT_TRUE((std::is_same<R, Expr>::value))
+#define CHECK_META_T(R, Expr) ASSERT_TRUE((std::is_same<R, Expr>::value))
 
 using i1 = meta::int_<1>;
 using i2 = meta::int_<2>;
@@ -38,15 +38,15 @@ TEST(MetaSeq, Parts) {
 
     // front
 
-    CHECK_MPL_T(i1, meta::front_t<L1>);
-    CHECK_MPL_T(i1, meta::front_t<L2>);
-    CHECK_MPL_T(i1, meta::front_t<L3>);
+    CHECK_META_T(i1, meta::front_t<L1>);
+    CHECK_META_T(i1, meta::front_t<L2>);
+    CHECK_META_T(i1, meta::front_t<L3>);
 
     // back
 
-    CHECK_MPL_T(i1, meta::back_t<L1>);
-    CHECK_MPL_T(i2, meta::back_t<L2>);
-    CHECK_MPL_T(i3, meta::back_t<L3>);
+    CHECK_META_T(i1, meta::back_t<L1>);
+    CHECK_META_T(i2, meta::back_t<L2>);
+    CHECK_META_T(i3, meta::back_t<L3>);
 
     // at
     using l1_0 = meta::at_t<L1, 0>;
@@ -56,23 +56,23 @@ TEST(MetaSeq, Parts) {
     using l3_1 = meta::at_t<L3, 1>;
     using l3_2 = meta::at_t<L3, 2>;
 
-    CHECK_MPL_T(i1, l1_0);
-    CHECK_MPL_T(i1, l2_0);
-    CHECK_MPL_T(i2, l2_1);
-    CHECK_MPL_T(i1, l3_0);
-    CHECK_MPL_T(i2, l3_1);
-    CHECK_MPL_T(i3, l3_2);
+    CHECK_META_T(i1, l1_0);
+    CHECK_META_T(i1, l2_0);
+    CHECK_META_T(i2, l2_1);
+    CHECK_META_T(i1, l3_0);
+    CHECK_META_T(i2, l3_1);
+    CHECK_META_T(i3, l3_2);
 
     // first
 
-    CHECK_MPL_T(i1, meta::first_t<L1>);
-    CHECK_MPL_T(i1, meta::first_t<L2>);
-    CHECK_MPL_T(i1, meta::first_t<L3>);
+    CHECK_META_T(i1, meta::first_t<L1>);
+    CHECK_META_T(i1, meta::first_t<L2>);
+    CHECK_META_T(i1, meta::first_t<L3>);
 
     // second
 
-    CHECK_MPL_T(i2, meta::second_t<L2>);
-    CHECK_MPL_T(i2, meta::second_t<L3>);
+    CHECK_META_T(i2, meta::second_t<L2>);
+    CHECK_META_T(i2, meta::second_t<L3>);
 }
 
 
@@ -80,13 +80,13 @@ TEST(MetaSeq, PopFront) {
     using L3 = seq_<i1, i2, i3>;
 
     using p1_r = seq_<i2, i3>;
-    CHECK_MPL_T(p1_r, meta::pop_front_t<L3>);
+    CHECK_META_T(p1_r, meta::pop_front_t<L3>);
 
     using p2_r = seq_<i3>;
-    CHECK_MPL_T(p2_r, meta::pop_front_t<p1_r>);
+    CHECK_META_T(p2_r, meta::pop_front_t<p1_r>);
 
     using p3_r = seq_<>;
-    CHECK_MPL_T(p3_r, meta::pop_front_t<p2_r>);
+    CHECK_META_T(p3_r, meta::pop_front_t<p2_r>);
 }
 
 
@@ -98,19 +98,19 @@ TEST(MetaSeq, PushFront) {
 
     using l0_pp = meta::push_front_t<L0, int>;
     using l0_pp_r = seq_<int>;
-    CHECK_MPL_T(l0_pp_r, l0_pp);
+    CHECK_META_T(l0_pp_r, l0_pp);
 
     using l1_pp = meta::push_front_t<L1, int>;
     using l1_pp_r = seq_<int, i1>;
-    CHECK_MPL_T(l1_pp_r, l1_pp);
+    CHECK_META_T(l1_pp_r, l1_pp);
 
     using l2_pp = meta::push_front_t<L2, int>;
     using l2_pp_r = seq_<int, i1, i2>;
-    CHECK_MPL_T(l2_pp_r, l2_pp);
+    CHECK_META_T(l2_pp_r, l2_pp);
 
     using l3_pp = meta::push_front_t<L3, int>;
     using l3_pp_r = seq_<int, i1, i2, i3>;
-    CHECK_MPL_T(l3_pp_r, l3_pp);
+    CHECK_META_T(l3_pp_r, l3_pp);
 }
 
 TEST(MetaSeq, PushBack) {
@@ -121,19 +121,19 @@ TEST(MetaSeq, PushBack) {
 
     using l0_ap = meta::push_back_t<L0, int>;
     using l0_ap_r = seq_<int>;
-    CHECK_MPL_T(l0_ap_r, l0_ap);
+    CHECK_META_T(l0_ap_r, l0_ap);
 
     using l1_ap = meta::push_back_t<L1, int>;
     using l1_ap_r = seq_<i1, int>;
-    CHECK_MPL_T(l1_ap_r, l1_ap);
+    CHECK_META_T(l1_ap_r, l1_ap);
 
     using l2_ap = meta::push_back_t<L2, int>;
     using l2_ap_r = seq_<i1, i2, int>;
-    CHECK_MPL_T(l2_ap_r, l2_ap);
+    CHECK_META_T(l2_ap_r, l2_ap);
 
     using l3_ap = meta::push_back_t<L3, int>;
     using l3_ap_r = seq_<i1, i2, i3, int>;
-    CHECK_MPL_T(l3_ap_r, l3_ap);
+    CHECK_META_T(l3_ap_r, l3_ap);
 }
 
 TEST(MetaSeq, Reverse) {
@@ -145,23 +145,23 @@ TEST(MetaSeq, Reverse) {
 
     using l0_rv = meta::reverse_t<L0>;
     using l0_rv_r = seq_<>;
-    CHECK_MPL_T(l0_rv_r, l0_rv);
+    CHECK_META_T(l0_rv_r, l0_rv);
 
     using l1_rv = meta::reverse_t<L1>;
     using l1_rv_r = seq_<i1>;
-    CHECK_MPL_T(l1_rv_r, l1_rv);
+    CHECK_META_T(l1_rv_r, l1_rv);
 
     using l2_rv = meta::reverse_t<L2>;
     using l2_rv_r = seq_<i2, i1>;
-    CHECK_MPL_T(l2_rv_r, l2_rv);
+    CHECK_META_T(l2_rv_r, l2_rv);
 
     using l3_rv = meta::reverse_t<L3>;
     using l3_rv_r = seq_<i3, i2, i1>;
-    CHECK_MPL_T(l3_rv_r, l3_rv);
+    CHECK_META_T(l3_rv_r, l3_rv);
 
     using l4_rv = meta::reverse_t<L4>;
     using l4_rv_r = seq_<i4, i3, i2, i1>;
-    CHECK_MPL_T(l4_rv_r, l4_rv);
+    CHECK_META_T(l4_rv_r, l4_rv);
 }
 
 TEST(MetaSeq, Cat) {
@@ -172,35 +172,35 @@ TEST(MetaSeq, Cat) {
 
     using cat_0_0 = meta::cat_t<L0, L0>;
     using cat_0_0_r = seq_<>;
-    CHECK_MPL_T(cat_0_0_r, cat_0_0);
+    CHECK_META_T(cat_0_0_r, cat_0_0);
 
     using cat_0_1 = meta::cat_t<L0, L1>;
     using cat_0_1_r = seq_<i1>;
-    CHECK_MPL_T(cat_0_1_r, cat_0_1);
+    CHECK_META_T(cat_0_1_r, cat_0_1);
 
     using cat_1_0 = meta::cat_t<L1, L0>;
     using cat_1_0_r = seq_<i1>;
-    CHECK_MPL_T(cat_1_0_r, cat_1_0);
+    CHECK_META_T(cat_1_0_r, cat_1_0);
 
     using cat_2_0 = meta::cat_t<L2, L0>;
     using cat_2_0_r = seq_<i1, i2>;
-    CHECK_MPL_T(cat_2_0_r, cat_2_0);
+    CHECK_META_T(cat_2_0_r, cat_2_0);
 
     using cat_0_2 = meta::cat_t<L0, L2>;
     using cat_0_2_r = seq_<i1, i2>;
-    CHECK_MPL_T(cat_0_2_r, cat_0_2);
+    CHECK_META_T(cat_0_2_r, cat_0_2);
 
     using cat_1_2 = meta::cat_t<L1, L2>;
     using cat_1_2_r = seq_<i1, i1, i2>;
-    CHECK_MPL_T(cat_1_2_r, cat_1_2);
+    CHECK_META_T(cat_1_2_r, cat_1_2);
 
     using cat_2_1 = meta::cat_t<L2, L1>;
     using cat_2_1_r = seq_<i1, i2, i1>;
-    CHECK_MPL_T(cat_2_1_r, cat_2_1);
+    CHECK_META_T(cat_2_1_r, cat_2_1);
 
     using cat_2_3 = meta::cat_t<L2, L3>;
     using cat_2_3_r = seq_<i1, i2, i1, i2, i3>;
-    CHECK_MPL_T(cat_2_3_r, cat_2_3);
+    CHECK_META_T(cat_2_3_r, cat_2_3);
 }
 
 
@@ -212,18 +212,18 @@ TEST(MetaSeq, Map) {
 
     using map_0 = meta::transform_t<meta::next, L0>;
     using map_0_r = seq_<>;
-    CHECK_MPL_T(map_0_r, map_0);
+    CHECK_META_T(map_0_r, map_0);
 
     using map_1 = meta::transform_t<meta::next, L1>;
     using map_1_r = seq_<i2>;
-    CHECK_MPL_T(map_1_r, map_1);
+    CHECK_META_T(map_1_r, map_1);
 
     using map_2 = meta::transform_t<meta::next, L2>;
     using map_2_r = seq_<i2, i3>;
-    CHECK_MPL_T(map_2_r, map_2);
+    CHECK_META_T(map_2_r, map_2);
 
     using map_3 = meta::transform_t<meta::next, L3>;
     using map_3_r = seq_<i2, i3, i4>;
-    CHECK_MPL_T(map_3_r, map_3);
+    CHECK_META_T(map_3_r, map_3);
 }
 

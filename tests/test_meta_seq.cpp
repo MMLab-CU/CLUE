@@ -315,6 +315,10 @@ TEST(MetaSeq, BinaryTransform) {
 template<typename X>
 struct _is_even : public meta::bool_<X::value % 2 == 0> {};
 
+template<typename X>
+struct _is_odd : public meta::bool_<X::value % 2 == 1> {};
+
+
 TEST(MetaSeq, Filter) {
 
     using L0   = seq_<>;
@@ -352,5 +356,85 @@ TEST(MetaSeq, Filter) {
     using L234_f = meta::filter_t<_is_even, L234>;
     using L234_f_r = seq_<i2, i4>;
     CHECK_META_T(L234_f_r, L234_f);
+}
+
+
+TEST(MetaSeq, Exists) {
+
+    using L0 = seq_<>;
+    using L1 = seq_<i1>;
+    using L2 = seq_<i1, i2>;
+    using L3 = seq_<i1, i2, i3>;
+
+    ASSERT_EQ(false, (::meta::exists<i1, L0>::value));
+    ASSERT_EQ(true,  (::meta::exists<i1, L1>::value));
+    ASSERT_EQ(true,  (::meta::exists<i1, L2>::value));
+    ASSERT_EQ(true,  (::meta::exists<i1, L3>::value));
+
+    ASSERT_EQ(false, (::meta::exists<i2, L0>::value));
+    ASSERT_EQ(false, (::meta::exists<i2, L1>::value));
+    ASSERT_EQ(true,  (::meta::exists<i2, L2>::value));
+    ASSERT_EQ(true,  (::meta::exists<i2, L3>::value));
+
+    ASSERT_EQ(false, (::meta::exists<i3, L0>::value));
+    ASSERT_EQ(false, (::meta::exists<i3, L1>::value));
+    ASSERT_EQ(false, (::meta::exists<i3, L2>::value));
+    ASSERT_EQ(true,  (::meta::exists<i3, L3>::value));
+
+    ASSERT_EQ(false, (::meta::exists<i4, L0>::value));
+    ASSERT_EQ(false, (::meta::exists<i4, L1>::value));
+    ASSERT_EQ(false, (::meta::exists<i4, L2>::value));
+    ASSERT_EQ(false, (::meta::exists<i4, L3>::value));
+}
+
+
+TEST(MetaSeq, ExistsIf) {
+    using L0 = seq_<>;
+    using L1 = seq_<i1>;
+    using L2 = seq_<i1, i2>;
+    using L3 = seq_<i1, i2, i3>;
+
+    ASSERT_EQ(false, (::meta::exists_if<_is_even, L0>::value));
+    ASSERT_EQ(false, (::meta::exists_if<_is_even, L1>::value));
+    ASSERT_EQ(true,  (::meta::exists_if<_is_even, L2>::value));
+    ASSERT_EQ(true,  (::meta::exists_if<_is_even, L3>::value));
+
+    ASSERT_EQ(false, (::meta::exists_if<_is_odd, L0>::value));
+    ASSERT_EQ(true,  (::meta::exists_if<_is_odd, L1>::value));
+    ASSERT_EQ(true,  (::meta::exists_if<_is_odd, L2>::value));
+    ASSERT_EQ(true,  (::meta::exists_if<_is_odd, L3>::value));
+}
+
+
+TEST(MetaSeq, Count) {
+    using A = seq_<>;
+    using B = seq_<i1, i2>;
+    using C = seq_<i1, i2, i2, i1, i2>;
+
+    ASSERT_EQ(0, (meta::count<i1, A>::value));
+    ASSERT_EQ(1, (meta::count<i1, B>::value));
+    ASSERT_EQ(2, (meta::count<i1, C>::value));
+
+    ASSERT_EQ(0, (meta::count<i2, A>::value));
+    ASSERT_EQ(1, (meta::count<i2, B>::value));
+    ASSERT_EQ(3, (meta::count<i2, C>::value));
+
+    ASSERT_EQ(0, (meta::count<i3, A>::value));
+    ASSERT_EQ(0, (meta::count<i3, B>::value));
+    ASSERT_EQ(0, (meta::count<i3, C>::value));
+}
+
+TEST(MetaSeq, CountIf) {
+    using A = seq_<>;
+    using B = seq_<i1, i2>;
+    using C = seq_<i1, i2, i2, i1, i2>;
+
+    ASSERT_EQ(0, (meta::count_if<_is_even, A>::value));
+    ASSERT_EQ(1, (meta::count_if<_is_even, B>::value));
+    ASSERT_EQ(3, (meta::count_if<_is_even, C>::value));
+
+    ASSERT_EQ(0, (meta::count_if<_is_odd, A>::value));
+    ASSERT_EQ(1, (meta::count_if<_is_odd, B>::value));
+    ASSERT_EQ(2, (meta::count_if<_is_odd, C>::value));
 }
 

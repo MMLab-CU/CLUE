@@ -349,6 +349,58 @@ public:
 };
 
 
+// exists
+
+template<typename X, typename X1, typename... Rest>
+struct exists<X, seq_<X1, Rest...>> :
+    public details::or_helper<
+        ::std::is_same<X, X1>::value,
+        exists<X, seq_<Rest...>>> {};
+
+template<typename X, typename X1>
+struct exists<X, seq_<X1>> : public bool_<::std::is_same<X, X1>::value> {};
+
+template<typename X>
+struct exists<X, seq_<>> : public bool_<false> {};
+
+
+// exists_if
+
+template<template<typename> class Pred, typename X, typename... Rest>
+struct exists_if<Pred, seq_<X, Rest...>> :
+    public details::or_helper<
+        Pred<X>::value,
+        exists_if<Pred, seq_<Rest...>>> {};
+
+template<template<typename> class Pred, typename X>
+struct exists_if<Pred, seq_<X>> : public bool_<Pred<X>::value> {};
+
+template<template<typename> class Pred>
+struct exists_if<Pred, seq_<>> : public bool_<false> {};
+
+
+// count
+
+template<typename X, typename X1, typename... Rest>
+struct count<X, seq_<X1, Rest...>> :
+    public plus<
+        details::cond_to_size<::std::is_same<X, X1>>,
+        count<X, seq_<Rest...>>> {};
+
+template<typename X, typename X1>
+struct count<X, seq_<X1>> :
+    public details::cond_to_size<::std::is_same<X, X1>> {};
+
+template<typename X>
+struct count<X, seq_<>> : public size_<0> {};
+
+
+// count_if
+
+template<template<typename X> class Pred, typename... Elems>
+struct count_if<Pred, seq_<Elems...>> :
+    public details::count_if_impl<Pred, Elems...> {};
+
 
 
 } // end namespace mpl

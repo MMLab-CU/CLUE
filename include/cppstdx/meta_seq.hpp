@@ -1,16 +1,16 @@
 /**
- * @file mpl_seq.hpp
+ * @file meta_seq.hpp
  *
- * MPL tools for working with a sequence of types
+ * Meta-programming tools for working with a sequence of types
  */
 
-#ifndef CPPSTDX_MPL_SEQ__
-#define CPPSTDX_MPL_SEQ__
+#ifndef CPPSTDX_META_SEQ__
+#define CPPSTDX_META_SEQ__
 
-#include <cppstdx/mpl.hpp>
+#include <cppstdx/meta.hpp>
 
 namespace cppstdx {
-namespace mpl {
+namespace meta {
 
 //===============================================
 //

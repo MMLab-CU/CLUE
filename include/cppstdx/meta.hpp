@@ -1,18 +1,18 @@
 /**
- * @file mpl.hpp
+ * @file meta.hpp
  *
  * Meta-programming facilities.
  */
 
-#ifndef CPPSTDX_MPL__
-#define CPPSTDX_MPL__
+#ifndef CPPSTDX_META__
+#define CPPSTDX_META__
 
 #include <cppstdx/config.hpp>
 #include <type_traits>
 
 namespace cppstdx {
 
-namespace mpl {
+namespace meta {
 
 using ::std::size_t;
 using ::std::integral_constant;
@@ -318,7 +318,7 @@ template<typename... Args>
 using any = details::any_impl<Args...>;
 
 
-} // end namespace mpl
+} // end namespace meta
 } // end namespace cppstdx
 
 #endif

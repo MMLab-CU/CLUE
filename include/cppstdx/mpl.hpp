@@ -54,6 +54,32 @@ template<size_t V> using size_ = integral_constant<size_t, V>;
 template<class A>
 using value_type_of = typename A::value_type;
 
+
+// pair
+
+template<typename T1, typename T2>
+struct pair_ {
+    using first_type = T1;
+    using second_type = T2;
+};
+
+template<class A> struct first;
+template<class A> struct second;
+
+template<class A> using first_t  = typename first<A>::type;
+template<class A> using second_t = typename second<A>::type;
+
+template<typename T1, typename T2>
+struct first<pair_<T1, T2>> {
+    using type = T1;
+};
+
+template<typename T1, typename T2>
+struct second<pair_<T1, T2>> {
+    using type = T2;
+};
+
+
 //===============================================
 //
 //   basic functions

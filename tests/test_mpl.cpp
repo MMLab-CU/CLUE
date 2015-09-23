@@ -17,6 +17,13 @@ using b0 = mpl::nil_;
 using bt = mpl::true_;
 using bf = mpl::false_;
 
+TEST(MPL, Pairs) {
+    using p = mpl::pair_<i2, i5>;
+    ASSERT_TRUE((std::is_same<mpl::first_t<p>,  i2>::value));
+    ASSERT_TRUE((std::is_same<mpl::second_t<p>, i5>::value));
+}
+
+
 TEST(MPL, ArithmeticFuns) {
     CHECK_MPL_F1(mpl::int_<-3>, mpl::negate, i3);
     CHECK_MPL_F1(i4, mpl::next, i3);

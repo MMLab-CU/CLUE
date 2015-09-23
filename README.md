@@ -14,5 +14,5 @@ Currently, the library contains the following:
 - [x] `contiguous_view`
 - [x] `reindexed_view`
 - [x] `value_range`
-- [x] `mpl`
-- [x] `mpl_list`
+- [x] `meta`
+- [x] `meta_seq`

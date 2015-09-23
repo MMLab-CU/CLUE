@@ -194,6 +194,53 @@ struct push_back<seq_<>, X> {
 };
 
 
+//===============================================
+//
+//   Sequence reduction
+//
+//===============================================
+
+// sum
+
+template<typename... Elems>
+struct sum<seq_<Elems...>> : public sum<Elems...> {};
+
+// prod
+
+template<typename... Elems>
+struct prod<seq_<Elems...>> : public prod<Elems...> {};
+
+// max
+
+template<typename... Elems>
+struct max<seq_<Elems...>> : public max<Elems...> {};
+
+// min
+
+template<typename... Elems>
+struct min<seq_<Elems...>> : public min<Elems...> {};
+
+// all
+
+template<typename... Elems>
+struct all<seq_<Elems...>> : public all<Elems...> {};
+
+// any
+
+template<typename... Elems>
+struct any<seq_<Elems...>> : public any<Elems...> {};
+
+// count_true
+
+template<typename... Elems>
+struct count_true<seq_<Elems...>> : public count_true<Elems...> {};
+
+// count_false
+
+template<typename... Elems>
+struct count_false<seq_<Elems...>> : public count_false<Elems...> {};
+
+
 
 //===============================================
 //
@@ -400,7 +447,6 @@ struct count<X, seq_<>> : public size_<0> {};
 template<template<typename X> class Pred, typename... Elems>
 struct count_if<Pred, seq_<Elems...>> :
     public details::count_if_impl<Pred, Elems...> {};
-
 
 
 } // end namespace mpl

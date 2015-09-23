@@ -147,6 +147,72 @@ TEST(MetaSeq, PushBack) {
     CHECK_META_T(l3_ap_r, l3_ap);
 }
 
+
+TEST(MetaSeq, Reduction) {
+    using bt = meta::true_;
+    using bf = meta::false_;
+
+    // all
+
+    using B0 = seq_<>;
+    using B1 = seq_<bt>;
+    using B3 = seq_<bt, bf, bt>;
+
+    ASSERT_EQ(true,  meta::all<B0>::value);
+    ASSERT_EQ(true,  meta::all<B1>::value);
+    ASSERT_EQ(false, meta::all<B3>::value);
+
+    // any
+
+    ASSERT_EQ(false, meta::any<B0>::value);
+    ASSERT_EQ(true,  meta::any<B1>::value);
+    ASSERT_EQ(true,  meta::any<B3>::value);
+
+    // count_true
+
+    ASSERT_EQ(0, meta::count_true<B0>::value);
+    ASSERT_EQ(1, meta::count_true<B1>::value);
+    ASSERT_EQ(2, meta::count_true<B3>::value);
+
+    // count_false
+
+    ASSERT_EQ(0, meta::count_false<B0>::value);
+    ASSERT_EQ(0, meta::count_false<B1>::value);
+    ASSERT_EQ(1, meta::count_false<B3>::value);
+
+    // sum
+
+    using V1 = seq_<i3>;
+    using V3 = seq_<i2, i3, i4>;
+
+    ASSERT_EQ(3, meta::sum<V1>::value);
+    ASSERT_EQ(9, meta::sum<V3>::value);
+
+    // verify it does not interfere with the original form
+
+    using _r1 = meta::sum<i3>;
+    ASSERT_EQ(3, _r1::value);
+
+    using _r3 = meta::sum<i2, i3, i4>;
+    ASSERT_EQ(9, _r3::value);
+
+    // prod
+
+    ASSERT_EQ(3,  meta::prod<V1>::value);
+    ASSERT_EQ(24, meta::prod<V3>::value);
+
+    // max
+
+    ASSERT_EQ(3, meta::max<V1>::value);
+    ASSERT_EQ(4, meta::max<V3>::value);
+
+    // min
+
+    ASSERT_EQ(3, meta::min<V1>::value);
+    ASSERT_EQ(2, meta::min<V3>::value);
+}
+
+
 TEST(MetaSeq, Cat) {
     using L0 = seq_<>;
     using L1 = seq_<i1>;

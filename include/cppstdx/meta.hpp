@@ -170,49 +170,59 @@ template<typename A, typename B> using or_  = details::or_helper<A::value, B>;
 //
 //===============================================
 
-namespace details {
-
 // sum
 
+template<typename... Args> struct sum;
+
 template<typename A, typename... Rest>
-struct sum_impl : public plus<A, sum_impl<Rest...>> {};
+struct sum<A, Rest...> : public plus<A, sum<Rest...>> {};
 
 template<typename A>
-struct sum_impl<A> : public id<A> {};
+struct sum<A> : public id<A> {};
 
 // prod
 
+template<typename... Args> struct prod;
+
 template<typename A, typename... Rest>
-struct prod_impl : public mul<A, prod_impl<Rest...>> {};
+struct prod<A, Rest...> : public mul<A, prod<Rest...>> {};
 
 template<typename A>
-struct prod_impl<A> : public id<A> {};
+struct prod<A> : public id<A> {};
 
 // max
 
-template<typename A, typename B>
-using _max = integral_constant<
-        value_type_of<A>, (A::value > B::value ? A::value : B::value)>;
+template<typename... Args> struct max;
 
 template<typename A, typename... Rest>
-struct max_impl : public _max<A, max_impl<Rest...>> {};
+struct max<A, Rest...> : public max<A, max<Rest...>> {};
 
 template<typename A>
-struct max_impl<A> : public id<A> {};
+struct max<A> : public id<A> {};
+
+template<typename A, typename B>
+struct max<A, B> : public integral_constant<
+    value_type_of<A>, (A::value > B::value ? A::value : B::value)> {};
+
 
 // min
 
-template<typename A, typename B>
-using _min = integral_constant<
-        value_type_of<A>, (A::value < B::value ? A::value : B::value)>;
+template<typename... Args> struct min;
 
 template<typename A, typename... Rest>
-struct min_impl : public _min<A, min_impl<Rest...>> {};
+struct min<A, Rest...> : public min<A, min<Rest...>> {};
 
 template<typename A>
-struct min_impl<A> : public id<A> {};
+struct min<A> : public id<A> {};
 
-// all
+template<typename A, typename B>
+struct min<A, B> : public integral_constant<
+     value_type_of<A>, (A::value < B::value ? A::value : B::value)> {};
+
+
+namespace details {
+
+// all_helper
 
 template<bool a, typename... Rest> struct all_helper;
 
@@ -228,15 +238,7 @@ struct all_helper<true, A> : public bool_<A::value> {};
 template<>
 struct all_helper<true> : public std::true_type {};
 
-template<typename... Args> struct all_impl;
-
-template<typename A, typename... Rest>
-struct all_impl<A, Rest...> : public all_helper<A::value, Rest...> {};
-
-template<>
-struct all_impl<> : public bool_<true> {};
-
-// any
+// any_helper
 
 template<bool a, typename... Rest> struct any_helper;
 
@@ -251,15 +253,6 @@ struct any_helper<false, A> : public bool_<A::value> {};
 
 template<>
 struct any_helper<false> : public bool_<false> {};
-
-template<typename... Args> struct any_impl;
-
-template<typename A, typename... Rest>
-struct any_impl<A, Rest...> : public any_helper<A::value, Rest...> {};
-
-template<>
-struct any_impl<> : public bool_<false> {};
-
 
 // generic count_if
 
@@ -280,33 +273,48 @@ struct count_if_impl<Pred, X> : public cond_to_size<Pred<X>> {};
 template<template<typename> class Pred>
 struct count_if_impl<Pred> : public size_<0> {};
 
-
-
 } // end namespace details
 
-template<typename... Args>
-using sum = details::sum_impl<Args...>;
+
+// all
+
+template<typename... Args> struct all;
+
+template<typename A, typename... Rest>
+struct all<A, Rest...> :
+    public details::all_helper<A::value, Rest...> {};
+
+template<>
+struct all<> : public bool_<true> {};
+
+template<typename A>
+struct all<A> : public bool_<A::value> {};
+
+// any
+
+template<typename... Args> struct any;
+
+template<typename A, typename... Rest>
+struct any<A, Rest...> :
+    public details::any_helper<A::value, Rest...> {};
+
+template<>
+struct any<> : public bool_<false> {};
+
+template<typename A>
+struct any<A> : public bool_<A::value> {};
+
+// count_true
 
 template<typename... Args>
-using prod = details::prod_impl<Args...>;
+struct count_true :
+     public details::count_if_impl<id, Args...> {};
+
+// count_false
 
 template<typename... Args>
-using max = details::max_impl<Args...>;
-
-template<typename... Args>
-using min = details::min_impl<Args...>;
-
-template<typename... Args>
-using count_true = details::count_if_impl<id, Args...>;
-
-template<typename... Args>
-using count_false = details::count_if_impl<not_, Args...>;
-
-template<typename... Args>
-using all = details::all_impl<Args...>;
-
-template<typename... Args>
-using any = details::any_impl<Args...>;
+struct count_false :
+    public details::count_if_impl<not_, Args...> {};
 
 
 } // end namespace meta

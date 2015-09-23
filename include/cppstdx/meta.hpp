@@ -7,8 +7,7 @@
 #ifndef CPPSTDX_META__
 #define CPPSTDX_META__
 
-#include <cppstdx/config.hpp>
-#include <type_traits>
+#include <cppstdx/type_traits.hpp>
 
 namespace cppstdx {
 

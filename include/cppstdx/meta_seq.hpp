@@ -376,17 +376,15 @@ struct filter<Pred, seq_<X, Rest...>> {
 private:
     using filtered_rest = typename filter<Pred, seq_<Rest...>>::type;
 public:
-    using type = typename ::std::conditional<Pred<X>::value,
+    using type = conditional_t<Pred<X>::value,
             push_front_t<filtered_rest, X>,
-            filtered_rest>::type;
-
+            filtered_rest>;
 };
 
 template<template<typename> class Pred, typename X>
 struct filter<Pred, seq_<X>> {
 public:
-    using type = typename ::std::conditional<Pred<X>::value,
-            seq_<X>, seq_<>>::type;
+    using type = conditional_t<Pred<X>::value, seq_<X>, seq_<>>;
 };
 
 template<template<typename> class Pred>

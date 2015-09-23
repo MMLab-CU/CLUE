@@ -263,16 +263,19 @@ struct any_impl<> : public bool_<false> {};
 
 // generic count_if
 
+template<typename A>
+struct cond_to_size : public size_<(A::value ? 1 : 0)> {};
+
 template<template<typename> class Pred, typename... Args>
 struct count_if_impl;
 
 template<template<typename> class Pred, typename X, typename... Rest>
-struct count_if_impl<Pred, X, Rest...> : public size_<
-    (Pred<X>::value ? 1 : 0) +
-    count_if_impl<Pred, Rest...>::value> {};
+struct count_if_impl<Pred, X, Rest...> : public plus<
+    cond_to_size<Pred<X>>,
+    count_if_impl<Pred, Rest...>> {};
 
 template<template<typename> class Pred, typename X>
-struct count_if_impl<Pred, X> : public size_<Pred<X>::value ? 1 : 0> {};
+struct count_if_impl<Pred, X> : public cond_to_size<Pred<X>> {};
 
 template<template<typename> class Pred>
 struct count_if_impl<Pred> : public size_<0> {};

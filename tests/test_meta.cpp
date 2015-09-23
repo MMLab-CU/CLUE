@@ -85,7 +85,34 @@ TEST(Meta, LazyAndOr) {
     ASSERT_EQ(true, (meta::or_<bt, meta::false_>::value));
 }
 
-TEST(Meta, VarReduce) {
+
+TEST(Meta, Select) {
+    using t = meta::true_;
+    using f = meta::false_;
+
+    using r1 = meta::select_t<i1>;
+
+    ASSERT_TRUE((::std::is_same<r1, i1>::value));
+
+    using r2t = meta::select_t<t, i1, i2>;
+    using r2f = meta::select_t<f, i1, i2>;
+
+    ASSERT_TRUE((::std::is_same<r2t, i1>::value));
+    ASSERT_TRUE((::std::is_same<r2f, i2>::value));
+
+    using r3tt = meta::select_t<t, i1, t, i2, i3>;
+    using r3tf = meta::select_t<t, i1, f, i2, i3>;
+    using r3ft = meta::select_t<f, i1, t, i2, i3>;
+    using r3ff = meta::select_t<f, i1, f, i2, i3>;
+
+    ASSERT_TRUE((::std::is_same<r3tt, i1>::value));
+    ASSERT_TRUE((::std::is_same<r3tf, i1>::value));
+    ASSERT_TRUE((::std::is_same<r3ft, i2>::value));
+    ASSERT_TRUE((::std::is_same<r3ff, i3>::value));
+}
+
+
+TEST(Meta, ValueReduce) {
     ASSERT_EQ(2,  (meta::sum<i2>::value));
     ASSERT_EQ(5,  (meta::sum<i2, i3>::value));
     ASSERT_EQ(6,  (meta::sum<i2, i3, i1>::value));

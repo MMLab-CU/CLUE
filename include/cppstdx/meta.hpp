@@ -162,6 +162,50 @@ template<typename A, typename B> using or_  = details::or_helper<A::value, B>;
 
 //===============================================
 //
+//  select
+//
+//===============================================
+
+template<typename... Args> struct select;
+
+namespace details {
+
+template<bool c1, typename... Rest>
+struct select_helper;
+
+template<typename T1, typename... Rest>
+struct select_helper<true, T1, Rest...> {
+    using type = T1;
+};
+
+template<typename T1, typename C2, typename... Rest>
+struct select_helper<false, T1, C2, Rest...> {
+    using type = typename select_helper<C2::value, Rest...>::type;
+};
+
+template<typename T1, typename T2>
+struct select_helper<false, T1, T2> {
+    using type = T2;
+};
+
+};
+
+template<typename C1, typename... Rest>
+struct select<C1, Rest...> {
+    using type = typename details::select_helper<C1::value, Rest...>::type;
+};
+
+template<typename T>
+struct select<T> {
+    using type = T;
+};
+
+template<typename... Args>
+using select_t = typename select<Args...>::type;
+
+
+//===============================================
+//
 //   variadic reduction
 //
 //===============================================

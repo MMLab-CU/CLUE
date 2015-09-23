@@ -43,11 +43,12 @@ TEST(MetaSeq, Parts) {
     CHECK_MPL_T(i1, meta::front_t<L3>);
 
     // back
+
     CHECK_MPL_T(i1, meta::back_t<L1>);
     CHECK_MPL_T(i2, meta::back_t<L2>);
     CHECK_MPL_T(i3, meta::back_t<L3>);
 
-    // get
+    // at
     using l1_0 = meta::at_t<L1, 0>;
     using l2_0 = meta::at_t<L2, 0>;
     using l2_1 = meta::at_t<L2, 1>;
@@ -61,6 +62,17 @@ TEST(MetaSeq, Parts) {
     CHECK_MPL_T(i1, l3_0);
     CHECK_MPL_T(i2, l3_1);
     CHECK_MPL_T(i3, l3_2);
+
+    // first
+
+    CHECK_MPL_T(i1, meta::first_t<L1>);
+    CHECK_MPL_T(i1, meta::first_t<L2>);
+    CHECK_MPL_T(i1, meta::first_t<L3>);
+
+    // second
+
+    CHECK_MPL_T(i2, meta::second_t<L2>);
+    CHECK_MPL_T(i2, meta::second_t<L3>);
 }
 
 

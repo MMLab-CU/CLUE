@@ -146,22 +146,22 @@ template<typename A, typename B> using xor_ = bool_<A::value != B::value>;
 
 namespace details {
 
-template<typename B, bool Av>
+template<bool Av, typename B>
 struct and_helper : public bool_<B::value> {};
 
 template<typename B>
-struct and_helper<B, false> : public bool_<false> {};
+struct and_helper<false, B> : public bool_<false> {};
 
-template<typename B, bool Av>
+template<bool Av, typename B>
 struct or_helper : public bool_<true> {};
 
 template<typename B>
-struct or_helper<B, false> : public bool_<B::value> {};
+struct or_helper<false, B> : public bool_<B::value> {};
 
 }
 
-template<typename A, typename B> using and_ = details::and_helper<B, A::value>;
-template<typename A, typename B> using or_  = details::or_helper<B, A::value>;
+template<typename A, typename B> using and_ = details::and_helper<A::value, B>;
+template<typename A, typename B> using or_  = details::or_helper<A::value, B>;
 
 
 //===============================================
@@ -260,35 +260,23 @@ struct any_impl<A, Rest...> : public any_helper<A::value, Rest...> {};
 template<>
 struct any_impl<> : public bool_<false> {};
 
-// count_true
 
-template<typename... Args>
-struct count_true_impl;
+// generic count_if
 
-template<typename A, typename... Rest>
-struct count_true_impl<A, Rest...> : public plus<
-    count_true_impl<A>, count_true_impl<Rest...>> {};
+template<template<typename> class Pred, typename... Args>
+struct count_if_impl;
 
-template<typename A>
-struct count_true_impl<A> : public size_<(A::value ? 1 : 0)> {};
+template<template<typename> class Pred, typename X, typename... Rest>
+struct count_if_impl<Pred, X, Rest...> : public size_<
+    (Pred<X>::value ? 1 : 0) +
+    count_if_impl<Pred, Rest...>::value> {};
 
-template<>
-struct count_true_impl<> : public size_<0> {};
+template<template<typename> class Pred, typename X>
+struct count_if_impl<Pred, X> : public size_<Pred<X>::value ? 1 : 0> {};
 
-// count_false
+template<template<typename> class Pred>
+struct count_if_impl<Pred> : public size_<0> {};
 
-template<typename... Args>
-struct count_false_impl;
-
-template<typename A, typename... Rest>
-struct count_false_impl<A, Rest...> : public plus<
-    count_false_impl<A>, count_false_impl<Rest...>> {};
-
-template<typename A>
-struct count_false_impl<A> : public size_<(A::value ? 0 : 1)> {};
-
-template<>
-struct count_false_impl<> : public size_<0> {};
 
 
 } // end namespace details
@@ -306,10 +294,10 @@ template<typename... Args>
 using min = details::min_impl<Args...>;
 
 template<typename... Args>
-using count_true = details::count_true_impl<Args...>;
+using count_true = details::count_if_impl<id, Args...>;
 
 template<typename... Args>
-using count_false = details::count_false_impl<Args...>;
+using count_false = details::count_if_impl<not_, Args...>;
 
 template<typename... Args>
 using all = details::all_impl<Args...>;

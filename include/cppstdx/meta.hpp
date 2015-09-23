@@ -95,9 +95,6 @@ template<typename A>
 using negate = integral_constant<value_type_of<A>, -A::value>;
 
 template<typename A>
-using complement = integral_constant<value_type_of<A>, ~A::value>;
-
-template<typename A>
 using next = integral_constant<value_type_of<A>, A::value+1>;
 
 template<typename A>

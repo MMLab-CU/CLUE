@@ -1,11 +1,11 @@
 /**
- * @file contiguous_view.hpp
+ * @file array_view.hpp
  *
  * Contiguous array view classes
  */
 
-#ifndef CPPSTDX_CONTIGUOUS_VIEW__
-#define CPPSTDX_CONTIGUOUS_VIEW__
+#ifndef CPPSTDX_ARRAY_VIEW__
+#define CPPSTDX_ARRAY_VIEW__
 
 #include <cppstdx/config.hpp>
 #include <cstddef>
@@ -18,9 +18,9 @@
 namespace cppstdx {
 
 template<typename T>
-class contiguous_view {
+class array_view {
     static_assert(::std::is_object<T>::value,
-        "contiguous_view<T>: T must be an object");
+        "array_view<T>: T must be an object");
 
 public:
     // types
@@ -44,21 +44,21 @@ private:
 public:
     // constructors, destructor, assignment operator
 
-    constexpr contiguous_view() noexcept :
+    constexpr array_view() noexcept :
         data_(nullptr), len_(0) { }
 
-    constexpr contiguous_view(pointer data, size_type len) noexcept :
+    constexpr array_view(pointer data, size_type len) noexcept :
         data_(data), len_(len) { }
 
-    constexpr contiguous_view(const contiguous_view&) noexcept = default;
+    constexpr array_view(const array_view&) noexcept = default;
 
-    ~contiguous_view() noexcept = default;
+    ~array_view() noexcept = default;
 
-    contiguous_view& operator=(const contiguous_view&) noexcept = default;
+    array_view& operator=(const array_view&) noexcept = default;
 
     // swap
 
-    void swap(contiguous_view& other) noexcept {
+    void swap(array_view& other) noexcept {
         ::std::swap(data_, other.data_);
         ::std::swap(len_, other.len_);
     }
@@ -128,7 +128,7 @@ public:
 };
 
 template<typename T>
-inline void swap(contiguous_view<T>& a, contiguous_view<T>& b) noexcept {
+inline void swap(array_view<T>& a, array_view<T>& b) noexcept {
     a.swap(b);
 }
 

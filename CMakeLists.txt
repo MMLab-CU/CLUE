@@ -64,9 +64,9 @@ set(UNIT_TESTS
     test_optional
     test_string_view
     test_stringex
-    test_contiguous_view
-    test_reindexed_view
     test_value_range
+    test_array_view
+    test_reindexed_view
     test_meta
     test_meta_seq
 )

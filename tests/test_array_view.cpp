@@ -1,12 +1,12 @@
-#include <cppstdx/contiguous_view.hpp>
+#include <cppstdx/array_view.hpp>
 #include <gtest/gtest.h>
 #include <vector>
 
-using cppstdx::contiguous_view;
+using cppstdx::array_view;
 
 TEST(ContiguousView, Empty) {
 
-    contiguous_view<int> v;
+    array_view<int> v;
 
     ASSERT_EQ(nullptr, v.data());
     ASSERT_EQ(0,       v.size());
@@ -25,7 +25,7 @@ TEST(ContiguousView, MutableView) {
 
     const size_t len = 5;
     int s[len] = {12, 24, 36, 48, 60};
-    contiguous_view<int> v(s, len);
+    array_view<int> v(s, len);
 
     ASSERT_EQ(s,     v.data());
     ASSERT_EQ(len,   v.size());
@@ -59,8 +59,8 @@ TEST(ContiguousView, ConstView) {
 
     const size_t len = 5;
     int s[len] = {12, 24, 36, 48, 60};
-    contiguous_view<const int> v(s, len);
-    ASSERT_TRUE((std::is_same<contiguous_view<const int>::value_type, int>::value));
+    array_view<const int> v(s, len);
+    ASSERT_TRUE((std::is_same<array_view<const int>::value_type, int>::value));
 
     ASSERT_EQ(s,     v.data());
     ASSERT_EQ(len,   v.size());
@@ -92,7 +92,7 @@ TEST(ContiguousView, Iterations) {
     std::vector<int> v0 {12, 24, 36, 48, 60};
     std::vector<int> vr0{60, 48, 36, 24, 12};
 
-    contiguous_view<int> cv(s, len);
+    array_view<int> cv(s, len);
     std::vector<int> v1(cv.begin(), cv.end());
     ASSERT_EQ(v0, v1);
 
@@ -109,4 +109,3 @@ TEST(ContiguousView, Iterations) {
     for (auto x: cv) v2.push_back(x);
     ASSERT_EQ(v0, v2);
 }
-

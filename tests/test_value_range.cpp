@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include <vector>
 
+using cppstdx::vrange;
+
 template<typename T>
 void test_unit_range(const cppstdx::value_range<T>& rgn, const T& a, const T& b) {
     using std::size_t;
@@ -81,9 +83,10 @@ TEST(ValueRanges, IntRanges) {
     using irange = cppstdx::value_range<int>;
     ASSERT_TRUE((std::is_same<irange::difference_type, int>::value));
 
-    test_unit_range(irange(0, 0), 0, 0);
-    test_unit_range(irange(5, 5), 5, 5);
-    test_unit_range(irange(3, 8), 3, 8);
+    test_unit_range(vrange(0, 0), 0, 0);
+    test_unit_range(vrange(5, 5), 5, 5);
+    test_unit_range(vrange(8),    0, 8);
+    test_unit_range(vrange(3, 8), 3, 8);
 }
 
 TEST(ValueRanges, SizeRanges) {
@@ -172,4 +175,3 @@ TEST(ValueRanges, StlAlgorithms) {
     std::vector<int> tr_r{9, 16, 25, 36, 49};
     ASSERT_EQ(tr_r, tr);
 }
-

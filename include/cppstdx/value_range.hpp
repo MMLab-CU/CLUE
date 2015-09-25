@@ -271,6 +271,15 @@ public:
 
 }; // end class value_range
 
+template<typename T>
+constexpr value_range<T> vrange(const T& u) {
+    return value_range<T>(static_cast<T>(0), u);
+}
+
+template<typename T>
+constexpr value_range<T> vrange(const T& a, const T& b) {
+    return value_range<T>(a, b);
+}
 
 template<typename T, typename Traits>
 inline void swap(value_range<T,Traits>& lhs, value_range<T,Traits>& rhs) {

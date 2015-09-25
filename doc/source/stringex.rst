@@ -1,4 +1,4 @@
-Extensions to String Functionalities
+Extensions of String Functionalities
 ======================================
 
 This library provides a set of functions to complement the methods of ``std::string`` (or ``string_view``). These functions are useful in many practical applications.

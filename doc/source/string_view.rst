@@ -139,6 +139,43 @@ Element Access
 
     :note: For views constructed with default constructor, this returns a null pointer.
 
+
+Iterators
+----------
+
+.. cpp:function:: constexpr const_iterator cbegin() const
+
+    Get a const iterator to the beginning.
+
+.. cpp:function:: constexpr const_iterator cend() const
+
+    Get a const iterator to the end.
+
+.. cpp:function:: constexpr iterator begin() const
+
+    Get a const iterator to the beginning, equivalent to ``cbegin()``.
+
+.. cpp:function:: constexpr iterator end() const
+
+    Get a const iterator to the end, equivalent to ``cend()``.
+
+.. cpp:function:: constexpr const_iterator crbegin() const
+
+    Get a const reverse iterator to the reversed beginning.
+
+.. cpp:function:: constexpr const_iterator crend() const
+
+    Get a const reverse iterator to the reversed end.
+
+.. cpp:function:: constexpr iterator rbegin() const
+
+    Get a const reverse iterator to the reversed beginning, equivalent to ``crbegin()``.
+
+.. cpp:function:: constexpr iterator rend() const
+
+    Get a const reverse iterator to the reversed end, equivalent to ``crend()``.
+
+
 Modifiers
 ----------
 

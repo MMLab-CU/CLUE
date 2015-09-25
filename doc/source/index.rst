@@ -15,3 +15,6 @@ Contents:
    string_view.rst
    stringex.rst
    optional.rst
+   value_range.rst
+
+   

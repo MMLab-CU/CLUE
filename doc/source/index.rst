@@ -9,7 +9,8 @@ Contents:
 ---------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    type_traits.rst
-   
+   string_view.rst
+   contiguous_view.rst

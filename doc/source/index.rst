@@ -13,4 +13,5 @@ Contents:
 
    type_traits.rst
    string_view.rst
+   stringex.rst
    contiguous_view.rst

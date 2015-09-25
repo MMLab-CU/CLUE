@@ -128,11 +128,14 @@ public:
 };
 
 template<typename T>
+constexpr array_view<T> aview(T* p, ::std::size_t n) noexcept {
+    return array_view<T>(p, n);
+}
+
+template<typename T>
 inline void swap(array_view<T>& a, array_view<T>& b) noexcept {
     a.swap(b);
 }
-
-
 
 }
 

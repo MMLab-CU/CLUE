@@ -1,10 +1,11 @@
 #include <cppstdx/array_view.hpp>
 #include <gtest/gtest.h>
 #include <vector>
+#include <type_traits>
 
 using cppstdx::array_view;
 
-TEST(ContiguousView, Empty) {
+TEST(ArrayView, Empty) {
 
     array_view<int> v;
 
@@ -21,7 +22,7 @@ TEST(ContiguousView, Empty) {
 }
 
 
-TEST(ContiguousView, MutableView) {
+TEST(ArrayView, MutableView) {
 
     const size_t len = 5;
     int s[len] = {12, 24, 36, 48, 60};
@@ -55,7 +56,7 @@ TEST(ContiguousView, MutableView) {
 }
 
 
-TEST(ContiguousView, ConstView) {
+TEST(ArrayView, ConstView) {
 
     const size_t len = 5;
     int s[len] = {12, 24, 36, 48, 60};
@@ -84,7 +85,7 @@ TEST(ContiguousView, ConstView) {
 }
 
 
-TEST(ContiguousView, Iterations) {
+TEST(ArrayView, Iterations) {
 
     const size_t len = 5;
     int s[len] = {12, 24, 36, 48, 60};
@@ -108,4 +109,22 @@ TEST(ContiguousView, Iterations) {
     std::vector<int> v2;
     for (auto x: cv) v2.push_back(x);
     ASSERT_EQ(v0, v2);
+}
+
+
+TEST(ArrayView, Aview) {
+    using cppstdx::aview;
+
+    std::vector<int> s {12, 24, 36, 48, 60};
+    const std::vector<int>& cs = s;
+
+    auto v = aview(s.data(), s.size());
+    ASSERT_TRUE((std::is_same<decltype(v), array_view<int>>::value));
+    ASSERT_EQ(s.data(), v.data());
+    ASSERT_EQ(s.size(), v.size());
+
+    auto cv = aview(cs.data(), cs.size());
+    ASSERT_TRUE((std::is_same<decltype(cv), array_view<const int>>::value));
+    ASSERT_EQ(cs.data(), v.data());
+    ASSERT_EQ(cs.size(), v.size());
 }

@@ -306,7 +306,7 @@ Similar to ``std::string``, string view classes provide a series of member funct
 Find Substrings
 ----------------
 
-.. cpp:function:: size_type find(basic_string_view s, size_type pos = 0) const noexcept
+.. cpp:function:: size_type find(string_view s, size_type pos = 0) const noexcept
 
     Find a substring ``s``, starting from ``pos``.
 
@@ -318,7 +318,7 @@ Find Substrings
 
     Equivalent to ``find(substr(s), pos)``.
 
-.. cpp:function:: size_type rfind(basic_string_view s, size_type pos = npos) const noexcept
+.. cpp:function:: size_type rfind(string_view s, size_type pos = npos) const noexcept
 
     Find a substring ``s``, in a reverse order, starting from ``pos``, or the end of the string view if ``pos >= size()``.
 

@@ -192,6 +192,7 @@ public:
     // types
     typedef T value_type;
     typedef D difference_type;
+    typedef Traits traits_type;
     typedef typename ::std::size_t size_type;
 
     typedef const T& reference;

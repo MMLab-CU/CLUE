@@ -1,5 +1,5 @@
-String Views
-=============
+String View
+============
 
 In the `C++ Extensions for Library Fundamentals (N4480) <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html>`_, a class template ``basic_string_view`` is introduced. Each instance of such a class refers to a constant contiguous sequence of characters (or *char-like objects*). This class provides a light-weight representation (with only a pointer and a size) of a *sub-string* that implements many of the methods available for ``std::string``.
 

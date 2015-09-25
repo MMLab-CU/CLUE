@@ -12,9 +12,8 @@ Contents:
    :maxdepth: 1
 
    type_traits.rst
+   optional.rst
    string_view.rst
    stringex.rst
-   optional.rst
    value_range.rst
-
-   
+   array_view.rst

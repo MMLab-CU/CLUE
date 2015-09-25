@@ -24,7 +24,7 @@ Here is a simple example that illustrates the use of the ``optional`` class.
     u.value_or(0.0);  // -> 0.0
 
     auto v = safe_sqrt(4.0);  // -> optional<double>(2.0)
-    (boo)v;           // -> true
+    (bool)v;          // -> true
     v.value();        // -> 2.0
     v.value_or(0.0);  // -> 2.0
 

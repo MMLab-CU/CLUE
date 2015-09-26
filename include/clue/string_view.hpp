@@ -70,10 +70,10 @@ public:
     basic_string_view(const ::std::basic_string<charT, Traits, Allocator>& s) noexcept
         : data_ (s.data()), len_(s.size()) {}
 
-    constexpr basic_string_view(const charT* s, size_type count)
+    constexpr basic_string_view(const charT* s, size_type count) noexcept
         : data_(s), len_(count) { }
 
-    constexpr basic_string_view(const charT* s)
+    constexpr basic_string_view(const charT* s) noexcept
         : data_(s), len_(Traits::length(s)) {}
 
 
@@ -218,7 +218,7 @@ public:
         return find_first_of(c, pos);
     }
 
-    size_type find(const charT* s, size_type pos, size_type n) const {
+    size_type find(const charT* s, size_type pos, size_type n) const noexcept {
         if (n == 0 || pos + n > size()) return npos;
         const_iterator r = ::std::search(cbegin() + pos, cend(), s, s + n, Traits::eq);
         return get_pos_(r);
@@ -228,17 +228,17 @@ public:
         return find(s.data(), pos, s.size());
     }
 
-    size_type find(const charT* s, size_type pos = 0) const {
+    size_type find(const charT* s, size_type pos = 0) const noexcept {
         return find(s, pos, Traits::length(s));
     }
 
     // rfind
 
-    size_type rfind(charT c, size_type pos = npos) const noexcept{
+    size_type rfind(charT c, size_type pos = npos) const noexcept {
         return find_last_of(c, pos);
     }
 
-    size_type rfind(const charT* s, size_type pos, size_type n) const {
+    size_type rfind(const charT* s, size_type pos, size_type n) const noexcept {
         pos = pos < size() ? (size() - pos > n ? pos + n : size()) : size();
         const charT *r = ::std::find_end(data(), data() + pos, s, s + n, Traits::eq);
         return (n > 0 && r == data() + pos) ? npos : static_cast<size_type>(r - data());
@@ -248,7 +248,7 @@ public:
         return rfind(s.data(), pos, s.size());
     }
 
-    size_type rfind(const charT* s, size_type pos = npos) const {
+    size_type rfind(const charT* s, size_type pos = npos) const noexcept {
         return rfind(s, pos, Traits::length(s));
     }
 
@@ -258,7 +258,7 @@ public:
         return find_if_(eq_(c), pos);
     }
 
-    size_type find_first_of(const charT* s, size_type pos, size_type n) const {
+    size_type find_first_of(const charT* s, size_type pos, size_type n) const noexcept {
         return find_if_(in_(s, n), pos);
     }
 
@@ -266,7 +266,7 @@ public:
         return find_if_(in_(s), pos);
     }
 
-    size_type find_first_of(const charT* s, size_type pos = 0) const {
+    size_type find_first_of(const charT* s, size_type pos = 0) const noexcept {
         return find_if_(in_(s), pos);
     }
 
@@ -276,7 +276,7 @@ public:
         return rfind_if_(eq_(c), pos);
     }
 
-    size_type find_last_of(const charT* s, size_type pos, size_type n) const {
+    size_type find_last_of(const charT* s, size_type pos, size_type n) const noexcept {
         return rfind_if_(in_(s, n), pos);
     }
 
@@ -284,7 +284,7 @@ public:
         return rfind_if_(in_(s), pos);
     }
 
-    size_type find_last_of(const charT* s, size_type pos = npos) const {
+    size_type find_last_of(const charT* s, size_type pos = npos) const noexcept {
         return rfind_if_(in_(s), pos);
     }
 
@@ -294,7 +294,7 @@ public:
         return find_if_not_(eq_(c), pos);
     }
 
-    size_type find_first_not_of(const charT* s, size_type pos, size_type n) const {
+    size_type find_first_not_of(const charT* s, size_type pos, size_type n) const noexcept {
         return find_if_not_(in_(s, n), pos);
     }
 
@@ -302,7 +302,7 @@ public:
         return find_if_not_(in_(s), pos);
     }
 
-    size_type find_first_not_of(const charT* s, size_type pos = 0) const {
+    size_type find_first_not_of(const charT* s, size_type pos = 0) const noexcept {
         return find_if_not_(in_(s), pos);
     }
 
@@ -312,7 +312,7 @@ public:
         return rfind_if_not_(eq_(c), pos);
     }
 
-    size_type find_last_not_of(const charT* s, size_type pos, size_type n) const {
+    size_type find_last_not_of(const charT* s, size_type pos, size_type n) const noexcept {
         return rfind_if_not_(in_(s, n), pos);
     }
 
@@ -320,7 +320,7 @@ public:
         return rfind_if_not_(in_(s), pos);
     }
 
-    size_type find_last_not_of(const charT* s, size_type pos = npos) const {
+    size_type find_last_not_of(const charT* s, size_type pos = npos) const noexcept {
         return rfind_if_not_(in_(s), pos);
     }
 
@@ -354,7 +354,7 @@ private:
         const charT *s_;
         const charT *se_;
     public:
-        constexpr in_rgn_pred(const char *s, size_type n) :
+        constexpr in_rgn_pred(const char *s, size_type n) noexcept :
             s_(s), se_(s + n) {}
         bool operator()(charT c) const noexcept {
             const charT *p = s_;
@@ -363,19 +363,19 @@ private:
         }
     };
 
-    static constexpr eq_pred eq_(charT c) {
+    static constexpr eq_pred eq_(charT c) noexcept {
         return eq_pred(c);
     }
 
-    static constexpr in_pred in_(const charT *s) {
+    static constexpr in_pred in_(const charT *s) noexcept {
         return in_pred(s);
     }
 
-    static constexpr in_rgn_pred in_(const char *s, size_type n) {
+    static constexpr in_rgn_pred in_(const char *s, size_type n) noexcept {
         return in_rgn_pred(s, n);
     }
 
-    static constexpr in_rgn_pred in_(basic_string_view s) {
+    static constexpr in_rgn_pred in_(basic_string_view s) noexcept {
         return in_rgn_pred(s.data(), s.size());
     }
 

@@ -143,35 +143,35 @@ Element Access
 Iterators
 ----------
 
-.. cpp:function:: constexpr const_iterator cbegin() const
+.. cpp:function:: constexpr const_iterator cbegin() const noexcept
 
     Get a const iterator to the beginning.
 
-.. cpp:function:: constexpr const_iterator cend() const
+.. cpp:function:: constexpr const_iterator cend() const noexcept
 
     Get a const iterator to the end.
 
-.. cpp:function:: constexpr iterator begin() const
+.. cpp:function:: constexpr iterator begin() const noexcept
 
     Get a const iterator to the beginning, equivalent to ``cbegin()``.
 
-.. cpp:function:: constexpr iterator end() const
+.. cpp:function:: constexpr iterator end() const noexcept
 
     Get a const iterator to the end, equivalent to ``cend()``.
 
-.. cpp:function:: constexpr const_iterator crbegin() const
+.. cpp:function:: constexpr const_iterator crbegin() const noexcept
 
     Get a const reverse iterator to the reversed beginning.
 
-.. cpp:function:: constexpr const_iterator crend() const
+.. cpp:function:: constexpr const_iterator crend() const noexcept
 
     Get a const reverse iterator to the reversed end.
 
-.. cpp:function:: constexpr iterator rbegin() const
+.. cpp:function:: constexpr iterator rbegin() const noexcept
 
     Get a const reverse iterator to the reversed beginning, equivalent to ``crbegin()``.
 
-.. cpp:function:: constexpr iterator rend() const
+.. cpp:function:: constexpr iterator rend() const noexcept
 
     Get a const reverse iterator to the reversed end, equivalent to ``crend()``.
 
@@ -287,7 +287,7 @@ Similar to ``std::string``, string view classes provide a series of member funct
 
     Equivalent to ``find_first_of(string_view(s, n), pos)``.
 
-.. cpp:function:: size_type find_first_of(const charT* s, size_type pos = 0) const
+.. cpp:function:: size_type find_first_of(const charT* s, size_type pos = 0) const noexcept
 
     Equivalent to ``find_first_of(string_view(s), pos)``.
 
@@ -303,7 +303,7 @@ Similar to ``std::string``, string view classes provide a series of member funct
 
     Equivalent to ``find_last_of(string_view(s, n), pos)``.
 
-.. cpp:function:: size_type find_last_of(const charT* s, size_type pos = npos) const
+.. cpp:function:: size_type find_last_of(const charT* s, size_type pos = npos) const noexcept
 
     Equivalent to ``find_last_of(string_view(s), pos)``.
 
@@ -319,7 +319,7 @@ Similar to ``std::string``, string view classes provide a series of member funct
 
     Equivalent to ``find_first_not_of(string_view(s, n), pos)``.
 
-.. cpp:function:: size_type find_first_not_of(const charT* s, size_type pos = 0) const
+.. cpp:function:: size_type find_first_not_of(const charT* s, size_type pos = 0) const noexcept
 
     Equivalent to ``find_first_not_of(string_view(s), pos)``.
 
@@ -335,7 +335,7 @@ Similar to ``std::string``, string view classes provide a series of member funct
 
     Equivalent to ``find_first_not_of(string_view(s, n), pos)``.
 
-.. cpp:function:: size_type find_last_not_of(const charT* s, size_type pos = npos) const
+.. cpp:function:: size_type find_last_not_of(const charT* s, size_type pos = npos) const noexcept
 
     Equivalent to ``find_first_not_of(string_view(s), pos)``.
 
@@ -351,7 +351,7 @@ Find Substrings
 
     Equivalent to ``find(substr(s, n), pos)``.
 
-.. cpp:function:: size_type find(const charT* s, size_type pos = 0) const
+.. cpp:function:: size_type find(const charT* s, size_type pos = 0) const noexcept
 
     Equivalent to ``find(substr(s), pos)``.
 
@@ -365,7 +365,7 @@ Find Substrings
 
     Equivalent to ``rfind(substr(s, n), pos)``.
 
-.. cpp:function:: size_type rfind(const charT* s, size_type pos = npos) const
+.. cpp:function:: size_type rfind(const charT* s, size_type pos = npos) const noexcept
 
     Equivalent to ``rfind(substr(s), pos)``.
 

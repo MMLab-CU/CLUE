@@ -18,3 +18,4 @@ Contents:
    value_range.rst
    array_view.rst
    reindexed_view.rst
+   meta.rst

@@ -53,6 +53,20 @@ include_directories(include)
 set(TESTS tests)
 set(EXECUTABLE_OUTPUT_PATH bin)
 
+###################################
+#
+#  Unit testing
+#
+###################################
+
+set(EXAMPLES
+    ex_stopwatch
+    ex_timing
+)
+
+foreach (name ${EXAMPLES})
+    add_executable(${name} examples/${name}.cpp)
+endforeach()
 
 ###################################
 #

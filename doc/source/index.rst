@@ -20,3 +20,4 @@ Contents:
    reindexed_view.rst
    meta.rst
    meta_seq.rst
+   timing.rst

@@ -4,10 +4,10 @@
  * Contiguous array view classes
  */
 
-#ifndef CPPSTDX_ARRAY_VIEW__
-#define CPPSTDX_ARRAY_VIEW__
+#ifndef CLUE_ARRAY_VIEW__
+#define CLUE_ARRAY_VIEW__
 
-#include <cppstdx/config.hpp>
+#include <clue/config.hpp>
 #include <cstddef>
 #include <type_traits>
 #include <iterator>
@@ -15,7 +15,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace cppstdx {
+namespace clue {
 
 template<typename T>
 class array_view {

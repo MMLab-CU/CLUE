@@ -4,12 +4,12 @@
  * Meta-programming facilities.
  */
 
-#ifndef CPPSTDX_META__
-#define CPPSTDX_META__
+#ifndef CLUE_META__
+#define CLUE_META__
 
-#include <cppstdx/type_traits.hpp>
+#include <clue/type_traits.hpp>
 
-namespace cppstdx {
+namespace clue {
 
 namespace meta {
 
@@ -358,6 +358,6 @@ struct count_false :
 
 
 } // end namespace meta
-} // end namespace cppstdx
+} // end namespace clue
 
 #endif

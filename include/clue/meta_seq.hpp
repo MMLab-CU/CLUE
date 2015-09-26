@@ -4,12 +4,12 @@
  * Meta-programming tools for working with a sequence of types
  */
 
-#ifndef CPPSTDX_META_SEQ__
-#define CPPSTDX_META_SEQ__
+#ifndef CLUE_META_SEQ__
+#define CLUE_META_SEQ__
 
-#include <cppstdx/meta.hpp>
+#include <clue/meta.hpp>
 
-namespace cppstdx {
+namespace clue {
 namespace meta {
 
 //===============================================
@@ -448,6 +448,6 @@ struct count_if<Pred, seq_<Elems...>> :
 
 
 } // end namespace mpl
-} // end namespace cppstdx
+} // end namespace clue
 
 #endif

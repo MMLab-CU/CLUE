@@ -1,13 +1,13 @@
-#include <cppstdx/value_range.hpp>
+#include <clue/value_range.hpp>
 #include <gtest/gtest.h>
 #include <vector>
 
-using cppstdx::vrange;
+using clue::vrange;
 
 template<typename T>
-void test_unit_range(const cppstdx::value_range<T>& rgn, const T& a, const T& b) {
+void test_unit_range(const clue::value_range<T>& rgn, const T& a, const T& b) {
     using std::size_t;
-    using difference_type = typename cppstdx::value_range<T>::difference_type;
+    using difference_type = typename clue::value_range<T>::difference_type;
 
     ASSERT_EQ(a,   rgn.first());
     ASSERT_EQ(b,   rgn.last());
@@ -80,7 +80,7 @@ void test_unit_range(const cppstdx::value_range<T>& rgn, const T& a, const T& b)
 
 TEST(ValueRanges, IntRanges) {
 
-    using irange = cppstdx::value_range<int>;
+    using irange = clue::value_range<int>;
     ASSERT_TRUE((std::is_same<irange::difference_type, int>::value));
 
     test_unit_range(vrange(0, 0), 0, 0);
@@ -91,7 +91,7 @@ TEST(ValueRanges, IntRanges) {
 
 TEST(ValueRanges, SizeRanges) {
     using std::size_t;
-    using srange = cppstdx::value_range<std::size_t>;
+    using srange = clue::value_range<std::size_t>;
     ASSERT_TRUE((std::is_same<srange::difference_type, std::ptrdiff_t>::value));
 
     test_unit_range(srange(0, 0), size_t(0), size_t(0));
@@ -100,7 +100,7 @@ TEST(ValueRanges, SizeRanges) {
 }
 
 TEST(ValueRanges, DoubleRanges) {
-    using drange = cppstdx::value_range<double>;
+    using drange = clue::value_range<double>;
     ASSERT_TRUE((std::is_same<drange::difference_type, double>::value));
 
     test_unit_range(drange(0.0, 0.0), 0.0, 0.0);
@@ -109,7 +109,7 @@ TEST(ValueRanges, DoubleRanges) {
 }
 
 TEST(ValueRanges, CharRanges) {
-    using crange = cppstdx::value_range<char>;
+    using crange = clue::value_range<char>;
     ASSERT_TRUE((std::is_same<crange::difference_type, char>::value));
 
     test_unit_range(crange('\0', '\0'), '\0', '\0');
@@ -118,7 +118,7 @@ TEST(ValueRanges, CharRanges) {
 }
 
 TEST(ValueRanges, Equality) {
-    using irange = cppstdx::value_range<int>;
+    using irange = clue::value_range<int>;
 
     ASSERT_EQ(true,  irange(2, 5) == irange(2, 5));
     ASSERT_EQ(false, irange(2, 5) != irange(2, 5));
@@ -134,8 +134,8 @@ TEST(ValueRanges, Equality) {
 }
 
 TEST(ValueRanges, Indices) {
-    using srange = cppstdx::value_range<std::size_t>;
-    using cppstdx::indices;
+    using srange = clue::value_range<std::size_t>;
+    using clue::indices;
 
     std::vector<int> s0;
     ASSERT_EQ(srange(0, 0), indices(s0));
@@ -147,7 +147,7 @@ TEST(ValueRanges, Indices) {
 TEST(ValueRanges, StlAlgorithms) {
     // verify that it works well with STL algorithms
 
-    cppstdx::value_range<int> rgn(3, 8); // 3, ..., 7
+    clue::value_range<int> rgn(3, 8); // 3, ..., 7
 
     auto i_min = std::min_element(rgn.begin(), rgn.end());
     ASSERT_EQ(3, *i_min);

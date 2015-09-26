@@ -4,13 +4,13 @@
  * Some additional type traits facilities introduced in C++14 or 17.
  */
 
-#ifndef CPPSTDX_TYPE_TRAITS__
-#define CPPSTDX_TYPE_TRAITS__
+#ifndef CLUE_TYPE_TRAITS__
+#define CLUE_TYPE_TRAITS__
 
-#include <cppstdx/config.hpp>
+#include <clue/config.hpp>
 #include <type_traits>
 
-namespace cppstdx {
+namespace clue {
 
 template<class T>
 using remove_cv_t = typename ::std::remove_cv<T>::type;

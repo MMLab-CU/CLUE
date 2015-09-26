@@ -1,12 +1,12 @@
-#include <cppstdx/reindexed_view.hpp>
-#include <cppstdx/value_range.hpp>
+#include <clue/reindexed_view.hpp>
+#include <clue/value_range.hpp>
 #include <vector>
 #include <gtest/gtest.h>
 
 
 std::vector<int> S{12, 24, 36, 48, 60};
-typedef cppstdx::reindexed_view<const std::vector<int>, const std::vector<size_t>> cview_t;
-typedef cppstdx::reindexed_view<      std::vector<int>, const std::vector<size_t>>  view_t;
+typedef clue::reindexed_view<const std::vector<int>, const std::vector<size_t>> cview_t;
+typedef clue::reindexed_view<      std::vector<int>, const std::vector<size_t>>  view_t;
 
 TEST(ReindexedView, Types) {
     ASSERT_TRUE((std::is_same<view_t::value_type, int  >::value));
@@ -137,8 +137,8 @@ TEST(ReindexedView, MutatingIterations) {
 
 
 TEST(ReindexedView, WithValueRange) {
-    using irange = cppstdx::value_range<std::size_t>;
-    using slice_t = cppstdx::reindexed_view<std::vector<int>, irange>;
+    using irange = clue::value_range<std::size_t>;
+    using slice_t = clue::reindexed_view<std::vector<int>, irange>;
 
     std::vector<int> src(S);
     irange inds(1, 4);

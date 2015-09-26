@@ -1,11 +1,11 @@
-#include <cppstdx/stringex.hpp>
+#include <clue/stringex.hpp>
 #include <gtest/gtest.h>
 
 using std::string;
-using cppstdx::string_view;
+using clue::string_view;
 
 TEST(StringEx, StrView) {
-    using cppstdx::view;
+    using clue::view;
 
     string s0;
     string_view v0 = view(s0);
@@ -18,7 +18,7 @@ TEST(StringEx, StrView) {
 }
 
 TEST(StringEx, Prefix) {
-    using cppstdx::prefix;
+    using clue::prefix;
 
     ASSERT_EQ(string_view(""),    prefix(string_view("abc"), 0));
     ASSERT_EQ(string_view("a"),   prefix(string_view("abc"), 1));
@@ -34,7 +34,7 @@ TEST(StringEx, Prefix) {
 }
 
 TEST(StringEx, Suffix) {
-    using cppstdx::suffix;
+    using clue::suffix;
 
     ASSERT_EQ(string_view(""),    suffix(string_view("abc"), 0));
     ASSERT_EQ(string_view("c"),   suffix(string_view("abc"), 1));
@@ -52,7 +52,7 @@ TEST(StringEx, Suffix) {
 
 template<typename T>
 void test_starts_with_char() {
-    using cppstdx::starts_with;
+    using clue::starts_with;
 
     ASSERT_EQ(false, starts_with(T(""),   'a'));
     ASSERT_EQ(true,  starts_with(T("a"),  'a'));
@@ -68,7 +68,7 @@ TEST(StringEx, StartsWithChar) {
 
 template<typename T, typename S>
 void test_starts_with() {
-    using cppstdx::starts_with;
+    using clue::starts_with;
 
     ASSERT_EQ(true,  starts_with(T(""), S("")));
     ASSERT_EQ(false, starts_with(T(""), S("a")));
@@ -97,7 +97,7 @@ TEST(StringEx, StartsWith) {
 
 template<typename T>
 void test_ends_with_char() {
-    using cppstdx::ends_with;
+    using clue::ends_with;
 
     ASSERT_EQ(false, ends_with(T(""),   'a'));
     ASSERT_EQ(true,  ends_with(T("a"),  'a'));
@@ -115,7 +115,7 @@ TEST(StringEx, EndsWithChar) {
 
 template<typename T, typename S>
 void test_ends_with() {
-    using cppstdx::ends_with;
+    using clue::ends_with;
 
     ASSERT_EQ(true,  ends_with(T(""), S("")));
     ASSERT_EQ(false, ends_with(T(""), S("a")));
@@ -145,9 +145,9 @@ TEST(StringEx, EndsWith) {
 
 template<typename T>
 void test_trim() {
-    using cppstdx::trim_left;
-    using cppstdx::trim_right;
-    using cppstdx::trim;
+    using clue::trim_left;
+    using clue::trim_right;
+    using clue::trim;
 
     ASSERT_EQ(T(""), trim_left  (T("")));
     ASSERT_EQ(T(""), trim_right (T("")));

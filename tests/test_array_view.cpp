@@ -1,9 +1,9 @@
-#include <cppstdx/array_view.hpp>
+#include <clue/array_view.hpp>
 #include <gtest/gtest.h>
 #include <vector>
 #include <type_traits>
 
-using cppstdx::array_view;
+using clue::array_view;
 
 TEST(ArrayView, Empty) {
 
@@ -113,7 +113,7 @@ TEST(ArrayView, Iterations) {
 
 
 TEST(ArrayView, Aview) {
-    using cppstdx::aview;
+    using clue::aview;
 
     std::vector<int> s {12, 24, 36, 48, 60};
     const std::vector<int>& cs = s;

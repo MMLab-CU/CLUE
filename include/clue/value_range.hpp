@@ -1,12 +1,12 @@
-#ifndef CPPSTDX_VALUE_RANGE__
-#define CPPSTDX_VALUE_RANGE__
+#ifndef CLUE_VALUE_RANGE__
+#define CLUE_VALUE_RANGE__
 
-#include <cppstdx/config.hpp>
+#include <clue/config.hpp>
 #include <type_traits>
 #include <algorithm>
 #include <stdexcept>
 
-namespace cppstdx {
+namespace clue {
 
 
 namespace details {

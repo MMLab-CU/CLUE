@@ -1,18 +1,7 @@
-# cppstdx
+# CLUE++
 
-A small set of extensions to C++ standard library.
+**C**++ **L**ightweight **U**tility **E**xtensions.
 
-**Test status:** [![Build Status](https://travis-ci.org/lindahua/cppstdx.svg?branch=master)](https://travis-ci.org/lindahua/cppstdx)
+**Test status:** [![Build Status](https://travis-ci.org/lindahua/CLUE.svg?branch=master)](https://travis-ci.org/lindahua/CLUE)
 
 ## Contents
-
-Currently, the library contains the following:
-
-- [x] `optional`
-- [x] `string_view`
-- [x] `stringex`
-- [x] `contiguous_view`
-- [x] `reindexed_view`
-- [x] `value_range`
-- [x] `meta`
-- [x] `meta_seq`

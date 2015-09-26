@@ -4,14 +4,14 @@
  * Extensions of string facilities.
  */
 
-#ifndef CPPSTDX_STRINGEX__
-#define CPPSTDX_STRINGEX__
+#ifndef CLUE_STRINGEX__
+#define CLUE_STRINGEX__
 
-#include <cppstdx/config.hpp>
-#include <cppstdx/string_view.hpp>
+#include <clue/config.hpp>
+#include <clue/string_view.hpp>
 #include <cctype>
 
-namespace cppstdx {
+namespace clue {
 
 namespace details {
 

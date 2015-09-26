@@ -4,16 +4,16 @@
  * The class reindexed_view.
  */
 
-#ifndef CPPSTDX_REINDEXED_VIEW__
-#define CPPSTDX_REINDEXED_VIEW__
+#ifndef CLUE_REINDEXED_VIEW__
+#define CLUE_REINDEXED_VIEW__
 
-#include <cppstdx/config.hpp>
+#include <clue/config.hpp>
 #include <cstddef>
 #include <type_traits>
 #include <iterator>
 #include <stdexcept>
 
-namespace cppstdx {
+namespace clue {
 
 namespace details {
 

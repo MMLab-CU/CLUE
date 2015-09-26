@@ -1,8 +1,8 @@
-#include <cppstdx/string_view.hpp>
+#include <clue/string_view.hpp>
 #include <gtest/gtest.h>
 #include <sstream>
 
-namespace stdx = cppstdx;
+namespace stdx = clue;
 
 using stdx::string_view;
 

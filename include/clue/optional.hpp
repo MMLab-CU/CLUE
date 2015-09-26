@@ -6,10 +6,10 @@
  * @note The implementation is adapted from libcxx.
  */
 
-#ifndef CPPSTDX_OPTIONAL__
-#define CPPSTDX_OPTIONAL__
+#ifndef CLUE_OPTIONAL__
+#define CLUE_OPTIONAL__
 
-#include <cppstdx/config.hpp>
+#include <clue/config.hpp>
 
 #include <utility>
 #include <type_traits>
@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <cassert>
 
-namespace cppstdx {
+namespace clue {
 
 template <typename T> class optional;
 
@@ -520,15 +520,15 @@ inline void swap(optional<_Tp>& x, optional<_Tp>& y) noexcept(noexcept(x.swap(y)
     x.swap(y);
 }
 
-} // end namespace cppstdx
+} // end namespace clue
 
 
 namespace std {
 
 // specialize std::hash
 template <class T>
-struct hash<cppstdx::optional<T> > {
-    typedef cppstdx::optional<T> argument_type;
+struct hash<clue::optional<T> > {
+    typedef clue::optional<T> argument_type;
     typedef size_t result_type;
 
     result_type operator()(const argument_type& arg) const noexcept {

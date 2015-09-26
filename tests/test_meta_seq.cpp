@@ -1,7 +1,7 @@
-#include <cppstdx/meta_seq.hpp>
+#include <clue/meta_seq.hpp>
 #include <gtest/gtest.h>
 
-namespace meta = cppstdx::meta;
+namespace meta = clue::meta;
 using meta::seq_;
 
 #define CHECK_META_T(R, Expr) ASSERT_TRUE((std::is_same<R, Expr>::value))

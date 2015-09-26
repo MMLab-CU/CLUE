@@ -6,10 +6,10 @@
  * @note The implementation is adapted from libcxx.
  */
 
-#ifndef CPPSTDX_STRING_VIEW__
-#define CPPSTDX_STRING_VIEW__
+#ifndef CLUE_STRING_VIEW__
+#define CLUE_STRING_VIEW__
 
-#include <cppstdx/config.hpp>
+#include <clue/config.hpp>
 
 #include <cstddef>
 #include <type_traits>
@@ -21,7 +21,7 @@
 #include <limits>
 
 
-namespace cppstdx {
+namespace clue {
 
 // declarations
 
@@ -473,16 +473,16 @@ inline ::std::basic_ostream<charT, Traits>& operator<< (
     return os;
 }
 
-}  // end namespace cppstdx
+}  // end namespace clue
 
 
 namespace std {
 
 template<class charT, class Traits>
-struct hash<cppstdx::basic_string_view<charT, Traits> >
-    : public unary_function<cppstdx::basic_string_view<charT, Traits>, size_t> {
+struct hash<clue::basic_string_view<charT, Traits> >
+    : public unary_function<clue::basic_string_view<charT, Traits>, size_t> {
 
-    size_t operator()(const cppstdx::basic_string_view<charT, Traits>& sv) const {
+    size_t operator()(const clue::basic_string_view<charT, Traits>& sv) const {
         // TODO: implement more efficient hash (that is also consistent with that of std::string
         return hash_(sv.to_string());
     }

@@ -4,11 +4,11 @@
  * URL: https://github.com/akrzemi1/Optional/blob/master/test_optional.cpp
  */
 
-#include <cppstdx/optional.hpp>
+#include <clue/optional.hpp>
 #include <unordered_set>
 #include <gtest/gtest.h>
 
-namespace stdx = cppstdx;
+namespace stdx = clue;
 
 enum State {
     sDefaultConstructed,

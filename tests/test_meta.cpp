@@ -1,7 +1,7 @@
-#include <cppstdx/meta.hpp>
+#include <clue/meta.hpp>
 #include <gtest/gtest.h>
 
-namespace meta = cppstdx::meta;
+namespace meta = clue::meta;
 
 #define CHECK_META_F1(R, F, A) ASSERT_EQ(R::value, (F<A>::value))
 #define CHECK_META_F2(R, F, A, B) ASSERT_EQ(R::value, (F<A, B>::value))

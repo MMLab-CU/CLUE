@@ -227,6 +227,11 @@ public:
 
 }; // end class reindexed_view
 
+template<class Container, class Indices>
+constexpr reindexed_view<Container, Indices> reindexed(Container& c, Indices& inds) {
+    return reindexed_view<Container, Indices>(c, inds);
+}
+
 
 }
 

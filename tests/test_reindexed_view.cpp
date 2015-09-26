@@ -138,11 +138,10 @@ TEST(ReindexedView, MutatingIterations) {
 
 TEST(ReindexedView, WithValueRange) {
     using irange = clue::value_range<std::size_t>;
-    using slice_t = clue::reindexed_view<std::vector<int>, irange>;
 
     std::vector<int> src(S);
     irange inds(1, 4);
-    slice_t v1(src, inds);
+    auto v1 = reindexed(src, inds);
 
     std::vector<int> r1r{src[1], src[2], src[3]};
     std::vector<int> r1(v1.begin(), v1.end());
@@ -156,4 +155,3 @@ TEST(ReindexedView, WithValueRange) {
     for (auto x: v1) r2.push_back(x);
     ASSERT_EQ(r2r, r2);
 }
-

@@ -30,6 +30,8 @@ install:
   - export GTEST_ROOT="$HOME/deps/googletest-release-1.7.0"
 
 script:
+  - "uname -a"
+  - "$CXX --version"
   - "cmake . && make && ctest ."
 
 notifications:

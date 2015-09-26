@@ -171,7 +171,7 @@ Logical functions
     Likewise, when ``A::value == true``, ``or_<A, B>::value`` is set to ``true`` without examining the internals of ``B``.
 
 Select
-~~~~~~~
+-------
 
 C++11 provides ``std::conditional`` for static dispatch based on a condition. However, using this type in practice, especially in the cases with multiple branches, is very cumbersome. Below is an example that uses ``std::conditional`` to map a numeric value to a signed value type.
 
@@ -227,7 +227,7 @@ A helper alias ``select_t`` is provided to further simplify the use:
     The meta-function ``select`` implements a *short-circuit behavior*. It examines the conditions sequentially, and once it finds a condition that is ``true``, it extracts the next type, and will not continue to examine following conditions.
 
 Variadic Reduction
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 A set of variadic meta-functions are provided to perform reduction over static values.
 

@@ -19,3 +19,4 @@ Contents:
    array_view.rst
    reindexed_view.rst
    meta.rst
+   meta_seq.rst

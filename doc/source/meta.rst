@@ -179,7 +179,6 @@ C++11 provides ``std::conditional`` for static dispatch based on a condition. Ho
 
     #include <type_traits>
 
-
     template<typename T>
     using signed_type =
         typename std::conditional<

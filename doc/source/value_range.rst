@@ -13,9 +13,9 @@ In C++11, the range for-loop syntax is introduced, which allow concise expressio
 
 .. code-block:: cpp
 
-    #include <cppstdx/value_range.hpp>
+    #include <clue/value_range.hpp>
 
-    using namespace cppstdx;
+    using namespace clue;
 
     size_t n = 10
 

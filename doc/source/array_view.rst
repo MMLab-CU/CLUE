@@ -5,9 +5,9 @@ An array view is a light-weight *container-like* wrapper of a pointer and a size
 
 .. code-block:: cpp
 
-    #include <cppstdx/array_view.hpp>
+    #include <clue/array_view.hpp>
 
-    using namespace cppstx;
+    using namespace clue;
 
     int a[] = {1, 2, 3, 4, 5};
 
@@ -20,7 +20,7 @@ In practice, it is not uncommon that you maintain a vector in your object and wo
 
 .. code-block:: cpp
 
-    using namespace cppstdx;
+    using namespace clue;
 
     class A {
     public:

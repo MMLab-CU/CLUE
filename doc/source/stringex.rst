@@ -5,7 +5,7 @@ This library provides a set of functions to complement the methods of ``std::str
 
 .. note::
 
-    To be consistent with the standard, these extended functionalities are provided as global functions (within the namespace ``cppstdx``) instead of member functions.
+    To be consistent with the standard, these extended functionalities are provided as global functions (within the namespace ``clue``) instead of member functions.
 
 
 Make String View

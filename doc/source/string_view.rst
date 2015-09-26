@@ -5,7 +5,7 @@ In the `C++ Extensions for Library Fundamentals (N4480) <http://www.open-std.org
 
 The string views are very useful in practice, especially for those applications that heavily rely on sub-string operations (but don't need to modify the string content). For such applications, string views can be a drop-in replacement of standard strings (*i.e.* instances of ``std::string``) as they provide a similar set of interface, but are generally much more efficient (they don't make copies).
 
-This library provides string view classes, where our implementation strictly follows the `Technical Specification (N4480) <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html>`_, except that all the classes and functions are within the namespace ``cppstdx`` (instead of ``std::experimental``). The standard document for this class is available `here <http://en.cppreference.com/w/cpp/experimental/basic_string_view>`_.
+This library provides string view classes, where our implementation strictly follows the `Technical Specification (N4480) <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html>`_, except that all the classes and functions are within the namespace ``clue`` (instead of ``std::experimental``). The standard document for this class is available `here <http://en.cppreference.com/w/cpp/experimental/basic_string_view>`_.
 
 Below is brief description of the types, their members, and other relevant functions.
 

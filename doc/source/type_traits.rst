@@ -20,7 +20,7 @@ This makes the codes that transform types more concise. In particular, with ``ad
 
     using const_type = add_const_t<my_type>;
 
-In *cppstdx*, we define all these helpers in the header ``<cppstdx/type_traits.hpp>``, so that they can be used within C++11 environment. In particular, the following helpers are provided. All these *backported* helpers are within the namespace ``cppstdx``.
+In *CLUE++*, we define all these helpers in the header ``<clue/type_traits.hpp>``, so that they can be used within C++11 environment. In particular, the following helpers are provided. All these *backported* helpers are within the namespace ``clue``.
 
 **Note:** Below is just a list. For detailed descriptions of these type traits, please refer to the `standard documentation <http://en.cppreference.com/w/cpp/header/type_traits>`_.
 

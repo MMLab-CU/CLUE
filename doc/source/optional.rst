@@ -1,16 +1,16 @@
 Optional (Nullable)
 ====================
 
-In the `C++ Extensions for Library Fundamentals (N4480) <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html>`_, a class template ``optional`` is introduced, which represents objects that may possibly contain a value. Such types are widely provided by modern programming languages (*e.g.* ``Nullable`` in *C#*, ``Maybe`` in *Haskell*, ``Optional`` in *Swift*, and ``Option`` in *Rust*), and have shown their important utility in practice. This library *"backports"* the ``optional`` type to C++11 (within the namespace ``cppstdx``).
+In the `C++ Extensions for Library Fundamentals (N4480) <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html>`_, a class template ``optional`` is introduced, which represents objects that may possibly contain a value. Such types are widely provided by modern programming languages (*e.g.* ``Nullable`` in *C#*, ``Maybe`` in *Haskell*, ``Optional`` in *Swift*, and ``Option`` in *Rust*), and have shown their important utility in practice. This library *"backports"* the ``optional`` type to C++11 (within the namespace ``clue``).
 
 Here is a simple example that illustrates the use of the ``optional`` class.
 
 .. code-block:: cpp
 
     #include <cmath>
-    #include <cppstdx/optional.hpp>
+    #include <clue/optional.hpp>
 
-    using namespace cppstdx;
+    using namespace clue;
 
     inline optional<double> safe_sqrt(double x) {
         return x >= 0.0 ?

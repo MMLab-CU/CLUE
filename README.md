@@ -4,7 +4,7 @@
 
 **Test status:** [![Build Status](https://travis-ci.org/lindahua/CLUE.svg?branch=master)](https://travis-ci.org/lindahua/CLUE)
 
-The library is tested on the following platforms:
+This library requires C++11-compliant compiler. Particularly, it is tested on the following platforms:
 
 - Clang (Apple LLVM version 7.0.0) @ Mac OS X 10.10.5 (Locally)
 - GCC 4.8.1 @ Ubuntu 12.04 (Travis CI)

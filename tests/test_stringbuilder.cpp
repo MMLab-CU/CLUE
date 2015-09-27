@@ -61,6 +61,15 @@ TEST(StringBuilder, WriteStrings) {
 
     string_builder sb;
 
+    sb.write('*', 3);
+
+    ASSERT_FALSE(sb.empty());
+    ASSERT_EQ(short_len, sb.capacity());
+    ASSERT_EQ(3, sb.size());
+    ASSERT_EQ("***", sb.str());
+    ASSERT_EQ(string_view(sb.data(), 3), sb.str_view());
+
+    sb.reset();
     sb.write("clue", 4);
 
     ASSERT_FALSE(sb.empty());
@@ -87,10 +96,7 @@ TEST(StringBuilder, WriteStrings) {
 
     ASSERT_FALSE(sb.empty());
     ASSERT_EQ(70, sb.size());
-
-    std::size_t c = short_len;
-    while (c < sb.size()) c *= 2;
-    ASSERT_EQ(c, sb.capacity());
+    ASSERT_EQ(128, sb.capacity());
     ASSERT_EQ(std::string("clue.") + long_text, sb.str());
     ASSERT_EQ(string_view(sb.data(), sb.size()), sb.str_view());
 
@@ -104,11 +110,7 @@ TEST(StringBuilder, WriteStrings) {
 
     sb.write(long_text2);
 
-    ASSERT_FALSE(sb.empty());
-    ASSERT_EQ(179, sb.size());
-
-    while (c < sb.size()) c *= 2;
-    ASSERT_EQ(c, sb.capacity());
+    ASSERT_EQ(256, sb.capacity());
     ASSERT_EQ(std::string("clue.") + long_text + long_text2, sb.str());
     ASSERT_EQ(string_view(sb.data(), sb.size()), sb.str_view());
 }

@@ -142,19 +142,7 @@ public:
     }
 
     basic_string_builder(const basic_string_builder&) = delete;
-
-    basic_string_builder(basic_string_builder&& r) noexcept :
-        cap_(r.cap_),
-        len_(r.len_),
-        sbuf_(r.sbuf_),
-        buf_(r.buf_) {
-        r.cap_ = short_len_;
-        r.len_ = 0;
-        r.buf_ = r.sbuf_.data();
-    }
-
     basic_string_builder& operator = (const basic_string_builder&) = delete;
-
 
 public:
     // Properties
@@ -188,6 +176,13 @@ public:
     void write(charT c) {
         reserve(len_ + 1);
         buf_[len_++] = c;
+    }
+
+    void write(charT c, size_type n) {
+        reserve(len_ + n);
+        charT *p = buf_ + len_;
+        for (size_type i = 0; i < n; ++i) *(p++) = c;
+        len_ += n;
     }
 
     void write(const charT *s, size_type n) {

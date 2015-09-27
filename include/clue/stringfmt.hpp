@@ -260,7 +260,7 @@ inline size_t format_int(T x, bool pad_zeros, bool plus_sign, size_t width,
     }
 }
 
-}
+} // end namespace details
 
 
 //===============================================
@@ -508,8 +508,6 @@ private:
     }
 
 }; // end class string_builder
-
-
 
 }
 

@@ -59,21 +59,6 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 #
 ###################################
 
-set(EXAMPLES
-    ex_stopwatch
-    ex_timing
-)
-
-foreach (name ${EXAMPLES})
-    add_executable(${name} examples/${name}.cpp)
-endforeach()
-
-###################################
-#
-#  Unit testing
-#
-###################################
-
 set(UNIT_TESTS
     test_optional
     test_string_view
@@ -90,4 +75,33 @@ foreach (tname ${UNIT_TESTS})
     target_link_libraries(${tname} ${GTEST_BOTH_LIBRARIES})
     target_link_libraries(${tname} ${CMAKE_THREAD_LIBS_INIT})
     add_test(NAME ${tname} COMMAND ${tname})
+endforeach()
+
+###################################
+#
+#  Examples
+#
+###################################
+
+set(EXAMPLES
+    ex_stopwatch
+    ex_timing
+)
+
+foreach (name ${EXAMPLES})
+    add_executable(${name} examples/${name}.cpp)
+endforeach()
+
+###################################
+#
+#  Performance evaluation
+#
+###################################
+
+set(PERFS
+    perf_strgrow
+)
+
+foreach (name ${PERFS})
+    add_executable(${name} perf/${name}.cpp)
 endforeach()

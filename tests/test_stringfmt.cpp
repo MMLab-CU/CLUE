@@ -120,22 +120,22 @@ TEST(StringFmt, IntFormat_Dec) {
 
     // formatters
 
-    auto f00 = intfmt();
+    auto f00 = dec();
     ASSERT_EQ(10,    f00.base());
     ASSERT_EQ(false, f00.pad_zeros());
     ASSERT_EQ(false, f00.plus_sign());
 
-    auto f01 = intfmt().plus_sign(true);
+    auto f01 = dec().plus_sign(true);
     ASSERT_EQ(10,    f01.base());
     ASSERT_EQ(false, f01.pad_zeros());
     ASSERT_EQ(true,  f01.plus_sign());
 
-    auto f10 = intfmt().pad_zeros(true);
+    auto f10 = dec().pad_zeros(true);
     ASSERT_EQ(10,    f10.base());
     ASSERT_EQ(true,  f10.pad_zeros());
     ASSERT_EQ(false, f10.plus_sign());
 
-    auto f11 = intfmt().plus_sign(true).pad_zeros(true);
+    auto f11 = dec().plus_sign(true).pad_zeros(true);
     ASSERT_EQ(10,    f11.base());
     ASSERT_EQ(true,  f11.pad_zeros());
     ASSERT_EQ(true,  f11.plus_sign());
@@ -186,22 +186,22 @@ TEST(StringFmt, IntFormat_Oct) {
 
     // formatters
 
-    auto f00 = intfmt(fmt::oct);
+    auto f00 = oct();
     ASSERT_EQ(8,     f00.base());
     ASSERT_EQ(false, f00.pad_zeros());
     ASSERT_EQ(false, f00.plus_sign());
 
-    auto f01 = intfmt(fmt::oct).plus_sign(true);
+    auto f01 = oct().plus_sign(true);
     ASSERT_EQ(8,     f01.base());
     ASSERT_EQ(false, f01.pad_zeros());
     ASSERT_EQ(true,  f01.plus_sign());
 
-    auto f10 = intfmt(fmt::oct).pad_zeros(true);
+    auto f10 = oct().pad_zeros(true);
     ASSERT_EQ(8,     f10.base());
     ASSERT_EQ(true,  f10.pad_zeros());
     ASSERT_EQ(false, f10.plus_sign());
 
-    auto f11 = intfmt(fmt::oct).plus_sign(true).pad_zeros(true);
+    auto f11 = oct().plus_sign(true).pad_zeros(true);
     ASSERT_EQ(8,     f11.base());
     ASSERT_EQ(true,  f11.pad_zeros());
     ASSERT_EQ(true,  f11.plus_sign());
@@ -253,22 +253,22 @@ TEST(StringFmt, IntFormat_Hex) {
 
     // formatters
 
-    auto f00 = intfmt(fmt::hex);
+    auto f00 = hex();
     ASSERT_EQ(16,    f00.base());
     ASSERT_EQ(false, f00.pad_zeros());
     ASSERT_EQ(false, f00.plus_sign());
 
-    auto f01 = intfmt(fmt::hex).plus_sign(true);
+    auto f01 = hex().plus_sign(true);
     ASSERT_EQ(16,    f01.base());
     ASSERT_EQ(false, f01.pad_zeros());
     ASSERT_EQ(true,  f01.plus_sign());
 
-    auto f10 = intfmt(fmt::hex).pad_zeros(true);
+    auto f10 = hex().pad_zeros(true);
     ASSERT_EQ(16,    f10.base());
     ASSERT_EQ(true,  f10.pad_zeros());
     ASSERT_EQ(false, f10.plus_sign());
 
-    auto f11 = intfmt(fmt::hex).plus_sign(true).pad_zeros(true);
+    auto f11 = hex().plus_sign(true).pad_zeros(true);
     ASSERT_EQ(16,    f11.base());
     ASSERT_EQ(true,  f11.pad_zeros());
     ASSERT_EQ(true,  f11.plus_sign());
@@ -320,22 +320,22 @@ TEST(StringFmt, IntFormat_UHex) {
 
     // formatters
 
-    auto f00 = intfmt(fmt::Hex);
+    auto f00 = Hex();
     ASSERT_EQ(16,    f00.base());
     ASSERT_EQ(false, f00.pad_zeros());
     ASSERT_EQ(false, f00.plus_sign());
 
-    auto f01 = intfmt(fmt::Hex).plus_sign(true);
+    auto f01 = Hex().plus_sign(true);
     ASSERT_EQ(16,    f01.base());
     ASSERT_EQ(false, f01.pad_zeros());
     ASSERT_EQ(true,  f01.plus_sign());
 
-    auto f10 = intfmt(fmt::Hex).pad_zeros(true);
+    auto f10 = Hex().pad_zeros(true);
     ASSERT_EQ(16,    f10.base());
     ASSERT_EQ(true,  f10.pad_zeros());
     ASSERT_EQ(false, f10.plus_sign());
 
-    auto f11 = intfmt(fmt::Hex).plus_sign(true).pad_zeros(true);
+    auto f11 = Hex().plus_sign(true).pad_zeros(true);
     ASSERT_EQ(16,    f11.base());
     ASSERT_EQ(true,  f11.pad_zeros());
     ASSERT_EQ(true,  f11.plus_sign());

@@ -45,25 +45,21 @@ namespace fmt {
 struct dec_t {
     static constexpr unsigned int base = 10;
 };
-constexpr dec_t dec{};
 
 // octal integer
 struct oct_t {
     static constexpr unsigned int base = 8;
 };
-constexpr oct_t oct{};
 
 // (lower-case) hexadecimal integer
 struct hex_t {
     static constexpr unsigned int base = 16;
 };
-constexpr hex_t hex{};
 
 // (upper-case) hexadecimal integer
 struct Hex_t {
     static constexpr unsigned int base = 16;
 };
-constexpr Hex_t Hex{};
 
 }
 
@@ -344,23 +340,19 @@ public:
 }; // end class format_spec
 
 
-constexpr integer_formatter<fmt::dec_t> intfmt() noexcept {
+constexpr integer_formatter<fmt::dec_t> dec() noexcept {
     return integer_formatter<fmt::dec_t>();
 }
 
-constexpr integer_formatter<fmt::dec_t> intfmt(fmt::dec_t) noexcept {
-    return integer_formatter<fmt::dec_t>();
-}
-
-constexpr integer_formatter<fmt::oct_t> intfmt(fmt::oct_t) noexcept {
+constexpr integer_formatter<fmt::oct_t> oct() noexcept {
     return integer_formatter<fmt::oct_t>();
 }
 
-constexpr integer_formatter<fmt::hex_t> intfmt(fmt::hex_t) noexcept {
+constexpr integer_formatter<fmt::hex_t> hex() noexcept {
     return integer_formatter<fmt::hex_t>();
 }
 
-constexpr integer_formatter<fmt::Hex_t> intfmt(fmt::Hex_t) noexcept {
+constexpr integer_formatter<fmt::Hex_t> Hex() noexcept {
     return integer_formatter<fmt::Hex_t>();
 }
 

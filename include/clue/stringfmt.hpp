@@ -132,8 +132,9 @@ struct digit_traits<fmt::oct_t> {
 
     template<typename T>
     static T trail_digit(T& x) noexcept {
+        T m = x & 7;
         x >>= 3;
-        return x & 7;
+        return m;
     }
 
     template<typename T>
@@ -158,13 +159,14 @@ struct digit_traits<fmt::hex_t> {
 
     template<typename T>
     static T trail_digit(T& x) noexcept {
+        T m = x & 15;
         x >>= 4;
-        return x & 15;
+        return m;
     }
 
     template<typename T>
     constexpr static char digit2char(T d) noexcept {
-        return d < 10 ? (char)('0' + d) : (char)('a' + d);
+        return d < 10 ? (char)('0' + d) : (char)('a' + (d - 10));
     }
 };
 
@@ -177,12 +179,12 @@ struct digit_traits<fmt::Hex_t> {
 
     template<typename T>
     static T trail_digit(T& x) noexcept {
-        return digit_traits<fmt::Hex_t>::positive_ndigits(x);
+        return digit_traits<fmt::hex_t>::trail_digit(x);
     }
 
     template<typename T>
     constexpr static char digit2char(T d) noexcept {
-        return d < 10 ? (char)('0' + d) : (char)('A' + d);
+        return d < 10 ? (char)('0' + d) : (char)('A' + (d - 10));
     }
 };
 

@@ -63,6 +63,7 @@ set(UNIT_TESTS
     test_optional
     test_string_view
     test_stringex
+    test_stringbuilder
     test_value_range
     test_array_view
     test_reindexed_view

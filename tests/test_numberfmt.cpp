@@ -1,4 +1,4 @@
-#include <clue/stringfmt.hpp>
+#include <clue/numberfmt.hpp>
 #include <vector>
 #include <gtest/gtest.h>
 
@@ -116,7 +116,7 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
 }
 
 
-TEST(StringFmt, IntFormat_Dec) {
+TEST(IntFmt, Dec) {
 
     // formatters
 
@@ -182,7 +182,7 @@ TEST(StringFmt, IntFormat_Dec) {
 }
 
 
-TEST(StringFmt, IntFormat_Oct) {
+TEST(IntFmt, Oct) {
 
     // formatters
 
@@ -249,7 +249,7 @@ TEST(StringFmt, IntFormat_Oct) {
 }
 
 
-TEST(StringFmt, IntFormat_Hex) {
+TEST(IntFmt, Hex) {
 
     // formatters
 
@@ -316,7 +316,7 @@ TEST(StringFmt, IntFormat_Hex) {
 }
 
 
-TEST(StringFmt, IntFormat_UHex) {
+TEST(IntFmt, UHex) {
 
     // formatters
 

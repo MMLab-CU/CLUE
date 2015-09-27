@@ -16,10 +16,9 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
-#include <iostream>
+#include <ostream>
 #include <stdexcept>
 #include <limits>
-
 
 namespace clue {
 

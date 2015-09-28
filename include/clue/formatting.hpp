@@ -3,10 +3,8 @@
 
 #include <clue/type_traits.hpp>
 #include <clue/internal/numfmt.hpp>
-#include <cstdio>
 #include <string>
 #include <cstdarg>
-#include <cstdint>
 #include <stdexcept>
 
 namespace clue {

@@ -2,9 +2,11 @@
 #define CLUE_INTERNAL_NUMFMT__
 
 #include <clue/config.hpp>
+#include <cstdio>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <cstdint>
 
 namespace clue {
 namespace fmt {

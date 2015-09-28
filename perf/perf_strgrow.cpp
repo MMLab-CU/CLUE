@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -153,7 +154,7 @@ private:
             buf_ = (char*)realloc(buf_, sizeof(char) * newcap);
             cap_ = newcap;
         }
-        memcpy(buf_ + len_, s, n * sizeof(char));
+        std::memcpy(buf_ + len_, s, n * sizeof(char));
         len_ += n;
     }
 };

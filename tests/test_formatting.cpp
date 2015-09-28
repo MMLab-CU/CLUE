@@ -90,70 +90,72 @@ template<typename F>
 
 
 
-//inline const char* notation(const fmt::float_formatter<fmt::fixed_t>&, bool up) {
-//    return up ? "F" : "f";
-//}
-//inline const char* notation(const fmt::float_formatter<fmt::sci_t>&, bool up)   {
-//    return up ? "E" : "e";
-//}
-//
-//template<class F>
-//std::string ref_float_format(const F& f, size_t w, double x) {
-//    std::string sfmt(notation(f));
-//    sfmt = std::string(".") + std::to_string(f.precision()) + sfmt;
-//    if (w > 0) {
-//        sfmt = std::to_string(w) + sfmt;
-//        if (f.pad_zeros()) sfmt = std::string("0") + sfmt;
-//    }
-//    if (f.plus_sign()) sfmt = std::string("+") + sfmt;
-//    sfmt = std::string("%") + sfmt;
-//    // std::printf("sfmt = %s\n", sfmt.c_str());
-//    return fmt::sprintf(sfmt.c_str(), x);
-//}
-//
-//template<typename F>
-//::testing::AssertionResult CheckFloatFormat(
-//    const char *fexpr, const char *wexpr, const char *xexpr,
-//    const F& f,  size_t width, double x) {
-//
-//    std::string refstr = ref_float_format(f, width, x);
-//    size_t rl = refstr.size();
-//    size_t fl_max = rl <= 16 ? rl + 1 : rl + 2;
-//
-//    size_t flen = f.formatted_length(x, width);
-//    if (!(flen >= rl && flen <= fl_max)) {
-//        return ::testing::AssertionFailure()
-//            << "Mismatched formatted length for "
-//            << "[" << xexpr << " = " << x << "] "
-//            << "with " << fexpr << ": \n"
-//            << "  notation: " << notation(f) << "\n"
-//            << "  precision: " << f.precision() << "\n"
-//            << "  plus_sign: " << f.plus_sign() << "\n"
-//            << "  pad_zeros: " << f.pad_zeros() << "\n"
-//            << "  width: " << wexpr << "=" << width << "\n"
-//            << "Result:\n"
-//            << "  ACTUAL = " << flen << "\n"
-//            << "  EXPECT = " << refstr.length()
-//            << " (\"" << refstr << "\")";
-//    }
-//
-//    std::string r = format(x, f);
-//    if (!(flen >= rl && flen <= fl_max)) {
-//        return ::testing::AssertionFailure()
-//            << "Mismatched formatted string for "
-//            << "[" << xexpr << " = " << x << "] "
-//            << "with " << fexpr << ": \n"
-//            << "  notation: " << notation(f) << "\n"
-//            << "  precision: " << f.precision() << "\n"
-//            << "  plus_sign: " << f.plus_sign() << "\n"
-//            << "  pad_zeros: " << f.pad_zeros() << "\n"
-//            << "  width: " << wexpr << "=" << width << "\n"
-//            << "Result:\n"
-//            << "  ACTUAL = \"" << r << "\"\n"
-//            << "  EXPECT = \"" << refstr << "\"";
-//    }
-//    return ::testing::AssertionSuccess();
-//}
+inline const char* notation(const fmt::float_formatter<fmt::fixed_t>&, bool up) {
+    return up ? "F" : "f";
+}
+inline const char* notation(const fmt::float_formatter<fmt::sci_t>&, bool up)   {
+    return up ? "E" : "e";
+}
+
+template<class F>
+std::string ref_float_format(const F& f, double x) {
+    std::string sfmt(notation(f, bool(f.flags() & fmt::upper_case)));
+    size_t w = f.width();
+    sfmt = std::string(".") + std::to_string(f.precision()) + sfmt;
+    if (w > 0) {
+        sfmt = std::to_string(w) + sfmt;
+        if (f.flags() & fmt::pad_zeros) sfmt = std::string("0") + sfmt;
+    }
+    if (f.flags() & fmt::plus_sign) sfmt = std::string("+") + sfmt;
+    sfmt = std::string("%") + sfmt;
+    // std::printf("sfmt = %s\n", sfmt.c_str());
+    return fmt::sprintf(sfmt.c_str(), x);
+}
+
+template<typename F>
+::testing::AssertionResult CheckFloatFormat(
+    const char *fexpr, const char *xexpr, const F& f, double x) {
+
+    const char *nch = notation(f, bool(f.flags() & fmt::upper_case));
+    size_t w = f.width();
+    std::string refstr = ref_float_format(f, x);
+    size_t rl = refstr.size();
+    size_t fl_max = rl <= 16 ? rl + 1 : rl + 2;
+
+    size_t flen = f.formatted_length(x);
+    if (!(flen >= rl && flen <= fl_max)) {
+        return ::testing::AssertionFailure()
+            << "Mismatched formatted length for "
+            << "[" << xexpr << " = " << x << "] "
+            << "with " << fexpr << ": \n"
+            << "  notation: " << nch << "\n"
+            << "  precision: " << f.precision() << "\n"
+            << "  plus_sign: " << bool(f.flags() & fmt::plus_sign) << "\n"
+            << "  pad_zeros: " << bool(f.flags() & fmt::pad_zeros) << "\n"
+            << "  width: " << w << "\n"
+            << "Result:\n"
+            << "  ACTUAL = " << flen << "\n"
+            << "  EXPECT = " << refstr.length()
+            << " (\"" << refstr << "\")";
+    }
+
+    std::string r = format(x, f);
+    if (!(flen >= rl && flen <= fl_max)) {
+        return ::testing::AssertionFailure()
+            << "Mismatched formatted string for "
+            << "[" << xexpr << " = " << x << "] "
+            << "with " << fexpr << ": \n"
+            << "  notation: " << nch << "\n"
+            << "  precision: " << f.precision() << "\n"
+            << "  plus_sign: " << bool(f.flags() & fmt::plus_sign) << "\n"
+            << "  pad_zeros: " << bool(f.flags() & fmt::pad_zeros) << "\n"
+            << "  width: " << w << "\n"
+            << "Result:\n"
+            << "  ACTUAL = \"" << r << "\"\n"
+            << "  EXPECT = \"" << refstr << "\"";
+    }
+    return ::testing::AssertionSuccess();
+}
 
 
 // C-string formatting
@@ -254,7 +256,7 @@ void IntFmtTests(const Fmt& fbase, unsigned b) {
                 auto fw = fmt.width(w);
                 ASSERT_EQ(w, fw.width());
                 ASSERT_EQ(fmt.flags(), fw.flags());
-                ASSERT_PRED_FORMAT2(CheckIntFormat, fmt, x);
+                ASSERT_PRED_FORMAT2(CheckIntFormat, fw, x);
             }
         }
     }
@@ -278,140 +280,135 @@ TEST(IntFmt, UHex) {
 
 
 // Floating-point formatting
-//
-//template<class F>
-//void verify_float_formatter(const F& f, size_t p, bool pzeros, bool psign) {
-//    ASSERT_EQ(p, f.precision());
-//    ASSERT_EQ(pzeros, f.pad_zeros());
-//    ASSERT_EQ(psign, f.plus_sign());
-//}
-//
-//std::vector<double> prepare_test_floats() {
-//    std::vector<double> xs;
-//    xs.push_back(0.0);
-//
-//    std::vector<int> pows{1, 2, 3, 4, 6, 8, 12, 16, 32, 64, 128, 200};
-//    for (int i: pows) {
-//        double e = std::pow(10.0, i);
-//        xs.push_back(e);
-//        xs.push_back(0.5134 * e);
-//        xs.push_back(0.9716 * e);
-//        xs.push_back(1.2438 * e);
-//        xs.push_back(3.8752 * e);
-//        xs.push_back(std::nextafter(e, 2.0 * e));
-//        xs.push_back(std::nextafter(e, 0.5 * e));
-//    }
-//    xs.push_back(std::numeric_limits<double>::epsilon());
-//    xs.push_back(std::numeric_limits<double>::infinity());
-//
-//    std::vector<double> xs_aug;
-//    for (double x: xs) {
-//        xs_aug.push_back(x);
-//        xs_aug.push_back(-x);
-//    }
-//    xs_aug.push_back(std::numeric_limits<double>::quiet_NaN());
-//
-//    return xs_aug;
-//}
-//
-//
-//template<class Tag>
-//void batch_test_float_format(const std::vector<fmt::float_formatter<Tag>>& fmts,
-//                     const std::vector<size_t>& ws,
-//                     const std::vector<double>& xs) {
-//
-//    for (const auto& fmt: fmts) {
-//        for (size_t w: ws) {
-//            for (double x: xs) {
-//                ASSERT_PRED_FORMAT3(CheckFloatFormat, fmt, w, x);
-//            }
-//        }
-//    }
-//}
-//
-//
-//template<class Fmt>
-//void FloatFmtTests(const Fmt& fbase) {
-//    // formatters
-//
-//    auto f00 = fbase;
-//    auto f00_0 = f00.precision(0);
-//    auto f00_2 = f00.precision(2);
-//    auto f00_9 = f00.precision(9);
-//
-//    verify_float_formatter(f00,   6, false, false);
-//    verify_float_formatter(f00_0, 0, false, false);
-//    verify_float_formatter(f00_2, 2, false, false);
-//    verify_float_formatter(f00_9, 9, false, false);
-//
-//    auto f01 = fbase.plus_sign(true);
-//    auto f01_0 = f01.precision(0);
-//    auto f01_2 = f01.precision(2);
-//    auto f01_9 = f01.precision(9);
-//
-//    verify_float_formatter(f01,   6, false, true);
-//    verify_float_formatter(f01_0, 0, false, true);
-//    verify_float_formatter(f01_2, 2, false, true);
-//    verify_float_formatter(f01_9, 9, false, true);
-//
-//    auto f10 = fbase.pad_zeros(true);
-//    auto f10_0 = f10.precision(0);
-//    auto f10_2 = f10.precision(2);
-//    auto f10_9 = f10.precision(9);
-//
-//    verify_float_formatter(f10,   6, true, false);
-//    verify_float_formatter(f10_0, 0, true, false);
-//    verify_float_formatter(f10_2, 2, true, false);
-//    verify_float_formatter(f10_9, 9, true, false);
-//
-//    auto f11 = fbase.pad_zeros(true).plus_sign(true);
-//    auto f11_0 = f11.precision(0);
-//    auto f11_2 = f11.precision(2);
-//    auto f11_9 = f11.precision(9);
-//
-//    verify_float_formatter(f11,   6, true, true);
-//    verify_float_formatter(f11_0, 0, true, true);
-//    verify_float_formatter(f11_2, 2, true, true);
-//    verify_float_formatter(f11_9, 9, true, true);
-//
-//    // special case
-//
-//    const double Inf = std::numeric_limits<double>::infinity();
-//    const double NaN = std::numeric_limits<double>::quiet_NaN();
-//
-//    ASSERT_EQ(3, f00.formatted_length(Inf));
-//    ASSERT_EQ(4, f00.formatted_length(-Inf));
-//    ASSERT_EQ(3, f00.formatted_length(NaN));
-//
-//    // combination coverage
-//
-//    std::vector<Fmt> fmts {
-//        f00, f00_0, f00_2, f00_9,
-//        f01, f01_0, f01_2, f01_9,
-//        f10, f10_0, f10_2, f10_9,
-//        f11, f11_0, f11_2, f11_9
-//    };
-//
-//    std::vector<size_t> widths{0, 4, 8, 12, 20};
-//    std::vector<double> xs = prepare_test_floats();
-//
-//    batch_test_float_format(fmts, widths, xs);
-//}
-//
-//
-//TEST(FloatFmt, Fixed) {
-//    FloatFmtTests(fmt::fixed());
-//}
-//
-//TEST(FloatFmt, Sci) {
-//    FloatFmtTests(fmt::sci());
-//}
-//
-//TEST(FloatFmt, UFixed) {
-//    FloatFmtTests(fmt::Fixed());
-//}
-//
-//TEST(FloatFmt, USci) {
-//    FloatFmtTests(fmt::Sci());
-//}
+
+template<class F>
+void verify_float_formatter(const F& f, size_t p, bool pzeros, bool psign) {
+    ASSERT_EQ(p, f.precision());
+    ASSERT_EQ(pzeros, bool(f.flags() & fmt::pad_zeros));
+    ASSERT_EQ(psign,  bool(f.flags() & fmt::plus_sign));
+}
+
+std::vector<double> prepare_test_floats() {
+    std::vector<double> xs;
+    xs.push_back(0.0);
+
+    std::vector<int> pows{1, 2, 3, 4, 6, 8, 12, 16, 32, 64, 128, 200};
+    for (int i: pows) {
+        double e = std::pow(10.0, i);
+        xs.push_back(e);
+        xs.push_back(0.5134 * e);
+        xs.push_back(0.9716 * e);
+        xs.push_back(1.2438 * e);
+        xs.push_back(3.8752 * e);
+        xs.push_back(std::nextafter(e, 2.0 * e));
+        xs.push_back(std::nextafter(e, 0.5 * e));
+    }
+    xs.push_back(std::numeric_limits<double>::epsilon());
+    xs.push_back(std::numeric_limits<double>::infinity());
+
+    std::vector<double> xs_aug;
+    for (double x: xs) {
+        xs_aug.push_back(x);
+        xs_aug.push_back(-x);
+    }
+    xs_aug.push_back(std::numeric_limits<double>::quiet_NaN());
+
+    return xs_aug;
+}
+
+
+template<class Tag>
+void batch_test_float_format(const std::vector<fmt::float_formatter<Tag>>& fmts,
+                     const std::vector<size_t>& ws,
+                     const std::vector<double>& xs) {
+
+    for (const auto& fmt: fmts) {
+        for (size_t w: ws) {
+            for (double x: xs) {
+                auto fw = fmt.width(w);
+                ASSERT_EQ(w, fw.width());
+                ASSERT_EQ(fmt.flags(), fw.flags());
+                ASSERT_PRED_FORMAT2(CheckFloatFormat, fw, x);
+            }
+        }
+    }
+}
+
+
+template<class Fmt>
+void FloatFmtTests(const Fmt& fbase) {
+    // formatters
+
+    auto f00 = fbase;
+    auto f00_0 = f00.precision(0);
+    auto f00_2 = f00.precision(2);
+    auto f00_9 = f00.precision(9);
+
+    verify_float_formatter(f00,   6, false, false);
+    verify_float_formatter(f00_0, 0, false, false);
+    verify_float_formatter(f00_2, 2, false, false);
+    verify_float_formatter(f00_9, 9, false, false);
+
+    auto f01 = fbase | fmt::plus_sign;
+    auto f01_0 = f01.precision(0);
+    auto f01_2 = f01.precision(2);
+    auto f01_9 = f01.precision(9);
+
+    verify_float_formatter(f01,   6, false, true);
+    verify_float_formatter(f01_0, 0, false, true);
+    verify_float_formatter(f01_2, 2, false, true);
+    verify_float_formatter(f01_9, 9, false, true);
+
+    auto f10 = fbase | fmt::pad_zeros;
+    auto f10_0 = f10.precision(0);
+    auto f10_2 = f10.precision(2);
+    auto f10_9 = f10.precision(9);
+
+    verify_float_formatter(f10,   6, true, false);
+    verify_float_formatter(f10_0, 0, true, false);
+    verify_float_formatter(f10_2, 2, true, false);
+    verify_float_formatter(f10_9, 9, true, false);
+
+    auto f11 = fbase | fmt::pad_zeros | fmt::plus_sign;
+    auto f11_0 = f11.precision(0);
+    auto f11_2 = f11.precision(2);
+    auto f11_9 = f11.precision(9);
+
+    verify_float_formatter(f11,   6, true, true);
+    verify_float_formatter(f11_0, 0, true, true);
+    verify_float_formatter(f11_2, 2, true, true);
+    verify_float_formatter(f11_9, 9, true, true);
+
+    // special case
+
+    const double Inf = std::numeric_limits<double>::infinity();
+    const double NaN = std::numeric_limits<double>::quiet_NaN();
+
+    ASSERT_EQ(3, f00.formatted_length(Inf));
+    ASSERT_EQ(4, f00.formatted_length(-Inf));
+    ASSERT_EQ(3, f00.formatted_length(NaN));
+
+    // combination coverage
+
+    std::vector<Fmt> fmts {
+        f00, f00_0, f00_2, f00_9,
+        f01, f01_0, f01_2, f01_9,
+        f10, f10_0, f10_2, f10_9,
+        f11, f11_0, f11_2, f11_9
+    };
+
+    std::vector<size_t> widths{0, 4, 8, 12, 20};
+    std::vector<double> xs = prepare_test_floats();
+
+    batch_test_float_format(fmts, widths, xs);
+}
+
+
+TEST(FloatFmt, Fixed) {
+    FloatFmtTests(fmt::fixed_fmt());
+}
+
+TEST(FloatFmt, Sci) {
+    FloatFmtTests(fmt::sci_fmt());
+}
 

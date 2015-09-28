@@ -224,7 +224,8 @@ public:
             if (sign) *(p++) = sign;
         }
         details::extract_digits(ax, radix_type{}, (bool)(flags_ & upper_case), p, nd);
-        return flen;
+        p[nd] = '\0';
+        return p + nd - buf;
     }
 };
 
@@ -253,31 +254,30 @@ struct float_fmt_traits {};
 
 template<>
 struct float_fmt_traits<fixed_t> {
-    inline size_t fmt_length(double x, size_t precision, bool plus_sign) {
+    static size_t fmt_length(double x, size_t precision, bool plus_sign) noexcept {
         double ax = ::std::abs(x);
         size_t n = 0;
         if (ax < 9.5) {  // 9.5x is possible to rounded up to 10 with low precision setting
             n = 1;
         } else if (ax < 9.22337e18) {
-            uint64_t n = static_cast<uint64_t>(::std::round(ax));
-            n = ndigits(n, dec);
+            uint64_t rint = static_cast<uint64_t>(::std::round(ax));
+            n = ndigits(rint, dec);
         } else {
             n = std::floor(std::log10(ax)) + 2;
         }
-
         if (precision > 0) n += (precision + 1);
         if (::std::signbit(x) || plus_sign) n += 1;
         return n;
     }
 
-    constexpr char printf_sym(bool upper) const {
+    static constexpr char printf_sym(bool upper) noexcept {
         return upper ? 'F' : 'f';
     }
 };
 
 template<>
 struct float_fmt_traits<sci_t> {
-    inline size_t fmt_length(double x, size_t precision, bool plus_sign) {
+    static size_t fmt_length(double x, size_t precision, bool plus_sign) noexcept {
         double ax = ::std::abs(x);
         size_t n = 1;
         if (precision > 0) n += (precision + 1);
@@ -294,7 +294,7 @@ struct float_fmt_traits<sci_t> {
         return n;
     }
 
-    constexpr char printf_sym(bool upper) const {
+    static constexpr char printf_sym(bool upper) noexcept {
         return upper ? 'E' : 'e';
     }
 };
@@ -346,23 +346,47 @@ private:
 public:
     typedef Tag tag_type;
 
-    template<typename T>
-    size_t formatted_length(T x) const noexcept {
-        size_t n = ndigits(x, dec);
-        if (x < 0 || (flags_ & plus_sign)) n++;
-        return n > width_ ? n : width_;
+    // construction & properties
+
+    constexpr float_formatter() noexcept :
+        width_(0), precision_(6), flags_(0) {}
+
+    constexpr float_formatter(size_t width, size_t precision, unsigned flags) :
+        width_(width), precision_(precision), flags_(flags) {}
+
+    constexpr unsigned width() const noexcept { return width_; }
+    constexpr unsigned flags() const noexcept { return flags_; }
+    constexpr unsigned precision() const noexcept { return precision_; }
+
+    constexpr float_formatter width(size_t v) const noexcept {
+        return float_formatter(v, precision_, flags_);
     }
 
+    constexpr float_formatter precision(size_t v) const noexcept {
+        return float_formatter(width_, v, flags_);
+    }
+
+    constexpr float_formatter flags(unsigned v) const noexcept {
+        return float_formatter(width_, precision_, v);
+    }
+
+    constexpr float_formatter operator | (unsigned v) const noexcept {
+        return float_formatter(width_, precision_, flags_ | v);
+    }
+
+    // formatting
+
     size_t formatted_length(double x) const noexcept {
+        size_t n = 0;
         if (::std::isfinite(x)) {
-            return fmt_traits_t::fmt_length(
-                Tag{}, x, precision_, bool(flags_ & upper_case));
+            n = fmt_traits_t::fmt_length(x, precision_, flags_ & plus_sign);
         } else if (::std::isinf(x)) {
-            return ::std::signbit(x) || bool(flags_ & plus_sign) ? 4 : 3;
+            n = ::std::signbit(x) || bool(flags_ & plus_sign) ? 4 : 3;
         } else {
             assert(::std::isnan(x));
-            return 3;
+            n = 3;
         }
+        return n > width_ ? n : width_;
     }
 
     template<typename charT>
@@ -374,6 +398,14 @@ public:
         return n;
     }
 };
+
+constexpr float_formatter<fixed_t> fixed_fmt() noexcept {
+    return float_formatter<fixed_t>();
+}
+
+constexpr float_formatter<sci_t> sci_fmt() noexcept {
+    return float_formatter<sci_t>();
+}
 
 //===============================================
 //

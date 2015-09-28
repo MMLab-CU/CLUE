@@ -7,7 +7,6 @@
 #include <string>
 #include <cstdarg>
 #include <cstdint>
-#include <cassert>
 #include <stdexcept>
 
 namespace clue {

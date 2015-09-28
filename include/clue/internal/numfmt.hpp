@@ -4,6 +4,7 @@
 #include <clue/config.hpp>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 
 namespace clue {
 namespace fmt {

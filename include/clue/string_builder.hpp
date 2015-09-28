@@ -3,6 +3,7 @@
 
 #include <clue/string_view.hpp>
 #include <clue/formatting.hpp>
+#include <cstring>
 #include <array>
 #include <new>  // for bad_alloc
 

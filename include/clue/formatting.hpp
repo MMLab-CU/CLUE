@@ -8,6 +8,7 @@
 #include <cstdarg>
 #include <cmath>
 #include <cstdint>
+#include <cassert>
 
 namespace clue {
 
@@ -356,25 +357,6 @@ public:
     format_write(T x, size_t width, charT *buf, size_t buf_len) const {
         return details::format_int<Tag, T, charT>(x, pad_zeros_, plus_sign_, width, buf, buf_len);
     }
-
-    template<typename T>
-    enable_if_t<::std::is_integral<T>::value, ::std::string>
-    format(T x) const {
-        size_t fmt_len = formatted_length(x);
-        ::std::string s(fmt_len, '\0');
-        format_write(x, 0, const_cast<char*>(s.data()), fmt_len + 1);
-        return ::std::move(s);
-    }
-
-    template<typename T>
-    enable_if_t<::std::is_integral<T>::value, ::std::string>
-    format(T x, size_t width) const {
-        size_t fmt_len = formatted_length(x, width);
-        ::std::string s(fmt_len, '\0');
-        format_write(x, width, const_cast<char*>(s.data()), fmt_len + 1);
-        return ::std::move(s);
-    }
-
 };
 
 constexpr integer_formatter<fmt::dec_t> dec() noexcept {
@@ -447,6 +429,46 @@ constexpr float_formatter<fixed_t> fixed() noexcept {
 
 constexpr float_formatter<sci_t> sci() noexcept {
     return float_formatter<sci_t>();
+}
+
+
+
+// Generic formatting function
+
+template<typename T, typename Fmt>
+struct is_formattable : public ::std::false_type {};
+
+template<typename T, typename Tag>
+struct is_formattable<T, integer_formatter<Tag>> : public ::std::is_integral<T> {};
+
+template<typename T, typename Tag>
+struct is_formattable<T, float_formatter<Tag>> : public ::std::is_arithmetic<T> {};
+
+
+template<typename T, typename Fmt>
+inline enable_if_t<is_formattable<T, Fmt>::value, ::std::string>
+format(const T& x, const Fmt& fmt) {
+    size_t fmt_len = fmt.formatted_length(x);
+    ::std::string s(fmt_len, '\0');
+    size_t wlen = fmt.format_write(x, 0, const_cast<char*>(s.data()), fmt_len + 1);
+    assert(wlen <= fmt_len);
+    if (wlen < fmt_len) {
+        s.resize(wlen);
+    }
+    return ::std::move(s);
+}
+
+template<typename T, typename Fmt>
+inline enable_if_t<is_formattable<T, Fmt>::value, ::std::string>
+format(const T& x, const Fmt& fmt, size_t width) {
+    size_t fmt_len = fmt.formatted_length(x, width);
+    ::std::string s(fmt_len, '\0');
+    size_t wlen = fmt.format_write(x, width, const_cast<char*>(s.data()), fmt_len + 1);
+    assert(wlen <= fmt_len);
+    if (wlen < fmt_len) {
+        s.resize(wlen);
+    }
+    return ::std::move(s);
 }
 
 

@@ -72,7 +72,7 @@ template<typename F>
     const F& f,  size_t width, long x) {
 
     std::string refstr = ref_int_format(f, width, x);
-    std::string r = f.format(x, width);
+    std::string r = format(x, f, width);
     if (refstr != r) {
         return intfmt_assertion_failure(
             "formatted string",
@@ -191,23 +191,23 @@ TEST(IntFmt, Dec) {
 
     // examples check
 
-    ASSERT_EQ("123",    f00.format(123));
-    ASSERT_EQ("   123", f00.format(123, 6));
-    ASSERT_EQ("+123",   f01.format(123));
-    ASSERT_EQ("  +123", f01.format(123, 6));
-    ASSERT_EQ("123",    f10.format(123));
-    ASSERT_EQ("000123", f10.format(123, 6));
-    ASSERT_EQ("+123",   f11.format(123));
-    ASSERT_EQ("+00123", f11.format(123, 6));
+    ASSERT_EQ("123",    fmt::format(123, f00));
+    ASSERT_EQ("   123", fmt::format(123, f00, 6));
+    ASSERT_EQ("+123",   fmt::format(123, f01));
+    ASSERT_EQ("  +123", fmt::format(123, f01, 6));
+    ASSERT_EQ("123",    fmt::format(123, f10));
+    ASSERT_EQ("000123", fmt::format(123, f10, 6));
+    ASSERT_EQ("+123",   fmt::format(123, f11));
+    ASSERT_EQ("+00123", fmt::format(123, f11, 6));
 
-    ASSERT_EQ("-123",   f00.format(-123));
-    ASSERT_EQ("  -123", f00.format(-123, 6));
-    ASSERT_EQ("-123",   f01.format(-123));
-    ASSERT_EQ("  -123", f01.format(-123, 6));
-    ASSERT_EQ("-123",   f10.format(-123));
-    ASSERT_EQ("-00123", f10.format(-123, 6));
-    ASSERT_EQ("-123",   f11.format(-123));
-    ASSERT_EQ("-00123", f11.format(-123, 6));
+    ASSERT_EQ("-123",   fmt::format(-123, f00));
+    ASSERT_EQ("  -123", fmt::format(-123, f00, 6));
+    ASSERT_EQ("-123",   fmt::format(-123, f01));
+    ASSERT_EQ("  -123", fmt::format(-123, f01, 6));
+    ASSERT_EQ("-123",   fmt::format(-123, f10));
+    ASSERT_EQ("-00123", fmt::format(-123, f10, 6));
+    ASSERT_EQ("-123",   fmt::format(-123, f11));
+    ASSERT_EQ("-00123", fmt::format(-123, f11, 6));
 
     // combination coverage
 
@@ -247,23 +247,23 @@ TEST(IntFmt, Oct) {
     // examples check
     // (263)_10 = (407)_8
 
-    ASSERT_EQ("407",    f00.format(263));
-    ASSERT_EQ("   407", f00.format(263, 6));
-    ASSERT_EQ("+407",   f01.format(263));
-    ASSERT_EQ("  +407", f01.format(263, 6));
-    ASSERT_EQ("407",    f10.format(263));
-    ASSERT_EQ("000407", f10.format(263, 6));
-    ASSERT_EQ("+407",   f11.format(263));
-    ASSERT_EQ("+00407", f11.format(263, 6));
+    ASSERT_EQ("407",    fmt::format(263, f00));
+    ASSERT_EQ("   407", fmt::format(263, f00, 6));
+    ASSERT_EQ("+407",   fmt::format(263, f01));
+    ASSERT_EQ("  +407", fmt::format(263, f01, 6));
+    ASSERT_EQ("407",    fmt::format(263, f10));
+    ASSERT_EQ("000407", fmt::format(263, f10, 6));
+    ASSERT_EQ("+407",   fmt::format(263, f11));
+    ASSERT_EQ("+00407", fmt::format(263, f11, 6));
 
-    ASSERT_EQ("-407",   f00.format(-263));
-    ASSERT_EQ("  -407", f00.format(-263, 6));
-    ASSERT_EQ("-407",   f01.format(-263));
-    ASSERT_EQ("  -407", f01.format(-263, 6));
-    ASSERT_EQ("-407",   f10.format(-263));
-    ASSERT_EQ("-00407", f10.format(-263, 6));
-    ASSERT_EQ("-407",   f11.format(-263));
-    ASSERT_EQ("-00407", f11.format(-263, 6));
+    ASSERT_EQ("-407",   fmt::format(-263, f00));
+    ASSERT_EQ("  -407", fmt::format(-263, f00, 6));
+    ASSERT_EQ("-407",   fmt::format(-263, f01));
+    ASSERT_EQ("  -407", fmt::format(-263, f01, 6));
+    ASSERT_EQ("-407",   fmt::format(-263, f10));
+    ASSERT_EQ("-00407", fmt::format(-263, f10, 6));
+    ASSERT_EQ("-407",   fmt::format(-263, f11));
+    ASSERT_EQ("-00407", fmt::format(-263, f11, 6));
 
     // combination coverage
 
@@ -303,23 +303,23 @@ TEST(IntFmt, Hex) {
     // examples check
     // (1234)_10 = (4d2)_16
 
-    ASSERT_EQ("4d2",    f00.format(1234));
-    ASSERT_EQ("   4d2", f00.format(1234, 6));
-    ASSERT_EQ("+4d2",   f01.format(1234));
-    ASSERT_EQ("  +4d2", f01.format(1234, 6));
-    ASSERT_EQ("4d2",    f10.format(1234));
-    ASSERT_EQ("0004d2", f10.format(1234, 6));
-    ASSERT_EQ("+4d2",   f11.format(1234));
-    ASSERT_EQ("+004d2", f11.format(1234, 6));
+    ASSERT_EQ("4d2",    fmt::format(1234, f00));
+    ASSERT_EQ("   4d2", fmt::format(1234, f00, 6));
+    ASSERT_EQ("+4d2",   fmt::format(1234, f01));
+    ASSERT_EQ("  +4d2", fmt::format(1234, f01, 6));
+    ASSERT_EQ("4d2",    fmt::format(1234, f10));
+    ASSERT_EQ("0004d2", fmt::format(1234, f10, 6));
+    ASSERT_EQ("+4d2",   fmt::format(1234, f11));
+    ASSERT_EQ("+004d2", fmt::format(1234, f11, 6));
 
-    ASSERT_EQ("-4d2",   f00.format(-1234));
-    ASSERT_EQ("  -4d2", f00.format(-1234, 6));
-    ASSERT_EQ("-4d2",   f01.format(-1234));
-    ASSERT_EQ("  -4d2", f01.format(-1234, 6));
-    ASSERT_EQ("-4d2",   f10.format(-1234));
-    ASSERT_EQ("-004d2", f10.format(-1234, 6));
-    ASSERT_EQ("-4d2",   f11.format(-1234));
-    ASSERT_EQ("-004d2", f11.format(-1234, 6));
+    ASSERT_EQ("-4d2",   fmt::format(-1234, f00));
+    ASSERT_EQ("  -4d2", fmt::format(-1234, f00, 6));
+    ASSERT_EQ("-4d2",   fmt::format(-1234, f01));
+    ASSERT_EQ("  -4d2", fmt::format(-1234, f01, 6));
+    ASSERT_EQ("-4d2",   fmt::format(-1234, f10));
+    ASSERT_EQ("-004d2", fmt::format(-1234, f10, 6));
+    ASSERT_EQ("-4d2",   fmt::format(-1234, f11));
+    ASSERT_EQ("-004d2", fmt::format(-1234, f11, 6));
 
     // combination coverage
 
@@ -359,23 +359,23 @@ TEST(IntFmt, UHex) {
     // examples check
     // (1234)_10 = (4D2)_16
 
-    ASSERT_EQ("4D2",    f00.format(1234));
-    ASSERT_EQ("   4D2", f00.format(1234, 6));
-    ASSERT_EQ("+4D2",   f01.format(1234));
-    ASSERT_EQ("  +4D2", f01.format(1234, 6));
-    ASSERT_EQ("4D2",    f10.format(1234));
-    ASSERT_EQ("0004D2", f10.format(1234, 6));
-    ASSERT_EQ("+4D2",   f11.format(1234));
-    ASSERT_EQ("+004D2", f11.format(1234, 6));
+    ASSERT_EQ("4D2",    fmt::format(1234, f00));
+    ASSERT_EQ("   4D2", fmt::format(1234, f00, 6));
+    ASSERT_EQ("+4D2",   fmt::format(1234, f01));
+    ASSERT_EQ("  +4D2", fmt::format(1234, f01, 6));
+    ASSERT_EQ("4D2",    fmt::format(1234, f10));
+    ASSERT_EQ("0004D2", fmt::format(1234, f10, 6));
+    ASSERT_EQ("+4D2",   fmt::format(1234, f11));
+    ASSERT_EQ("+004D2", fmt::format(1234, f11, 6));
 
-    ASSERT_EQ("-4D2",   f00.format(-1234));
-    ASSERT_EQ("  -4D2", f00.format(-1234, 6));
-    ASSERT_EQ("-4D2",   f01.format(-1234));
-    ASSERT_EQ("  -4D2", f01.format(-1234, 6));
-    ASSERT_EQ("-4D2",   f10.format(-1234));
-    ASSERT_EQ("-004D2", f10.format(-1234, 6));
-    ASSERT_EQ("-4D2",   f11.format(-1234));
-    ASSERT_EQ("-004D2", f11.format(-1234, 6));
+    ASSERT_EQ("-4D2",   fmt::format(-1234, f00));
+    ASSERT_EQ("  -4D2", fmt::format(-1234, f00, 6));
+    ASSERT_EQ("-4D2",   fmt::format(-1234, f01));
+    ASSERT_EQ("  -4D2", fmt::format(-1234, f01, 6));
+    ASSERT_EQ("-4D2",   fmt::format(-1234, f10));
+    ASSERT_EQ("-004D2", fmt::format(-1234, f10, 6));
+    ASSERT_EQ("-4D2",   fmt::format(-1234, f11));
+    ASSERT_EQ("-004D2", fmt::format(-1234, f11, 6));
 }
 
 

@@ -120,7 +120,7 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
     }
 
     long e = 1;
-    for (size_t k = 0; k < 9; ++k) {
+    for (size_t k = 0; k < m; ++k) {
         long ep = e;
         e *= base;
         xs.push_back(e);

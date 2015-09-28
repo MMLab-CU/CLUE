@@ -64,7 +64,8 @@ set(UNIT_TESTS
     test_string_view
     test_stringex
     test_formatting
-    test_string_builder    
+    test_grisu
+    test_string_builder  
     test_value_range
     test_array_view
     test_reindexed_view

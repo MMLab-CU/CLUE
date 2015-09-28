@@ -251,7 +251,8 @@ inline DiyFp GetCachedPower10(int exp, int *outExp) {
 //
 //===============================================
 
-inline void GrisuRound(char* buffer, int len, uint64_t delta, uint64_t rest, uint64_t ten_kappa, uint64_t wp_w) {
+template<typename charT>
+inline void GrisuRound(charT* buffer, int len, uint64_t delta, uint64_t rest, uint64_t ten_kappa, uint64_t wp_w) {
     while (rest < wp_w && delta - rest >= ten_kappa &&
            (rest + ten_kappa < wp_w ||  /// closer
             wp_w - rest > rest + ten_kappa - wp_w)) {
@@ -272,7 +273,8 @@ inline unsigned CountDecimalDigit32(uint32_t n) {
     return 9;
 }
 
-inline void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, char* buffer, int* len, int* K) {
+template<typename charT>
+inline void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, charT* buffer, int* len, int* K) {
     static const uint32_t kPow10[] = {
         1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000
     };
@@ -298,7 +300,7 @@ inline void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, char* buff
             default:;
         }
         if (d || *len)
-            buffer[(*len)++] = static_cast<char>('0' + static_cast<char>(d));
+            buffer[(*len)++] = u2digit<charT>(d);
         kappa--;
         uint64_t tmp = (static_cast<uint64_t>(p1) << -one.e) + p2;
         if (tmp <= delta) {
@@ -315,7 +317,7 @@ inline void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, char* buff
         delta *= 10;
         char d = static_cast<char>(p2 >> -one.e);
         if (d || *len)
-            buffer[(*len)++] = static_cast<char>('0' + d);
+            buffer[(*len)++] = u2digit<charT>(d);
         p2 &= one.f - 1;
         kappa--;
         if (p2 < delta) {
@@ -328,7 +330,8 @@ inline void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, char* buff
     }
 }
 
-inline void Grisu2(double value, char* buffer, int* length, int* K) {
+template<typename charT>
+inline void Grisu2(double value, charT* buffer, int* length, int* K) {
     const DiyFp v(value);
     DiyFp w_m, w_p;
     v.NormalizedBoundaries(&w_m, &w_p);
@@ -365,57 +368,59 @@ inline charT* WriteExponent(int K_, charT* buffer) {
     return buffer;
 }
 
-inline void Prettify(char* buffer, int length, int k) {
+template<typename charT>
+inline void Prettify(charT* buffer, int length, int k) {
     const int kk = length + k;  // 10^(kk-1) <= v < 10^kk
 
     if (length <= kk && kk <= 21) {
         // 1234e7 -> 12340000000
         for (int i = length; i < kk; i++)
-            buffer[i] = '0';
-        buffer[kk] = '.';
-        buffer[kk + 1] = '0';
-        buffer[kk + 2] = '\0';
+            buffer[i] = (charT)('0');
+        buffer[kk]     = (charT)('.');
+        buffer[kk + 1] = (charT)('0');
+        buffer[kk + 2] = (charT)('\0');
     }
     else if (0 < kk && kk <= 21) {
         // 1234e-2 -> 12.34
-        ::std::memmove(&buffer[kk + 1], &buffer[kk], static_cast<size_t>(length - kk));
-        buffer[kk] = '.';
-        buffer[length + 1] = '\0';
+        ::std::memmove(&buffer[kk + 1], &buffer[kk],
+            static_cast<size_t>(length - kk) * sizeof(charT));
+        buffer[kk] = (charT)('.');
+        buffer[length + 1] = (charT)('\0');
     }
     else if (-6 < kk && kk <= 0) {
         // 1234e-6 -> 0.001234
         const int offset = 2 - kk;
-        ::std::memmove(&buffer[offset], &buffer[0], static_cast<size_t>(length));
-        buffer[0] = '0';
-        buffer[1] = '.';
+        ::std::memmove(&buffer[offset], &buffer[0], static_cast<size_t>(length) * sizeof(charT));
+        buffer[0] = (charT)('0');
+        buffer[1] = (charT)('.');
         for (int i = 2; i < offset; i++)
-            buffer[i] = '0';
-        buffer[length + offset] = '\0';
+            buffer[i] = (charT)('0');
+        buffer[length + offset] = charT('\0');
     }
     else if (length == 1) {
         // 1e30
-        buffer[1] = 'e';
+        buffer[1] = (charT)('e');
         WriteExponent(kk - 1, &buffer[2]);
     }
     else {
         // 1234e30 -> 1.234e33
-        ::std::memmove(&buffer[2], &buffer[1], static_cast<size_t>(length - 1));
-        buffer[1] = '.';
-        buffer[length + 1] = 'e';
+        ::std::memmove(&buffer[2], &buffer[1], static_cast<size_t>(length - 1) * sizeof(charT));
+        buffer[1] = (charT)('.');
+        buffer[length + 1] = (charT)('e');
         WriteExponent(kk - 1, &buffer[0 + length + 2]);
     }
 }
 
-inline void Grisu_DtoA(double value, char* buffer) {
+template<typename charT>
+inline void Grisu_DtoA(double value, charT* buffer) {
     if (::std::isfinite(value)) {
         if (value == 0.0) {  // 0.0 or -0.0
-            if (::std::signbit(value)) *buffer++ = '-';
-            buffer[0] = '0';
-            buffer[1] = '.';
-            buffer[2] = '0';
+            if (::std::signbit(value)) *buffer++ = (charT)('-');
+            static charT zerosrc[4] = {'0', '.', '0', '\0'};
+            ::std::memcpy(buffer, zerosrc, 4 * sizeof(charT));
         } else {
             if (value < 0) {
-                *buffer++ = '-';
+                *buffer++ = (charT)('-');
                 value = -value;
             }
             int length, K;
@@ -423,13 +428,13 @@ inline void Grisu_DtoA(double value, char* buffer) {
             Prettify(buffer, length, K);
         }
     } else if (::std::isinf(value) ) {
-        static char infsrc[4] = {'I', 'n', 'f', '\0'};
-        if (::std::signbit(value)) *buffer++ = '-';
-        ::std::memcpy(buffer, infsrc, 4 * sizeof(char));
+        if (::std::signbit(value)) *buffer++ = (charT)('-');
+        static charT infsrc[4] = {'I', 'n', 'f', '\0'};
+        ::std::memcpy(buffer, infsrc, 4 * sizeof(charT));
     } else {
         CLUE_ASSERT(::std::isnan(value));
-        static char nansrc[4] = {'N', 'a', 'N', '\0'};
-        ::std::memcpy(buffer, nansrc, 4 * sizeof(char));
+        static charT nansrc[4] = {'N', 'a', 'N', '\0'};
+        ::std::memcpy(buffer, nansrc, 4 * sizeof(charT));
     }
 }
 

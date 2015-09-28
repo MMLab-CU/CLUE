@@ -2,11 +2,10 @@
 #define CLUE_FORMATTING__
 
 #include <clue/type_traits.hpp>
-#include <cstdlib>
+#include <clue/internal/numfmt.hpp>
 #include <cstdio>
 #include <string>
 #include <cstdarg>
-#include <cmath>
 #include <cstdint>
 #include <cassert>
 #include <stdexcept>
@@ -71,37 +70,18 @@ hex_t hex{};
 //       negative x would results in undefined behavior.
 //
 template<typename T>
-inline size_t ndigits(T x, dec_t) noexcept {
-    size_t c = 0;
-    while (x >= 10000) {
-        x /= 10000;
-        c += 4;
-    }
-    if (x < 10) c += 1;
-    else if (x < 100) c += 2;
-    else if (x < 1000) c += 3;
-    else c += 4;
-    return c;
+inline size_t ndigits(T x, dec_t) {
+    return details::ndigits_dec(x);
 }
 
 template<typename T>
-inline size_t ndigits(T x, oct_t) noexcept {
-    size_t c = 1;
-    while (x > 7) {
-        x >>= 3;
-        c ++;
-    }
-    return c;
+inline size_t ndigits(T x, oct_t) {
+    return details::ndigits_oct(x);
 }
 
 template<typename T>
-inline size_t ndigits(T x, hex_t) noexcept {
-    size_t c = 1;
-    while (x > 15) {
-        x >>= 4;
-        c ++;
-    }
-    return c;
+inline size_t ndigits(T x, hex_t) {
+    return details::ndigits_hex(x);
 }
 
 
@@ -113,43 +93,18 @@ namespace details {
 //       negative x would result in undefined behavior.
 //
 template<typename T, typename charT>
-inline charT* extract_digits(T x, dec_t, bool upper, charT *buf, size_t n) {
-    size_t m = n - 1;
-    while (m > 0 && x > 9) {
-        T q = x / 10;
-        T r = x - q * 10;
-        buf[m--] = (charT)('0' + r);
-        x = q;
-    }
-    assert(x < 10);
-    buf[m] = (charT)('0' + x);
-    return buf + m;
+inline void extract_digits(T x, dec_t, bool upper, charT *buf, size_t n) {
+    extract_digits_dec(x, buf, n);
 }
 
 template<typename T, typename charT>
-inline charT* extract_digits(T x, oct_t, bool upper, charT *buf, size_t n) {
-    size_t m = n - 1;
-    while (m > 0 && x > 7) {
-        buf[m--] = (charT)('0' + (x & 7));
-        x >>= 3;
-    }
-    assert(x < 8);
-    buf[m] = (charT)('0' + x);
-    return buf + m;
+inline void extract_digits(T x, oct_t, bool upper, charT *buf, size_t n) {
+    extract_digits_oct(x, buf, n);
 }
 
 template<typename T, typename charT>
-inline charT* extract_digits(T x, hex_t, bool upper, charT *buf, size_t n) {
-    size_t m = n - 1;
-    char a = upper ? 'A' : 'a';
-    while (m > 0 && x > 15) {
-        T r = x & 15;
-        buf[m--] = r < 10 ? (charT)('0' + r) : (charT)(a + (r - 10));
-        x >>= 4;
-    }
-    assert(x < 16);
-    buf[m] = x < 10 ? (charT)('0' + x) : (charT)(a + (x - 10));
-    return buf + m;
+inline void extract_digits(T x, hex_t, bool upper, charT *buf, size_t n) {
+    extract_digits_hex(x, upper, buf, n);
 }
 
 } // end namespace details
@@ -255,19 +210,7 @@ struct float_fmt_traits {};
 template<>
 struct float_fmt_traits<fixed_t> {
     static size_t fmt_length(double x, size_t precision, bool plus_sign) noexcept {
-        double ax = ::std::abs(x);
-        size_t n = 0;
-        if (ax < 9.5) {  // 9.5x is possible to rounded up to 10 with low precision setting
-            n = 1;
-        } else if (ax < 9.22337e18) {
-            uint64_t rint = static_cast<uint64_t>(::std::round(ax));
-            n = ndigits(rint, dec);
-        } else {
-            n = std::floor(std::log10(ax)) + 2;
-        }
-        if (precision > 0) n += (precision + 1);
-        if (::std::signbit(x) || plus_sign) n += 1;
-        return n;
+        return fixed_fmt_length(x, precision, plus_sign);
     }
 
     static constexpr char printf_sym(bool upper) noexcept {
@@ -278,20 +221,7 @@ struct float_fmt_traits<fixed_t> {
 template<>
 struct float_fmt_traits<sci_t> {
     static size_t fmt_length(double x, size_t precision, bool plus_sign) noexcept {
-        double ax = ::std::abs(x);
-        size_t n = 1;
-        if (precision > 0) n += (precision + 1);
-        if (::std::signbit(x) || plus_sign) n += 1;
-
-        // exponent part
-        if (ax == 0.0) {
-            n += 4;
-        } else if (ax < 1.0e-99 || ax > 9.0e99) {
-            n += 5;
-        } else {
-            n += 4;
-        }
-        return n;
+        return sci_fmt_length(x, precision, plus_sign);
     }
 
     static constexpr char printf_sym(bool upper) noexcept {
@@ -301,38 +231,18 @@ struct float_fmt_traits<sci_t> {
 
 // buf at least 16 bytes
 template<typename Tag>
-inline const char* float_cfmt(char* buf, size_t width, size_t prec, unsigned int flags) {
+inline void float_cfmt(char* buf, size_t width, size_t prec, unsigned int flags) {
     assert(prec < 100);
     assert(width < 1000);
-    char *p = buf;
-    *p++ = '%';
 
-    // write sign
-    if (flags & plus_sign) *p++ = '+';
+    const bool psign = (bool)(flags & plus_sign);
+    const bool pzeros = (bool)(flags & pad_zeros);
+    const char fsym = float_fmt_traits<Tag>::printf_sym((bool)(flags & upper_case));
 
-    // write width
-    if (width > 0) {
-        if (flags & pad_zeros) *p++ = '0';
-        size_t w_nd = width < 10 ? 1: (width < 100 ? 2: 3);
-        details::extract_digits(width, dec, false, p, w_nd);
-        p += w_nd;
-    }
-
-    // write precision
-    *p++ = '.';
-    size_t p_nd = prec < 10 ? 1 : 2;
-    details::extract_digits(prec, dec, false, p, p_nd);
-    p += p_nd;
-
-    // write symbol
-    *p++ = float_fmt_traits<Tag>::printf_sym(bool(flags & upper_case));
-    *p = '\0';
-    return buf;
+    float_cfmt_impl(buf, fsym, width, prec, psign, pzeros);
 }
 
 } // end namespace details
-
-
 
 
 template<typename Tag>

@@ -21,4 +21,9 @@
 #   endif
 #endif
 
+
+#include <cassert>
+
+#define CLUE_ASSERT(cond) assert(cond)
+
 #endif

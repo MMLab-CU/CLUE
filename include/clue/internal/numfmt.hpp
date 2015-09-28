@@ -2,6 +2,7 @@
 #define CLUE_INTERNAL_NUMFMT__
 
 #include <clue/config.hpp>
+#include <clue/type_traits.hpp>
 #include <cstdio>
 #include <cmath>
 #include <cstdlib>
@@ -13,6 +14,33 @@ namespace fmt {
 namespace details {
 
 using ::std::size_t;
+
+//===============================================
+//
+//  Convert arbitrary integer to unsigned abs
+//
+//===============================================
+
+template<typename T, bool=::std::is_signed<T>::value>
+struct uabs_helper {
+    using U = make_unsigned_t<T>;
+    static constexpr U get(T x) noexcept {
+        return static_cast<U>(x < 0 ? -x : x);
+    };
+};
+
+template<typename T>
+struct uabs_helper<T, false> {
+    static constexpr T get(T x) noexcept {
+        return x;
+    }
+};
+
+template<typename T>
+constexpr make_unsigned_t<T> uabs(T x) noexcept {
+    return uabs_helper<T>::get(x);
+}
+
 
 //===============================================
 //

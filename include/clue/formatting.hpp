@@ -1,7 +1,6 @@
 #ifndef CLUE_FORMATTING__
 #define CLUE_FORMATTING__
 
-#include <clue/type_traits.hpp>
 #include <clue/internal/numfmt.hpp>
 #include <string>
 #include <cstdarg>
@@ -62,23 +61,20 @@ dec_t dec{};
 hex_t hex{};
 
 // ndigits
-//
-// Note: for ndigits, x must be non-negative.
-//       negative x would results in undefined behavior.
-//
+
 template<typename T>
-inline size_t ndigits(T x, dec_t) {
-    return details::ndigits_dec(x);
+inline size_t ndigits(T x, dec_t) noexcept {
+    return details::ndigits_dec(details::uabs(x));
 }
 
 template<typename T>
-inline size_t ndigits(T x, oct_t) {
-    return details::ndigits_oct(x);
+inline size_t ndigits(T x, oct_t) noexcept {
+    return details::ndigits_oct(details::uabs(x));
 }
 
 template<typename T>
 inline size_t ndigits(T x, hex_t) {
-    return details::ndigits_hex(x);
+    return details::ndigits_hex(details::uabs(x));
 }
 
 
@@ -146,14 +142,14 @@ public:
 
     template<typename T>
     size_t formatted_length(T x) const noexcept {
-        size_t n = ndigits(x < 0 ? -x : x, radix_type{});
+        size_t n = ndigits(x, radix_type{});
         if (x < 0 || (flags_ & plus_sign)) n++;
         return n > width_ ? n : width_;
     }
 
     template<typename T, typename charT>
     size_t formatted_write(T x, charT *buf, size_t buf_len) const {
-        T ax = x < 0 ? -x : x;
+        auto ax = details::uabs(x);
         size_t nd = ndigits(ax, radix_type{});
         char sign = x < 0 ? '-' : ((flags_ & plus_sign) ? '+' : '\0');
         size_t flen = nd + (sign ? 1 : 0);

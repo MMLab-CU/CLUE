@@ -266,7 +266,7 @@ struct float_fmt_traits<fixed_t> {
         }
 
         if (precision > 0) n += (precision + 1);
-        if (signbit(x) || plus_sign) n += 1;
+        if (::std::signbit(x) || plus_sign) n += 1;
         return n;
     }
 
@@ -281,7 +281,7 @@ struct float_fmt_traits<sci_t> {
         double ax = ::std::abs(x);
         size_t n = 1;
         if (precision > 0) n += (precision + 1);
-        if (signbit(x) || plus_sign) n += 1;
+        if (::std::signbit(x) || plus_sign) n += 1;
 
         // exponent part
         if (ax == 0.0) {

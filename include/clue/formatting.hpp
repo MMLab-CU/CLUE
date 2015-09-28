@@ -275,19 +275,19 @@ inline size_t format_int(T x, bool pad_zeros, bool plus_sign, size_t width,
 // Floating-point formatting
 
 inline size_t float_intpart_ndigits(double x) {
-    if (x < 10.0) {
+    if (x < 9.5) {  // 9.5x is possible to rounded up to 10 with low precision setting
         return 1;
     } else if (x < 9.22337e18) {
-        uint64_t n = static_cast<uint64_t>(x);
+        uint64_t n = static_cast<uint64_t>(::std::round(x));
         return digit_traits<fmt::dec_t>::positive_ndigits(n);
     } else {
-        return std::floor(std::log10(x)) + 1;
+        return std::floor(std::log10(x)) + 2;
     }
 }
 
 inline size_t float_formatted_length(fmt::fixed_t, double x, size_t precision, bool plus_sign) {
     // precondition: x is finite
-    return (plus_sign || ::std::signbit(x) ? 0 : 1) +  // sign
+    return (plus_sign || ::std::signbit(x) ? 1 : 0) +  // sign
         float_intpart_ndigits(::std::abs(x)) +      // unsigned integer part
         (precision > 0 ? precision + 1 : 0);        // fractional part
 }
@@ -297,7 +297,7 @@ inline size_t float_formatted_length(fmt::sci_t, double x, size_t precision, boo
     double ax = ::std::abs(x);
     return (plus_sign || ::std::signbit(x) ? 2 : 1) +            // integer part
         (precision > 0 ? precision + 1 : 0) +                    // fractional part
-        (ax == 0.0 ? 4 : (ax < 1.0e-99 || x > 9.0e99 ? 5: 4));   // exponent part
+        (ax == 0.0 ? 4 : (ax < 1.0e-99 || ax > 9.0e99 ? 5: 4));   // exponent part
 }
 
 } // end namespace details
@@ -420,7 +420,21 @@ public:
     template<typename T>
     enable_if_t<::std::is_arithmetic<T>::value, size_t>
     formatted_length(T x) const noexcept {
-        return details::float_formatted_length(Tag{}, x, precision_, plus_sign_);
+        if (::std::isfinite(x)) {
+            return details::float_formatted_length(Tag{}, x, precision_, plus_sign_);
+        } else if (::std::isinf(x)) {
+            return ::std::signbit(x) || plus_sign_ ? 4 : 3;
+        } else {
+            assert(::std::isnan(x));
+            return 3;
+        }
+    }
+
+    template<typename T>
+    enable_if_t<::std::is_arithmetic<T>::value, size_t>
+    formatted_length(T x, size_t width) const noexcept {
+        size_t n = formatted_length(x);
+        return n > width ? n : width;
     }
 };
 

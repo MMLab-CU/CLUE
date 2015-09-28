@@ -293,7 +293,7 @@ public:
         } else if (::std::isinf(x)) {
             n = ::std::signbit(x) || bool(flags_ & plus_sign) ? 4 : 3;
         } else {
-            assert(::std::isnan(x));
+            CLUE_ASSERT(::std::isnan(x));
             n = plus_sign ? 4 : 3;
         }
         return n > width_ ? n : width_;
@@ -304,7 +304,7 @@ public:
         char cfmt[16];
         details::float_cfmt<Tag>(cfmt, width_, precision_, flags_);
         size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
-        assert(n < buf_len);
+        CLUE_ASSERT(n < buf_len);
         return n;
     }
 };
@@ -342,7 +342,7 @@ format(const T& x, const Fmt& fmt) {
     size_t fmt_len = fmt.formatted_length(x);
     ::std::string s(fmt_len, '\0');
     size_t wlen = fmt.formatted_write(x, const_cast<char*>(s.data()), fmt_len + 1);
-    assert(wlen <= fmt_len);
+    CLUE_ASSERT(wlen <= fmt_len);
     if (wlen < fmt_len) {
         s.resize(wlen);
     }

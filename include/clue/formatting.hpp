@@ -35,321 +35,345 @@ inline ::std::string sprintf(const char *fmt, ...) {
     return ::std::move(str);
 }
 
+//===============================================
+//
+//  Number formatting flags
+//
+//===============================================
+
+constexpr unsigned int upper_case = 0x01;
+constexpr unsigned int pad_zeros  = 0x02;
+constexpr unsigned int plus_sign  = 0x04;
+constexpr unsigned int left_just  = 0x08;
 
 //===============================================
 //
-//  Formatting tags
+//  Integer formatting
 //
 //===============================================
 
+template<unsigned int N>
+struct radix_t : ::std::integral_constant<unsigned int, N> {};
 
-// decimal integer
-struct dec_t {
-    static constexpr unsigned int base = 10;
-};
+using bin_t = radix_t<2>;
+using oct_t = radix_t<8>;
+using dec_t = radix_t<10>;
+using hex_t = radix_t<16>;
 
-// octal integer
-struct oct_t {
-    static constexpr unsigned int base = 8;
-};
+bin_t bin{};
+oct_t oct{};
+dec_t dec{};
+hex_t hex{};
 
-// (lower-case) hexadecimal integer
-struct hex_t {
-    static constexpr unsigned int base = 16;
-};
-
-// (upper-case) hexadecimal integer
-struct Hex_t {
-    static constexpr unsigned int base = 16;
-};
-
-
-// fixed-point notation
-struct fixed_t {};
-struct Fixed_t {};
-
-// scientific notation
-struct sci_t {};
-struct Sci_t {};
-
-
-//===============================================
+// ndigits
 //
-//  Formatting details
+// Note: for ndigits, x must be non-negative.
+//       negative x would results in undefined behavior.
 //
-//===============================================
+template<typename T>
+inline size_t ndigits(T x, dec_t) noexcept {
+    size_t c = 0;
+    while (x >= 10000) {
+        x /= 10000;
+        c += 4;
+    }
+    if (x < 10) c += 1;
+    else if (x < 100) c += 2;
+    else if (x < 1000) c += 3;
+    else c += 4;
+    return c;
+}
+
+template<typename T>
+inline size_t ndigits(T x, oct_t) noexcept {
+    size_t c = 1;
+    while (x > 7) {
+        x >>= 3;
+        c ++;
+    }
+    return c;
+}
+
+template<typename T>
+inline size_t ndigits(T x, hex_t) noexcept {
+    size_t c = 1;
+    while (x > 15) {
+        x >>= 4;
+        c ++;
+    }
+    return c;
+}
+
 
 namespace details {
 
-template<typename charT>
-inline charT* fill_chars(size_t n, charT ch, charT *buf) {
-    for (size_t i = 0; i < n; ++i)
-        buf[i] = ch;
-    return buf + n;
+// extract_digits
+//
+// Note: for extract_digits, x must be non-negative.
+//       negative x would result in undefined behavior.
+//
+template<typename T, typename charT>
+inline charT* extract_digits(T x, dec_t, bool upper, charT *buf, size_t n) {
+    size_t m = n - 1;
+    while (m > 0 && x > 9) {
+        T q = x / 10;
+        T r = x - q * 10;
+        buf[m--] = (charT)('0' + r);
+        x = q;
+    }
+    assert(x < 10);
+    buf[m] = (charT)('0' + x);
+    return buf + m;
 }
 
-// Digit traits
+template<typename T, typename charT>
+inline charT* extract_digits(T x, oct_t, bool upper, charT *buf, size_t n) {
+    size_t m = n - 1;
+    while (m > 0 && x > 7) {
+        buf[m--] = (charT)('0' + (x & 7));
+        x >>= 3;
+    }
+    assert(x < 8);
+    buf[m] = (charT)('0' + x);
+    return buf + m;
+}
+
+template<typename T, typename charT>
+inline charT* extract_digits(T x, hex_t, bool upper, charT *buf, size_t n) {
+    size_t m = n - 1;
+    char a = upper ? 'A' : 'a';
+    while (m > 0 && x > 15) {
+        T r = x & 15;
+        buf[m--] = r < 10 ? (charT)('0' + r) : (charT)(a + (r - 10));
+        x >>= 4;
+    }
+    assert(x < 16);
+    buf[m] = x < 10 ? (charT)('0' + x) : (charT)(a + (x - 10));
+    return buf + m;
+}
+
+} // end namespace details
+
+
+// length of formatted integer
+
+template<unsigned int N>
+class int_formatter {
+private:
+    size_t width_;
+    unsigned int flags_;
+
+public:
+    static constexpr unsigned int radix_value = N;
+    typedef radix_t<N> radix_type;
+
+    // construction & properties
+
+    constexpr int_formatter() noexcept :
+        width_(0), flags_(0) {}
+
+    constexpr int_formatter(size_t width, unsigned flags) :
+        width_(width), flags_(flags) {}
+
+    constexpr unsigned width() const noexcept { return width_; }
+    constexpr unsigned flags() const noexcept { return flags_; }
+
+    constexpr int_formatter width(size_t v) const noexcept {
+        return int_formatter(v, flags_);
+    }
+
+    constexpr int_formatter flags(unsigned v) const noexcept {
+        return int_formatter(width_, v);
+    }
+
+    constexpr int_formatter operator | (unsigned v) const noexcept {
+        return int_formatter(width_, flags_ | v);
+    }
+
+    // formatting
+
+    template<typename T>
+    size_t formatted_length(T x) const noexcept {
+        size_t n = ndigits(x < 0 ? -x : x, radix_type{});
+        if (x < 0 || (flags_ & plus_sign)) n++;
+        return n > width_ ? n : width_;
+    }
+
+    template<typename T, typename charT>
+    size_t formatted_write(T x, charT *buf, size_t buf_len) const {
+        T ax = x < 0 ? -x : x;
+        size_t nd = ndigits(ax, radix_type{});
+        char sign = x < 0 ? '-' : ((flags_ & plus_sign) ? '+' : '\0');
+        size_t flen = nd + (sign ? 1 : 0);
+        assert(buf_len > flen);
+
+        charT *p = buf;
+        if (width_ > flen) {
+            size_t plen = width_ - flen;
+            if (flags_ & pad_zeros) {
+                // pad zeros
+                if (sign) *(p++) = sign;
+                for (size_t i = 0; i < plen; ++i) *(p++) = (charT)('0');
+            } else {
+                // pad empty
+                for (size_t i = 0; i < plen; ++i) *(p++) = (charT)(' ');
+                if (sign) *(p++) = sign;
+            }
+        } else {
+            // no padding
+            if (sign) *(p++) = sign;
+        }
+        details::extract_digits(ax, radix_type{}, (bool)(flags_ & upper_case), p, nd);
+        return flen;
+    }
+};
+
+constexpr int_formatter<8>  oct_fmt() noexcept { return int_formatter<8>();  }
+constexpr int_formatter<10> dec_fmt() noexcept { return int_formatter<10>(); }
+constexpr int_formatter<16> hex_fmt() noexcept { return int_formatter<16>(); }
+
+
+//===============================================
+//
+//  Floating-point formatting
+//
+//===============================================
+
+// fixed-point notation
+struct fixed_t {};
+
+// scientific notation
+struct sci_t {};
+
+
+namespace details {
 
 template<typename Tag>
-struct digit_traits;
+struct float_fmt_traits {};
 
 template<>
-struct digit_traits<dec_t> {
-    template<typename T>
-    static size_t positive_ndigits(T x) noexcept {
-        // precondition: x > 0
-        size_t c = 0;
-        while (x >= 10000) {
-            x /= 10000;
-            c += 4;
-        }
-        if (x < 10) c += 1;
-        else if (x < 100) c += 2;
-        else if (x < 1000) c += 3;
-        else c += 4;
-        return c;
-    }
-
-    template<typename T>
-    static T trail_digit(T& x) noexcept {
-        T q = x / 10;
-        T m = x - q * 10;
-        x = q;
-        return m;
-    }
-
-    template<typename T>
-    static char digit2char(T d) noexcept {
-        return (char)('0' + d);
-    }
-};
-
-template<>
-struct digit_traits<oct_t> {
-    template<typename T>
-    static size_t positive_ndigits(T x) noexcept {
-        // precondition: x > 0
-        size_t c = 0;
-        while (x > 0) {
-            x >>= 3;
-            c ++;
-        }
-        return c;
-    }
-
-    template<typename T>
-    static T trail_digit(T& x) noexcept {
-        T m = x & 7;
-        x >>= 3;
-        return m;
-    }
-
-    template<typename T>
-    static char digit2char(T d) noexcept {
-        return (char)('0' + d);
-    }
-};
-
-
-template<>
-struct digit_traits<hex_t> {
-    template<typename T>
-    static size_t positive_ndigits(T x) noexcept {
-        // precondition: x > 0
-        size_t c = 0;
-        while (x > 0) {
-            x >>= 4;
-            c ++;
-        }
-        return c;
-    }
-
-    template<typename T>
-    static T trail_digit(T& x) noexcept {
-        T m = x & 15;
-        x >>= 4;
-        return m;
-    }
-
-    template<typename T>
-    constexpr static char digit2char(T d) noexcept {
-        return d < 10 ? (char)('0' + d) : (char)('a' + (d - 10));
-    }
-};
-
-template<>
-struct digit_traits<Hex_t> {
-    template<typename T>
-    static size_t positive_ndigits(T x) noexcept {
-        return digit_traits<hex_t>::positive_ndigits(x);
-    }
-
-    template<typename T>
-    static T trail_digit(T& x) noexcept {
-        return digit_traits<hex_t>::trail_digit(x);
-    }
-
-    template<typename T>
-    constexpr static char digit2char(T d) noexcept {
-        return d < 10 ? (char)('0' + d) : (char)('A' + (d - 10));
-    }
-};
-
-
-// Integer formatting
-
-template<typename Tag, typename T>
-inline size_t int_formatted_length(T x, bool plus_sign) {
-    // integer format length (no padding)
-    if (x >= 0) {
-        size_t n = (x == 0 ? 1 : digit_traits<Tag>::positive_ndigits(x));
-        return plus_sign ? n + 1 : n;
-    } else {
-        return digit_traits<Tag>::positive_ndigits(-x) + 1;
-    }
-}
-
-template<typename Tag, typename T, typename charT>
-inline void write_digits(T x, size_t nd, charT *buf) noexcept {
-    size_t m = nd - 1;
-    for (size_t i = 0; i < m; ++i) {
-        T d = digit_traits<Tag>::trail_digit(x);
-        buf[m - i] = (charT)digit_traits<Tag>::digit2char(d);
-    }
-    buf[0] = (charT)digit_traits<Tag>::digit2char(x);
-}
-
-template<typename Tag, typename T, typename charT>
-inline size_t _format_int(T x, char sign, size_t nd, size_t width, bool pad_zeros_, charT *buf) {
-    // precondition: x >= 0
-    // nd: the number of digits in x
-    // width: minimum width
-
-    if (sign == '\0') {
-        size_t len = nd;
-        if (width > nd) {
-            buf = fill_chars(width - nd, (charT)(pad_zeros_ ? '0' : ' '), buf);
-            len = width;
-        }
-        write_digits<Tag, T, charT>(x, nd, buf);
-        buf[nd] = (charT)('\0');
-        return len;
-    } else {
-        size_t len = nd + 1;
-        if (width > len) {
-            if (pad_zeros_) {
-                *buf++ = (charT)(sign);
-                buf = fill_chars(width - len, (charT)('0'), buf);
-            } else {
-                buf = fill_chars(width - len, (charT)(' '), buf);
-                *buf++ = (charT)(sign);
-            }
-            len = width;
+struct float_fmt_traits<fixed_t> {
+    inline size_t fmt_length(double x, size_t precision, bool plus_sign) {
+        double ax = ::std::abs(x);
+        size_t n = 0;
+        if (ax < 9.5) {  // 9.5x is possible to rounded up to 10 with low precision setting
+            n = 1;
+        } else if (ax < 9.22337e18) {
+            uint64_t n = static_cast<uint64_t>(::std::round(ax));
+            n = ndigits(n, dec);
         } else {
-            *buf++ = (charT)(sign);
+            n = std::floor(std::log10(ax)) + 2;
         }
-        write_digits<Tag, T, charT>(x, nd, buf);
-        buf[nd] = (charT)('\0');
-        return len;
+
+        if (precision > 0) n += (precision + 1);
+        if (signbit(x) || plus_sign) n += 1;
+        return n;
     }
-}
 
-template<typename Tag, typename T, typename charT>
-inline size_t format_int(T x, bool pad_zeros, bool plus_sign, size_t width,
-                         charT *buf, size_t buf_len) {
-    if (x >= 0) {
-        size_t nd = (x == 0 ? 1 : digit_traits<Tag>::positive_ndigits(x));
-        char sign = plus_sign ? '+' : '\0';
-        size_t fmtLen = nd + static_cast<size_t>(plus_sign);
-        if (buf_len < fmtLen + 1)
-            throw ::std::invalid_argument("intfmt::format: buffer too small.");
-        return _format_int<Tag, T, charT>(x, sign, nd, width, pad_zeros, buf);
-    } else {
-        T mx = -x;
-        size_t nd = digit_traits<Tag>::positive_ndigits(mx);
-        size_t fmtLen = nd + 1;
-        if (buf_len < fmtLen + 1)
-            throw ::std::invalid_argument("intfmt::format: buffer too small.");
-        return _format_int<Tag, T, charT>(mx, '-', nd, width, pad_zeros, buf);
+    constexpr char printf_sym(bool upper) const {
+        return upper ? 'F' : 'f';
     }
-}
+};
 
-// Floating-point formatting
+template<>
+struct float_fmt_traits<sci_t> {
+    inline size_t fmt_length(double x, size_t precision, bool plus_sign) {
+        double ax = ::std::abs(x);
+        size_t n = 1;
+        if (precision > 0) n += (precision + 1);
+        if (signbit(x) || plus_sign) n += 1;
 
-inline size_t float_intpart_ndigits(double x) {
-    if (x < 9.5) {  // 9.5x is possible to rounded up to 10 with low precision setting
-        return 1;
-    } else if (x < 9.22337e18) {
-        uint64_t n = static_cast<uint64_t>(::std::round(x));
-        return digit_traits<fmt::dec_t>::positive_ndigits(n);
-    } else {
-        return std::floor(std::log10(x)) + 2;
+        // exponent part
+        if (ax == 0.0) {
+            n += 4;
+        } else if (ax < 1.0e-99 || ax > 9.0e99) {
+            n += 5;
+        } else {
+            n += 4;
+        }
+        return n;
     }
-}
 
-inline size_t float_formatted_length(fixed_t, double x, size_t precision, bool plus_sign) {
-    // precondition: x is finite
-    return (plus_sign || ::std::signbit(x) ? 1 : 0) +  // sign
-        float_intpart_ndigits(::std::abs(x)) +      // unsigned integer part
-        (precision > 0 ? precision + 1 : 0);        // fractional part
-}
-
-inline size_t float_formatted_length(Fixed_t, double x, size_t precision, bool plus_sign) {
-    return float_formatted_length(fixed_t{}, x, precision, plus_sign);
-}
-
-inline size_t float_formatted_length(sci_t, double x, size_t precision, bool plus_sign) {
-    // precondition: x is finite
-    double ax = ::std::abs(x);
-    return (plus_sign || ::std::signbit(x) ? 2 : 1) +            // integer part
-        (precision > 0 ? precision + 1 : 0) +                    // fractional part
-        (ax == 0.0 ? 4 : (ax < 1.0e-99 || ax > 9.0e99 ? 5: 4));   // exponent part
-}
-
-inline size_t float_formatted_length(Sci_t, double x, size_t precision, bool plus_sign) {
-    return float_formatted_length(sci_t{}, x, precision, plus_sign);
-}
-
-
-constexpr char _printf_csym(fixed_t) noexcept { return 'f'; };
-constexpr char _printf_csym(Fixed_t) noexcept { return 'F'; };
-constexpr char _printf_csym(sci_t)   noexcept { return 'e'; };
-constexpr char _printf_csym(Sci_t)   noexcept { return 'E'; };
+    constexpr char printf_sym(bool upper) const {
+        return upper ? 'E' : 'e';
+    }
+};
 
 // buf at least 16 bytes
 template<typename Tag>
-inline const char* float_cfmt(Tag, char* buf, unsigned prec, bool pzeros, bool psign, unsigned width) {
+inline const char* float_cfmt(char* buf, size_t width, size_t prec, unsigned int flags) {
     assert(prec < 100);
     assert(width < 1000);
     char *p = buf;
     *p++ = '%';
 
     // write sign
-    if (psign) *p++ = '+';
+    if (flags & plus_sign) *p++ = '+';
 
     // write width
     if (width > 0) {
-        if (pzeros) *p++ = '0';
+        if (flags & pad_zeros) *p++ = '0';
         size_t w_nd = width < 10 ? 1: (width < 100 ? 2: 3);
-        write_digits<dec_t, unsigned, char>(width, w_nd, p);
+        details::extract_digits(width, dec, false, p, w_nd);
         p += w_nd;
     }
 
     // write precision
     *p++ = '.';
     size_t p_nd = prec < 10 ? 1 : 2;
-    write_digits<dec_t, unsigned, char>(prec, p_nd, p);
+    details::extract_digits(prec, dec, false, p, p_nd);
     p += p_nd;
 
     // write symbol
-    *p++ = _printf_csym(Tag{});
+    *p++ = float_fmt_traits<Tag>::printf_sym(bool(flags & upper_case));
     *p = '\0';
     return buf;
 }
 
-
 } // end namespace details
 
+
+
+
+template<typename Tag>
+class float_formatter {
+private:
+    typedef details::float_fmt_traits<Tag> fmt_traits_t;
+    size_t width_;
+    size_t precision_;
+    unsigned int flags_;
+
+public:
+    typedef Tag tag_type;
+
+    template<typename T>
+    size_t formatted_length(T x) const noexcept {
+        size_t n = ndigits(x, dec);
+        if (x < 0 || (flags_ & plus_sign)) n++;
+        return n > width_ ? n : width_;
+    }
+
+    size_t formatted_length(double x) const noexcept {
+        if (::std::isfinite(x)) {
+            return fmt_traits_t::fmt_length(
+                Tag{}, x, precision_, bool(flags_ & upper_case));
+        } else if (::std::isinf(x)) {
+            return ::std::signbit(x) || bool(flags_ & plus_sign) ? 4 : 3;
+        } else {
+            assert(::std::isnan(x));
+            return 3;
+        }
+    }
+
+    template<typename charT>
+    size_t formatted_write(double x, charT *buf, size_t buf_len) const {
+        char cfmt[16];
+        details::float_cfmt<Tag>(cfmt, width_, precision_, flags_);
+        size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
+        assert(n < buf_len);
+        return n;
+    }
+};
 
 //===============================================
 //
@@ -357,161 +381,14 @@ inline const char* float_cfmt(Tag, char* buf, unsigned prec, bool pzeros, bool p
 //
 //===============================================
 
-template<typename Tag>
-class integer_formatter {
-private:
-    using size_t = ::std::size_t;
-    bool pad_zeros_;
-    bool plus_sign_;
-
-public:
-    constexpr integer_formatter() noexcept :
-        pad_zeros_(false),
-        plus_sign_(false) {}
-
-    constexpr integer_formatter(bool pzeros, bool psign) noexcept :
-        pad_zeros_(pzeros),
-        plus_sign_(psign) {}
-
-    constexpr size_t base() const noexcept {
-        return Tag::base;
-    }
-
-    constexpr bool pad_zeros() const noexcept { return pad_zeros_; }
-    constexpr bool plus_sign() const noexcept { return plus_sign_; }
-
-    constexpr integer_formatter pad_zeros(bool v) const noexcept {
-        return integer_formatter(v, plus_sign_);
-    }
-
-    constexpr integer_formatter plus_sign(bool v) const noexcept {
-        return integer_formatter(pad_zeros_, v);
-    }
-
-    template<typename T>
-    enable_if_t<::std::is_integral<T>::value, size_t>
-    formatted_length(T x) const noexcept {
-        return details::int_formatted_length<Tag, T>(x, plus_sign_);
-    }
-
-    template<typename T>
-    enable_if_t<::std::is_integral<T>::value, size_t>
-    formatted_length(T x, size_t width) const noexcept {
-        size_t n = formatted_length(x);
-        return n > width ? n : width;
-    }
-
-    template<typename charT, typename T>
-    enable_if_t<::std::is_integral<T>::value, size_t>
-    format_write(T x, size_t width, charT *buf, size_t buf_len) const {
-        return details::format_int<Tag, T, charT>(x, pad_zeros_, plus_sign_, width, buf, buf_len);
-    }
-};
-
-constexpr integer_formatter<fmt::dec_t> dec() noexcept {
-    return integer_formatter<fmt::dec_t>();
-}
-
-constexpr integer_formatter<fmt::oct_t> oct() noexcept {
-    return integer_formatter<fmt::oct_t>();
-}
-
-constexpr integer_formatter<fmt::hex_t> hex() noexcept {
-    return integer_formatter<fmt::hex_t>();
-}
-
-constexpr integer_formatter<fmt::Hex_t> Hex() noexcept {
-    return integer_formatter<fmt::Hex_t>();
-}
-
-//===============================================
-//
-//  floating point format specifiers
-//
-//===============================================
-
-template<typename Tag>
-class float_formatter {
-private:
-    using size_t = ::std::size_t;
-    size_t precision_;
-    bool pad_zeros_;
-    bool plus_sign_;
-
-public:
-    constexpr float_formatter() :
-        precision_(6),
-        pad_zeros_(false),
-        plus_sign_(false) {}
-
-    constexpr float_formatter(size_t prec, bool pzeros, bool psign) :
-        precision_(prec),
-        pad_zeros_(pzeros),
-        plus_sign_(psign) {}
-
-    constexpr size_t precision() const noexcept { return precision_; }
-    constexpr bool pad_zeros() const noexcept { return pad_zeros_; }
-    constexpr bool plus_sign() const noexcept { return plus_sign_; }
-
-    constexpr float_formatter precision(size_t v) const noexcept {
-        return float_formatter(v, pad_zeros_, plus_sign_);
-    }
-
-    constexpr float_formatter pad_zeros(bool v) const noexcept {
-        return float_formatter(precision_, v, plus_sign_);
-    }
-
-    constexpr float_formatter plus_sign(bool v) const noexcept {
-        return float_formatter(precision_, pad_zeros_, v);
-    }
-
-    size_t formatted_length(double x) const noexcept {
-        if (::std::isfinite(x)) {
-            return details::float_formatted_length(Tag{}, x, precision_, plus_sign_);
-        } else if (::std::isinf(x)) {
-            return ::std::signbit(x) || plus_sign_ ? 4 : 3;
-        } else {
-            assert(::std::isnan(x));
-            return 3;
-        }
-    }
-
-    size_t formatted_length(double x, size_t width) const noexcept {
-        size_t n = formatted_length(x);
-        return n > width ? n : width;
-    }
-
-    size_t format_write(double x, size_t width, char *buf, size_t buf_len) const {
-        char cfmt[16];
-        details::float_cfmt(Tag{}, cfmt, precision_, pad_zeros_, plus_sign_, width);
-        return (size_t)::std::snprintf(buf, buf_len, cfmt, x);
-    }
-};
-
-constexpr float_formatter<fixed_t> fixed() noexcept {
-    return float_formatter<fixed_t>();
-}
-
-constexpr float_formatter<Fixed_t> Fixed() noexcept {
-    return float_formatter<Fixed_t>();
-}
-
-constexpr float_formatter<sci_t> sci() noexcept {
-    return float_formatter<sci_t>();
-}
-
-constexpr float_formatter<Sci_t> Sci() noexcept {
-    return float_formatter<Sci_t>();
-}
-
 
 // Generic formatting function
 
 template<typename T, typename Fmt>
 struct is_formattable : public ::std::false_type {};
 
-template<typename T, typename Tag>
-struct is_formattable<T, integer_formatter<Tag>> : public ::std::is_integral<T> {};
+template<typename T, unsigned int N>
+struct is_formattable<T, int_formatter<N>> : public ::std::is_integral<T> {};
 
 template<typename T, typename Tag>
 struct is_formattable<T, float_formatter<Tag>> : public ::std::is_arithmetic<T> {};
@@ -522,20 +399,7 @@ inline enable_if_t<is_formattable<T, Fmt>::value, ::std::string>
 format(const T& x, const Fmt& fmt) {
     size_t fmt_len = fmt.formatted_length(x);
     ::std::string s(fmt_len, '\0');
-    size_t wlen = fmt.format_write(x, 0, const_cast<char*>(s.data()), fmt_len + 1);
-    assert(wlen <= fmt_len);
-    if (wlen < fmt_len) {
-        s.resize(wlen);
-    }
-    return ::std::move(s);
-}
-
-template<typename T, typename Fmt>
-inline enable_if_t<is_formattable<T, Fmt>::value, ::std::string>
-format(const T& x, const Fmt& fmt, size_t width) {
-    size_t fmt_len = fmt.formatted_length(x, width);
-    ::std::string s(fmt_len, '\0');
-    size_t wlen = fmt.format_write(x, width, const_cast<char*>(s.data()), fmt_len + 1);
+    size_t wlen = fmt.formatted_write(x, const_cast<char*>(s.data()), fmt_len + 1);
     assert(wlen <= fmt_len);
     if (wlen < fmt_len) {
         s.resize(wlen);

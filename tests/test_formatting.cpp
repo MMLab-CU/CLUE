@@ -140,6 +140,9 @@ template<typename F>
     }
 
     std::string r = format(x, f);
+
+    // std::printf("%s  |   %s\n", refstr.c_str(), r.c_str());
+
     if (!(flen >= rl && flen <= fl_max)) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted string for "
@@ -379,15 +382,6 @@ void FloatFmtTests(const Fmt& fbase) {
     verify_float_formatter(f11_2, 2, true, true);
     verify_float_formatter(f11_9, 9, true, true);
 
-    // special case
-
-    const double Inf = std::numeric_limits<double>::infinity();
-    const double NaN = std::numeric_limits<double>::quiet_NaN();
-
-    ASSERT_EQ(3, f00.formatted_length(Inf));
-    ASSERT_EQ(4, f00.formatted_length(-Inf));
-    ASSERT_EQ(3, f00.formatted_length(NaN));
-
     // combination coverage
 
     std::vector<Fmt> fmts {
@@ -410,5 +404,13 @@ TEST(FloatFmt, Fixed) {
 
 TEST(FloatFmt, Sci) {
     FloatFmtTests(fmt::sci_fmt());
+}
+
+TEST(FloatFmt, UFixed) {
+    FloatFmtTests(fmt::fixed_fmt() | fmt::upper_case);
+}
+
+TEST(FloatFmt, USci) {
+    FloatFmtTests(fmt::sci_fmt() | fmt::upper_case);
 }
 

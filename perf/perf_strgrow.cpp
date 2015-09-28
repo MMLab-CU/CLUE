@@ -181,9 +181,9 @@ int main() {
 
     WithStringStream  with_strstream;
     WithStringBuf     with_strbuf;
+    WithStringBuilder with_strbuilder;
     WithString        with_string;
     WithVectorChar    with_vecchar;
-    WithStringBuilder with_strbuilder;
 
     // verify the correctness
 
@@ -197,9 +197,9 @@ int main() {
     cout << "Verifying correctness ..." << endl;
     verify_correctness(with_strstream,  tokens0, expect_str);
     verify_correctness(with_strbuf,     tokens0, expect_str);
+    verify_correctness(with_strbuilder, tokens0, expect_str);
     verify_correctness(with_string,     tokens0, expect_str);
     verify_correctness(with_vecchar,    tokens0, expect_str);
-    verify_correctness(with_strbuilder, tokens0, expect_str);
 
     // prepare data for performance measurement
 
@@ -218,9 +218,10 @@ int main() {
     cout << "Measuring performance ..." << endl;
     measure_performance(with_strstream,  tokens);
     measure_performance(with_strbuf,     tokens);
+    measure_performance(with_strbuilder, tokens);
     measure_performance(with_string,     tokens);
     measure_performance(with_vecchar,    tokens);
-    measure_performance(with_strbuilder, tokens);
+
 
     return 0;
 }

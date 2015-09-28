@@ -103,7 +103,7 @@ public:
 
     void write(const charT *s, size_type n) {
         reserve(len_ + n);
-        Traits::copy(buf_ + len_, s, n);
+        ::std::memcpy(buf_ + len_, s, n * sizeof(charT));
         len_ += n;
     }
 

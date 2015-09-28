@@ -25,6 +25,12 @@ namespace grisu_impl {
 using ::std::uint32_t;
 using ::std::uint64_t;
 
+template<typename charT>
+constexpr charT u2digit(unsigned int x) noexcept {
+    return static_cast<charT>('0' + x);
+}
+
+
 struct DiyFp {
     // fields
 
@@ -336,47 +342,30 @@ inline void Grisu2(double value, char* buffer, int* length, int* K) {
     DigitGen(W, Wp, Wp.f - Wm.f, buffer, length, K);
 }
 
-inline const char* GetDigitsLut() {
-    static const char cDigitsLut[200] = {
-        '0','0','0','1','0','2','0','3','0','4','0','5','0','6','0','7','0','8','0','9',
-        '1','0','1','1','1','2','1','3','1','4','1','5','1','6','1','7','1','8','1','9',
-        '2','0','2','1','2','2','2','3','2','4','2','5','2','6','2','7','2','8','2','9',
-        '3','0','3','1','3','2','3','3','3','4','3','5','3','6','3','7','3','8','3','9',
-        '4','0','4','1','4','2','4','3','4','4','4','5','4','6','4','7','4','8','4','9',
-        '5','0','5','1','5','2','5','3','5','4','5','5','5','6','5','7','5','8','5','9',
-        '6','0','6','1','6','2','6','3','6','4','6','5','6','6','6','7','6','8','6','9',
-        '7','0','7','1','7','2','7','3','7','4','7','5','7','6','7','7','7','8','7','9',
-        '8','0','8','1','8','2','8','3','8','4','8','5','8','6','8','7','8','8','8','9',
-        '9','0','9','1','9','2','9','3','9','4','9','5','9','6','9','7','9','8','9','9'
-    };
-    return cDigitsLut;
-}
+template<typename charT>
+inline charT* WriteExponent(int K_, charT* buffer) {
+    if (K_ < 0) *buffer++ = '-';
+    unsigned int K = static_cast<unsigned int>(K_ < 0 ? -K_ : K_);
 
-inline char* WriteExponent(int K, char* buffer) {
-    if (K < 0) {
-        *buffer++ = '-';
-        K = -K;
-    }
     if (K >= 100) {
-        *buffer++ = static_cast<char>('0' + static_cast<char>(K / 100));
-        K %= 100;
-        const char* d = GetDigitsLut() + K * 2;
-        *buffer++ = d[0];
-        *buffer++ = d[1];
+        unsigned int d0 = K / 100;
+        *buffer++ = u2digit<charT>(d0);
+        K -= d0 * 100;
+        unsigned int d1 = K / 10;
+        *buffer++ = u2digit<charT>(d1);
+        *buffer++ = u2digit<charT>(K - d1 * 10);
+    } else if (K >= 10) {
+        unsigned int d0 = K / 10;
+        *buffer++ = u2digit<charT>(d0);
+        *buffer++ = u2digit<charT>(K - d0 * 10);
+    } else {
+        *buffer++ = u2digit<charT>(K);
     }
-    else if (K >= 10) {
-        const char* d = GetDigitsLut() + K * 2;
-        *buffer++ = d[0];
-        *buffer++ = d[1];
-    }
-    else
-        *buffer++ = static_cast<char>('0' + static_cast<char>(K));
-
-    *buffer = '\0';
+    *buffer = (charT)('\0');
     return buffer;
 }
 
-inline char* Prettify(char* buffer, int length, int k) {
+inline void Prettify(char* buffer, int length, int k) {
     const int kk = length + k;  // 10^(kk-1) <= v < 10^kk
 
     if (length <= kk && kk <= 21) {
@@ -385,13 +374,13 @@ inline char* Prettify(char* buffer, int length, int k) {
             buffer[i] = '0';
         buffer[kk] = '.';
         buffer[kk + 1] = '0';
-        return &buffer[kk + 2];
+        buffer[kk + 2] = '\0';
     }
     else if (0 < kk && kk <= 21) {
         // 1234e-2 -> 12.34
         ::std::memmove(&buffer[kk + 1], &buffer[kk], static_cast<size_t>(length - kk));
         buffer[kk] = '.';
-        return &buffer[length + 1];
+        buffer[length + 1] = '\0';
     }
     else if (-6 < kk && kk <= 0) {
         // 1234e-6 -> 0.001234
@@ -401,19 +390,19 @@ inline char* Prettify(char* buffer, int length, int k) {
         buffer[1] = '.';
         for (int i = 2; i < offset; i++)
             buffer[i] = '0';
-        return &buffer[length + offset];
+        buffer[length + offset] = '\0';
     }
     else if (length == 1) {
         // 1e30
         buffer[1] = 'e';
-        return WriteExponent(kk - 1, &buffer[2]);
+        WriteExponent(kk - 1, &buffer[2]);
     }
     else {
         // 1234e30 -> 1.234e33
         ::std::memmove(&buffer[2], &buffer[1], static_cast<size_t>(length - 1));
         buffer[1] = '.';
         buffer[length + 1] = 'e';
-        return WriteExponent(kk - 1, &buffer[0 + length + 2]);
+        WriteExponent(kk - 1, &buffer[0 + length + 2]);
     }
 }
 

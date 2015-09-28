@@ -206,6 +206,14 @@ int main() {
     measure_performance(WithSprintfChecked(), ints, reals);
     measure_performance(WithClueFmtChecked(), ints, reals);
 
+    std::printf("with-clue-grisu:\n");
+    static char tmpbuf[256];
+    auto f_grisu = [&]() {
+        for (double x: reals) grisu_impl::Grisu_DtoA(x, tmpbuf);
+    };
+    auto r_grisu = calibrated_time(f_grisu);
+    report("grisu", reals.size(), r_grisu);
+
     return 0;
 }
 

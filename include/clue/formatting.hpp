@@ -2,6 +2,7 @@
 #define CLUE_FORMATTING__
 
 #include <clue/internal/numfmt.hpp>
+#include <clue/internal/grisu.hpp>
 #include <string>
 #include <cstdarg>
 #include <stdexcept>
@@ -193,6 +194,9 @@ struct fixed_t {};
 
 // scientific notation
 struct sci_t {};
+
+// grisu formatting
+struct grisu_t {};
 
 
 namespace details {

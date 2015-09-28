@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <clue/string_builder.hpp>
 #include <clue/timing.hpp>
 
 using namespace std;
@@ -109,53 +110,26 @@ public:
 };
 
 
-class WithManualBuffer {
+class WithStringBuilder {
 private:
-    size_t cap_;
-    size_t len_;
-    char *buf_;
+    string_builder builder_;
 
 public:
-    WithManualBuffer() :
-        cap_(4),
-        len_(0),
-        buf_((char*)malloc(sizeof(char) * cap_)) { }
-
-    ~WithManualBuffer() {
-        free(buf_);
-    }
-
-    WithManualBuffer(const WithManualBuffer&) = delete;
-    WithManualBuffer& operator = (const WithManualBuffer&) = delete;
-
     const char *repr() const {
-        return "with-manualbuf";
+        return "with-strbuilder";
     }
 
     void reset() {
-        len_ = 0;
+        builder_.reset();
     }
 
     string str() const {
-        return string(buf_, len_);
+        return builder_.str();
     }
 
     void append(const string& s) {
-        _append(s.c_str(), s.size());
-        _append(" ", 1);
-    }
-
-private:
-    void _append(const char *s, size_t n) {
-        size_t newlen = len_ + n;
-        if (cap_ < newlen) {
-            size_t newcap = cap_ * 2;
-            while (newcap < newlen) newcap *= 2;
-            buf_ = (char*)realloc(buf_, sizeof(char) * newcap);
-            cap_ = newcap;
-        }
-        std::memcpy(buf_ + len_, s, n * sizeof(char));
-        len_ += n;
+        builder_.write(s);
+        builder_.write(' ');
     }
 };
 
@@ -205,11 +179,11 @@ int main() {
 
     // competitors
 
-    WithStringStream with_strstream;
-    WithStringBuf    with_strbuf;
-    WithString       with_string;
-    WithVectorChar   with_vecchar;
-    WithManualBuffer with_manbuf;
+    WithStringStream  with_strstream;
+    WithStringBuf     with_strbuf;
+    WithString        with_string;
+    WithVectorChar    with_vecchar;
+    WithStringBuilder with_strbuilder;
 
     // verify the correctness
 
@@ -221,11 +195,11 @@ int main() {
     string expect_str("abc ef xyz ");
 
     cout << "Verifying correctness ..." << endl;
-    verify_correctness(with_strstream, tokens0, expect_str);
-    verify_correctness(with_strbuf,    tokens0, expect_str);
-    verify_correctness(with_string,    tokens0, expect_str);
-    verify_correctness(with_vecchar,   tokens0, expect_str);
-    verify_correctness(with_manbuf,    tokens0, expect_str);
+    verify_correctness(with_strstream,  tokens0, expect_str);
+    verify_correctness(with_strbuf,     tokens0, expect_str);
+    verify_correctness(with_string,     tokens0, expect_str);
+    verify_correctness(with_vecchar,    tokens0, expect_str);
+    verify_correctness(with_strbuilder, tokens0, expect_str);
 
     // prepare data for performance measurement
 
@@ -242,11 +216,11 @@ int main() {
 
     // measure performance
     cout << "Measuring performance ..." << endl;
-    measure_performance(with_strstream, tokens);
-    measure_performance(with_strbuf,    tokens);
-    measure_performance(with_string,    tokens);
-    measure_performance(with_vecchar,   tokens);
-    measure_performance(with_manbuf,    tokens);
+    measure_performance(with_strstream,  tokens);
+    measure_performance(with_strbuf,     tokens);
+    measure_performance(with_string,     tokens);
+    measure_performance(with_vecchar,    tokens);
+    measure_performance(with_strbuilder, tokens);
 
     return 0;
 }

@@ -1,4 +1,4 @@
-#include <clue/stringfmt.hpp>
+#include <clue/string_builder.hpp>
 #include <gtest/gtest.h>
 
 using namespace clue;

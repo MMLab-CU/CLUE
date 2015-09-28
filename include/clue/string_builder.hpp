@@ -1,8 +1,8 @@
-#ifndef CLUE_STRINGFMT__
-#define CLUE_STRINGFMT__
+#ifndef CLUE_STRING_BUILDER__
+#define CLUE_STRING_BUILDER__
 
 #include <clue/string_view.hpp>
-#include <clue/numberfmt.hpp>
+#include <clue/formatting.hpp>
 #include <array>
 #include <new>  // for bad_alloc
 #include <stdexcept>

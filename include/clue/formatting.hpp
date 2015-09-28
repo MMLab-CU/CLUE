@@ -1,5 +1,5 @@
-#ifndef CLUE_NUMBERFMT__
-#define CLUE_NUMBERFMT__
+#ifndef CLUE_FORMATTING__
+#define CLUE_FORMATTING__
 
 #include <clue/type_traits.hpp>
 #include <cstdlib>
@@ -11,13 +11,15 @@
 
 namespace clue {
 
+namespace fmt {
+
 //===============================================
 //
 //  C-format
 //
 //===============================================
 
-inline ::std::string c_fmt(const char *fmt, ...) {
+inline ::std::string sprintf(const char *fmt, ...) {
     std::va_list args0, args;
     va_start(args0, fmt);
     va_copy(args, args0);
@@ -31,13 +33,13 @@ inline ::std::string c_fmt(const char *fmt, ...) {
     return ::std::move(str);
 }
 
+
 //===============================================
 //
 //  Formatting tags
 //
 //===============================================
 
-namespace fmt {
 
 // decimal integer
 struct dec_t {
@@ -67,9 +69,6 @@ struct fixed_t {};
 struct sci_t {};
 
 
-} // end namespace fmt
-
-
 //===============================================
 //
 //  Formatting details
@@ -91,7 +90,7 @@ template<typename Tag>
 struct digit_traits;
 
 template<>
-struct digit_traits<fmt::dec_t> {
+struct digit_traits<dec_t> {
     template<typename T>
     static size_t positive_ndigits(T x) noexcept {
         // precondition: x > 0
@@ -122,7 +121,7 @@ struct digit_traits<fmt::dec_t> {
 };
 
 template<>
-struct digit_traits<fmt::oct_t> {
+struct digit_traits<oct_t> {
     template<typename T>
     static size_t positive_ndigits(T x) noexcept {
         // precondition: x > 0
@@ -149,7 +148,7 @@ struct digit_traits<fmt::oct_t> {
 
 
 template<>
-struct digit_traits<fmt::hex_t> {
+struct digit_traits<hex_t> {
     template<typename T>
     static size_t positive_ndigits(T x) noexcept {
         // precondition: x > 0
@@ -175,15 +174,15 @@ struct digit_traits<fmt::hex_t> {
 };
 
 template<>
-struct digit_traits<fmt::Hex_t> {
+struct digit_traits<Hex_t> {
     template<typename T>
     static size_t positive_ndigits(T x) noexcept {
-        return digit_traits<fmt::hex_t>::positive_ndigits(x);
+        return digit_traits<hex_t>::positive_ndigits(x);
     }
 
     template<typename T>
     static T trail_digit(T& x) noexcept {
-        return digit_traits<fmt::hex_t>::trail_digit(x);
+        return digit_traits<hex_t>::trail_digit(x);
     }
 
     template<typename T>
@@ -284,16 +283,14 @@ inline size_t float_intpart_ndigits(double x) {
     }
 }
 
-template<typename T>
-inline size_t float_formatted_length(fmt::fixed_t, T x, size_t precision, bool plus_sign) {
+inline size_t float_formatted_length(fmt::fixed_t, double x, size_t precision, bool plus_sign) {
     // precondition: x is finite
     return (plus_sign || ::std::signbit(x) ? 0 : 1) +  // sign
         float_intpart_ndigits(::std::abs(x)) +      // unsigned integer part
         (precision > 0 ? precision + 1 : 0);        // fractional part
 }
 
-template<typename T>
-inline size_t float_formatted_length(fmt::sci_t, T x, size_t precision, bool plus_sign) {
+inline size_t float_formatted_length(fmt::sci_t, double x, size_t precision, bool plus_sign) {
     // precondition: x is finite
     double ax = ::std::abs(x);
     return (plus_sign || ::std::signbit(x) ? 2 : 1) +            // integer part
@@ -378,8 +375,7 @@ public:
         return ::std::move(s);
     }
 
-}; // end class format_spec
-
+};
 
 constexpr integer_formatter<fmt::dec_t> dec() noexcept {
     return integer_formatter<fmt::dec_t>();
@@ -396,7 +392,6 @@ constexpr integer_formatter<fmt::hex_t> hex() noexcept {
 constexpr integer_formatter<fmt::Hex_t> Hex() noexcept {
     return integer_formatter<fmt::Hex_t>();
 }
-
 
 //===============================================
 //
@@ -446,8 +441,16 @@ public:
     }
 };
 
-
-
+constexpr float_formatter<fixed_t> fixed() noexcept {
+    return float_formatter<fixed_t>();
 }
+
+constexpr float_formatter<sci_t> sci() noexcept {
+    return float_formatter<sci_t>();
+}
+
+
+} // end namespace fmt
+} // end namespace clue
 
 #endif

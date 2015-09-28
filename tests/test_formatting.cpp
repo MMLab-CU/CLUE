@@ -1,4 +1,4 @@
-#include <clue/numberfmt.hpp>
+#include <clue/formatting.hpp>
 #include <vector>
 #include <gtest/gtest.h>
 
@@ -7,19 +7,19 @@ using std::size_t;
 
 // Auxiliary functions for testing
 
-const char *cfmt_lsym(const integer_formatter<fmt::dec_t>&) {
+const char *cfmt_lsym(const fmt::integer_formatter<fmt::dec_t>&) {
     return "%ld";
 }
 
-const char *cfmt_lsym(const integer_formatter<fmt::oct_t>&) {
+const char *cfmt_lsym(const fmt::integer_formatter<fmt::oct_t>&) {
     return "%lo";
 }
 
-const char *cfmt_lsym(const integer_formatter<fmt::hex_t>&) {
+const char *cfmt_lsym(const fmt::integer_formatter<fmt::hex_t>&) {
     return "%lx";
 }
 
-const char *cfmt_lsym(const integer_formatter<fmt::Hex_t>&) {
+const char *cfmt_lsym(const fmt::integer_formatter<fmt::Hex_t>&) {
     return "%lX";
 }
 
@@ -29,7 +29,7 @@ std::string ref_int_format(const F& f, size_t w, long x) {
 
     // format the main digits
     const char *cf = cfmt_lsym(f);
-    std::string main = c_fmt(cf, (x >= 0 ? x : -x));
+    std::string main = fmt::sprintf(cf, (x >= 0 ? x : -x));
     size_t ml = main.size();
 
     // get the sign string
@@ -90,13 +90,17 @@ template<typename F>
 }
 
 
-TEST(StringFmt, C_Fmt) {
-    ASSERT_EQ("", c_fmt(""));
-    ASSERT_EQ("123", c_fmt("%d", 123));
-    ASSERT_EQ("2 + 3 = 5", c_fmt("%d + %d = %d", 2, 3, 5));
-    ASSERT_EQ("12.5000", c_fmt("%.4f", 12.5));
+// C-string formatting
+
+TEST(StringFmt, Sprintf) {
+    ASSERT_EQ("", fmt::sprintf(""));
+    ASSERT_EQ("123", fmt::sprintf("%d", 123));
+    ASSERT_EQ("2 + 3 = 5", fmt::sprintf("%d + %d = %d", 2, 3, 5));
+    ASSERT_EQ("12.5000", fmt::sprintf("%.4f", 12.5));
 }
 
+
+// Integer formatting
 
 std::vector<long> prepare_test_ints(size_t base, bool show=false) {
     std::vector<long> xs;
@@ -148,7 +152,7 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
 }
 
 template<class Tag>
-void batch_test_int_format(const std::vector<integer_formatter<Tag>>& fmts,
+void batch_test_int_format(const std::vector<fmt::integer_formatter<Tag>>& fmts,
                      const std::vector<size_t>& ws,
                      const std::vector<long>& xs) {
 
@@ -165,22 +169,22 @@ TEST(IntFmt, Dec) {
 
     // formatters
 
-    auto f00 = dec();
+    auto f00 = fmt::dec();
     ASSERT_EQ(10,    f00.base());
     ASSERT_EQ(false, f00.pad_zeros());
     ASSERT_EQ(false, f00.plus_sign());
 
-    auto f01 = dec().plus_sign(true);
+    auto f01 = fmt::dec().plus_sign(true);
     ASSERT_EQ(10,    f01.base());
     ASSERT_EQ(false, f01.pad_zeros());
     ASSERT_EQ(true,  f01.plus_sign());
 
-    auto f10 = dec().pad_zeros(true);
+    auto f10 = fmt::dec().pad_zeros(true);
     ASSERT_EQ(10,    f10.base());
     ASSERT_EQ(true,  f10.pad_zeros());
     ASSERT_EQ(false, f10.plus_sign());
 
-    auto f11 = dec().plus_sign(true).pad_zeros(true);
+    auto f11 = fmt::dec().plus_sign(true).pad_zeros(true);
     ASSERT_EQ(10,    f11.base());
     ASSERT_EQ(true,  f11.pad_zeros());
     ASSERT_EQ(true,  f11.plus_sign());
@@ -207,7 +211,7 @@ TEST(IntFmt, Dec) {
 
     // combination coverage
 
-    std::vector<integer_formatter<fmt::dec_t>> fmts {
+    std::vector<fmt::integer_formatter<fmt::dec_t>> fmts {
         f00, f01, f10, f11};
     std::vector<size_t> widths = {0, 5, 12};
     std::vector<long> xs = prepare_test_ints(10);
@@ -220,22 +224,22 @@ TEST(IntFmt, Oct) {
 
     // formatters
 
-    auto f00 = oct();
+    auto f00 = fmt::oct();
     ASSERT_EQ(8,     f00.base());
     ASSERT_EQ(false, f00.pad_zeros());
     ASSERT_EQ(false, f00.plus_sign());
 
-    auto f01 = oct().plus_sign(true);
+    auto f01 = fmt::oct().plus_sign(true);
     ASSERT_EQ(8,     f01.base());
     ASSERT_EQ(false, f01.pad_zeros());
     ASSERT_EQ(true,  f01.plus_sign());
 
-    auto f10 = oct().pad_zeros(true);
+    auto f10 = fmt::oct().pad_zeros(true);
     ASSERT_EQ(8,     f10.base());
     ASSERT_EQ(true,  f10.pad_zeros());
     ASSERT_EQ(false, f10.plus_sign());
 
-    auto f11 = oct().plus_sign(true).pad_zeros(true);
+    auto f11 = fmt::oct().plus_sign(true).pad_zeros(true);
     ASSERT_EQ(8,     f11.base());
     ASSERT_EQ(true,  f11.pad_zeros());
     ASSERT_EQ(true,  f11.plus_sign());
@@ -263,7 +267,7 @@ TEST(IntFmt, Oct) {
 
     // combination coverage
 
-    std::vector<integer_formatter<fmt::oct_t>> fmts {
+    std::vector<fmt::integer_formatter<fmt::oct_t>> fmts {
         f00, f01, f10, f11};
     std::vector<size_t> widths = {0, 5, 12};
     std::vector<long> xs = prepare_test_ints(10);
@@ -276,22 +280,22 @@ TEST(IntFmt, Hex) {
 
     // formatters
 
-    auto f00 = hex();
+    auto f00 = fmt::hex();
     ASSERT_EQ(16,    f00.base());
     ASSERT_EQ(false, f00.pad_zeros());
     ASSERT_EQ(false, f00.plus_sign());
 
-    auto f01 = hex().plus_sign(true);
+    auto f01 = fmt::hex().plus_sign(true);
     ASSERT_EQ(16,    f01.base());
     ASSERT_EQ(false, f01.pad_zeros());
     ASSERT_EQ(true,  f01.plus_sign());
 
-    auto f10 = hex().pad_zeros(true);
+    auto f10 = fmt::hex().pad_zeros(true);
     ASSERT_EQ(16,    f10.base());
     ASSERT_EQ(true,  f10.pad_zeros());
     ASSERT_EQ(false, f10.plus_sign());
 
-    auto f11 = hex().plus_sign(true).pad_zeros(true);
+    auto f11 = fmt::hex().plus_sign(true).pad_zeros(true);
     ASSERT_EQ(16,    f11.base());
     ASSERT_EQ(true,  f11.pad_zeros());
     ASSERT_EQ(true,  f11.plus_sign());
@@ -319,7 +323,7 @@ TEST(IntFmt, Hex) {
 
     // combination coverage
 
-    std::vector<integer_formatter<fmt::hex_t>> fmts {
+    std::vector<fmt::integer_formatter<fmt::hex_t>> fmts {
         f00, f01, f10, f11};
     std::vector<size_t> widths = {0, 5, 12};
     std::vector<long> xs = prepare_test_ints(10);
@@ -332,22 +336,22 @@ TEST(IntFmt, UHex) {
 
     // formatters
 
-    auto f00 = Hex();
+    auto f00 = fmt::Hex();
     ASSERT_EQ(16,    f00.base());
     ASSERT_EQ(false, f00.pad_zeros());
     ASSERT_EQ(false, f00.plus_sign());
 
-    auto f01 = Hex().plus_sign(true);
+    auto f01 = fmt::Hex().plus_sign(true);
     ASSERT_EQ(16,    f01.base());
     ASSERT_EQ(false, f01.pad_zeros());
     ASSERT_EQ(true,  f01.plus_sign());
 
-    auto f10 = Hex().pad_zeros(true);
+    auto f10 = fmt::Hex().pad_zeros(true);
     ASSERT_EQ(16,    f10.base());
     ASSERT_EQ(true,  f10.pad_zeros());
     ASSERT_EQ(false, f10.plus_sign());
 
-    auto f11 = Hex().plus_sign(true).pad_zeros(true);
+    auto f11 = fmt::Hex().plus_sign(true).pad_zeros(true);
     ASSERT_EQ(16,    f11.base());
     ASSERT_EQ(true,  f11.pad_zeros());
     ASSERT_EQ(true,  f11.plus_sign());
@@ -373,4 +377,20 @@ TEST(IntFmt, UHex) {
     ASSERT_EQ("-4D2",   f11.format(-1234));
     ASSERT_EQ("-004D2", f11.format(-1234, 6));
 }
+
+
+
+//// Floating-point formatting
+//
+//TEST(FloatFmt, Fixed) {
+//
+//    // formatters
+//
+//    auto
+//
+//
+//}
+
+
+
 

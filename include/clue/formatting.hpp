@@ -66,9 +66,11 @@ struct Hex_t {
 
 // fixed-point notation
 struct fixed_t {};
+struct Fixed_t {};
 
 // scientific notation
 struct sci_t {};
+struct Sci_t {};
 
 
 //===============================================
@@ -285,20 +287,66 @@ inline size_t float_intpart_ndigits(double x) {
     }
 }
 
-inline size_t float_formatted_length(fmt::fixed_t, double x, size_t precision, bool plus_sign) {
+inline size_t float_formatted_length(fixed_t, double x, size_t precision, bool plus_sign) {
     // precondition: x is finite
     return (plus_sign || ::std::signbit(x) ? 1 : 0) +  // sign
         float_intpart_ndigits(::std::abs(x)) +      // unsigned integer part
         (precision > 0 ? precision + 1 : 0);        // fractional part
 }
 
-inline size_t float_formatted_length(fmt::sci_t, double x, size_t precision, bool plus_sign) {
+inline size_t float_formatted_length(Fixed_t, double x, size_t precision, bool plus_sign) {
+    return float_formatted_length(fixed_t{}, x, precision, plus_sign);
+}
+
+inline size_t float_formatted_length(sci_t, double x, size_t precision, bool plus_sign) {
     // precondition: x is finite
     double ax = ::std::abs(x);
     return (plus_sign || ::std::signbit(x) ? 2 : 1) +            // integer part
         (precision > 0 ? precision + 1 : 0) +                    // fractional part
         (ax == 0.0 ? 4 : (ax < 1.0e-99 || ax > 9.0e99 ? 5: 4));   // exponent part
 }
+
+inline size_t float_formatted_length(Sci_t, double x, size_t precision, bool plus_sign) {
+    return float_formatted_length(sci_t{}, x, precision, plus_sign);
+}
+
+
+constexpr char _printf_csym(fixed_t) noexcept { return 'f'; };
+constexpr char _printf_csym(Fixed_t) noexcept { return 'F'; };
+constexpr char _printf_csym(sci_t)   noexcept { return 'e'; };
+constexpr char _printf_csym(Sci_t)   noexcept { return 'E'; };
+
+// buf at least 16 bytes
+template<typename Tag>
+inline const char* float_cfmt(Tag, char* buf, unsigned prec, bool pzeros, bool psign, unsigned width) {
+    assert(prec < 100);
+    assert(width < 1000);
+    char *p = buf;
+    *p++ = '%';
+
+    // write sign
+    if (psign) *p++ = '+';
+
+    // write width
+    if (width > 0) {
+        if (pzeros) *p++ = '0';
+        size_t w_nd = width < 10 ? 1: (width < 100 ? 2: 3);
+        write_digits<dec_t, unsigned, char>(width, w_nd, p);
+        p += w_nd;
+    }
+
+    // write precision
+    *p++ = '.';
+    size_t p_nd = prec < 10 ? 1 : 2;
+    write_digits<dec_t, unsigned, char>(prec, p_nd, p);
+    p += p_nd;
+
+    // write symbol
+    *p++ = _printf_csym(Tag{});
+    *p = '\0';
+    return buf;
+}
+
 
 } // end namespace details
 
@@ -417,9 +465,7 @@ public:
         return float_formatter(precision_, pad_zeros_, v);
     }
 
-    template<typename T>
-    enable_if_t<::std::is_arithmetic<T>::value, size_t>
-    formatted_length(T x) const noexcept {
+    size_t formatted_length(double x) const noexcept {
         if (::std::isfinite(x)) {
             return details::float_formatted_length(Tag{}, x, precision_, plus_sign_);
         } else if (::std::isinf(x)) {
@@ -430,11 +476,15 @@ public:
         }
     }
 
-    template<typename T>
-    enable_if_t<::std::is_arithmetic<T>::value, size_t>
-    formatted_length(T x, size_t width) const noexcept {
+    size_t formatted_length(double x, size_t width) const noexcept {
         size_t n = formatted_length(x);
         return n > width ? n : width;
+    }
+
+    size_t format_write(double x, size_t width, char *buf, size_t buf_len) const {
+        char cfmt[16];
+        details::float_cfmt(Tag{}, cfmt, precision_, pad_zeros_, plus_sign_, width);
+        return (size_t)::std::snprintf(buf, buf_len, cfmt, x);
     }
 };
 
@@ -442,10 +492,17 @@ constexpr float_formatter<fixed_t> fixed() noexcept {
     return float_formatter<fixed_t>();
 }
 
+constexpr float_formatter<Fixed_t> Fixed() noexcept {
+    return float_formatter<Fixed_t>();
+}
+
 constexpr float_formatter<sci_t> sci() noexcept {
     return float_formatter<sci_t>();
 }
 
+constexpr float_formatter<Sci_t> Sci() noexcept {
+    return float_formatter<Sci_t>();
+}
 
 
 // Generic formatting function

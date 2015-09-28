@@ -92,15 +92,10 @@ template<typename F>
 
 
 
-inline const char* notation(const fmt::float_formatter<fmt::fixed_t>&) {
-    return "f";
-}
-
-inline const char* notation(const fmt::float_formatter<fmt::sci_t>&) {
-    return "e";
-}
-
-
+inline const char* notation(const fmt::float_formatter<fmt::fixed_t>&) { return "f"; }
+inline const char* notation(const fmt::float_formatter<fmt::Fixed_t>&) { return "F"; }
+inline const char* notation(const fmt::float_formatter<fmt::sci_t>&)   { return "e"; }
+inline const char* notation(const fmt::float_formatter<fmt::Sci_t>&)   { return "E"; }
 
 template<class F>
 std::string ref_float_format(const F& f, size_t w, double x) {
@@ -114,26 +109,6 @@ std::string ref_float_format(const F& f, size_t w, double x) {
     sfmt = std::string("%") + sfmt;
     // std::printf("sfmt = %s\n", sfmt.c_str());
     return fmt::sprintf(sfmt.c_str(), x);
-}
-
-template<typename F, typename X>
-::testing::AssertionResult floatfmt_assertion_failure(
-    const char *title, const F& f, size_t width, double x,
-    const char *fexpr, const char *wexpr, const char *xexpr,
-    const X& actual, const X& expect) {
-
-    return ::testing::AssertionFailure()
-        << "Mismatched " << title << " for "
-        << "[" << xexpr << " = " << x << "] "
-        << "with " << fexpr << ": \n"
-        << "  notation: " << notation(f) << "\n"
-        << "  precision: " << f.precision() << "\n"
-        << "  plus_sign: " << f.plus_sign() << "\n"
-        << "  pad_zeros: " << f.pad_zeros() << "\n"
-        << "  width: " << wexpr << "=" << width << "\n"
-        << "Result:\n"
-        << "  ACTUAL = \"" << actual << "\"\n"
-        << "  EXPECT = \"" << expect << "\"";
 }
 
 template<typename F>
@@ -161,9 +136,24 @@ template<typename F>
             << "  EXPECT = " << refstr.length()
             << " (\"" << refstr << "\")";
     }
+
+    std::string r = format(x, f);
+    if (!(flen >= rl && flen <= fl_max)) {
+        return ::testing::AssertionFailure()
+            << "Mismatched formatted string for "
+            << "[" << xexpr << " = " << x << "] "
+            << "with " << fexpr << ": \n"
+            << "  notation: " << notation(f) << "\n"
+            << "  precision: " << f.precision() << "\n"
+            << "  plus_sign: " << f.plus_sign() << "\n"
+            << "  pad_zeros: " << f.pad_zeros() << "\n"
+            << "  width: " << wexpr << "=" << width << "\n"
+            << "Result:\n"
+            << "  ACTUAL = \"" << r << "\"\n"
+            << "  EXPECT = \"" << refstr << "\"";
+    }
     return ::testing::AssertionSuccess();
 }
-
 
 
 // C-string formatting
@@ -227,13 +217,39 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
     return xs_aug;
 }
 
-template<class Tag>
-void batch_test_int_format(const std::vector<fmt::integer_formatter<Tag>>& fmts,
-                     const std::vector<size_t>& ws,
-                     const std::vector<long>& xs) {
+template<class Fmt>
+void IntFmtTests(const Fmt& fbase, unsigned b) {
+    // formatters
+
+    auto f00 = fbase;
+    ASSERT_EQ(b,     f00.base());
+    ASSERT_EQ(false, f00.pad_zeros());
+    ASSERT_EQ(false, f00.plus_sign());
+
+    auto f01 = fbase.plus_sign(true);
+    ASSERT_EQ(b,     f01.base());
+    ASSERT_EQ(false, f01.pad_zeros());
+    ASSERT_EQ(true,  f01.plus_sign());
+
+    auto f10 = fbase.pad_zeros(true);
+    ASSERT_EQ(b,     f10.base());
+    ASSERT_EQ(true,  f10.pad_zeros());
+    ASSERT_EQ(false, f10.plus_sign());
+
+    auto f11 = fbase.plus_sign(true).pad_zeros(true);
+    ASSERT_EQ(b,     f11.base());
+    ASSERT_EQ(true,  f11.pad_zeros());
+    ASSERT_EQ(true,  f11.plus_sign());
+
+    // combination coverage
+
+    std::vector<Fmt> fmts {
+        f00, f01, f10, f11};
+    std::vector<size_t> widths = {0, 5, 12};
+    std::vector<long> xs = prepare_test_ints(10);
 
     for (const auto& fmt: fmts) {
-        for (size_t w: ws) {
+        for (size_t w: widths) {
             for (long x: xs) {
                 ASSERT_PRED_FORMAT3(CheckIntFormat, fmt, w, x);
             }
@@ -242,218 +258,20 @@ void batch_test_int_format(const std::vector<fmt::integer_formatter<Tag>>& fmts,
 }
 
 TEST(IntFmt, Dec) {
-
-    // formatters
-
-    auto f00 = fmt::dec();
-    ASSERT_EQ(10,    f00.base());
-    ASSERT_EQ(false, f00.pad_zeros());
-    ASSERT_EQ(false, f00.plus_sign());
-
-    auto f01 = fmt::dec().plus_sign(true);
-    ASSERT_EQ(10,    f01.base());
-    ASSERT_EQ(false, f01.pad_zeros());
-    ASSERT_EQ(true,  f01.plus_sign());
-
-    auto f10 = fmt::dec().pad_zeros(true);
-    ASSERT_EQ(10,    f10.base());
-    ASSERT_EQ(true,  f10.pad_zeros());
-    ASSERT_EQ(false, f10.plus_sign());
-
-    auto f11 = fmt::dec().plus_sign(true).pad_zeros(true);
-    ASSERT_EQ(10,    f11.base());
-    ASSERT_EQ(true,  f11.pad_zeros());
-    ASSERT_EQ(true,  f11.plus_sign());
-
-    // examples check
-
-    ASSERT_EQ("123",    fmt::format(123, f00));
-    ASSERT_EQ("   123", fmt::format(123, f00, 6));
-    ASSERT_EQ("+123",   fmt::format(123, f01));
-    ASSERT_EQ("  +123", fmt::format(123, f01, 6));
-    ASSERT_EQ("123",    fmt::format(123, f10));
-    ASSERT_EQ("000123", fmt::format(123, f10, 6));
-    ASSERT_EQ("+123",   fmt::format(123, f11));
-    ASSERT_EQ("+00123", fmt::format(123, f11, 6));
-
-    ASSERT_EQ("-123",   fmt::format(-123, f00));
-    ASSERT_EQ("  -123", fmt::format(-123, f00, 6));
-    ASSERT_EQ("-123",   fmt::format(-123, f01));
-    ASSERT_EQ("  -123", fmt::format(-123, f01, 6));
-    ASSERT_EQ("-123",   fmt::format(-123, f10));
-    ASSERT_EQ("-00123", fmt::format(-123, f10, 6));
-    ASSERT_EQ("-123",   fmt::format(-123, f11));
-    ASSERT_EQ("-00123", fmt::format(-123, f11, 6));
-
-    // combination coverage
-
-    std::vector<fmt::integer_formatter<fmt::dec_t>> fmts {
-        f00, f01, f10, f11};
-    std::vector<size_t> widths = {0, 5, 12};
-    std::vector<long> xs = prepare_test_ints(10);
-
-    batch_test_int_format(fmts, widths, xs);
+    IntFmtTests(fmt::dec(), 10);
 }
-
 
 TEST(IntFmt, Oct) {
-
-    // formatters
-
-    auto f00 = fmt::oct();
-    ASSERT_EQ(8,     f00.base());
-    ASSERT_EQ(false, f00.pad_zeros());
-    ASSERT_EQ(false, f00.plus_sign());
-
-    auto f01 = fmt::oct().plus_sign(true);
-    ASSERT_EQ(8,     f01.base());
-    ASSERT_EQ(false, f01.pad_zeros());
-    ASSERT_EQ(true,  f01.plus_sign());
-
-    auto f10 = fmt::oct().pad_zeros(true);
-    ASSERT_EQ(8,     f10.base());
-    ASSERT_EQ(true,  f10.pad_zeros());
-    ASSERT_EQ(false, f10.plus_sign());
-
-    auto f11 = fmt::oct().plus_sign(true).pad_zeros(true);
-    ASSERT_EQ(8,     f11.base());
-    ASSERT_EQ(true,  f11.pad_zeros());
-    ASSERT_EQ(true,  f11.plus_sign());
-
-    // examples check
-    // (263)_10 = (407)_8
-
-    ASSERT_EQ("407",    fmt::format(263, f00));
-    ASSERT_EQ("   407", fmt::format(263, f00, 6));
-    ASSERT_EQ("+407",   fmt::format(263, f01));
-    ASSERT_EQ("  +407", fmt::format(263, f01, 6));
-    ASSERT_EQ("407",    fmt::format(263, f10));
-    ASSERT_EQ("000407", fmt::format(263, f10, 6));
-    ASSERT_EQ("+407",   fmt::format(263, f11));
-    ASSERT_EQ("+00407", fmt::format(263, f11, 6));
-
-    ASSERT_EQ("-407",   fmt::format(-263, f00));
-    ASSERT_EQ("  -407", fmt::format(-263, f00, 6));
-    ASSERT_EQ("-407",   fmt::format(-263, f01));
-    ASSERT_EQ("  -407", fmt::format(-263, f01, 6));
-    ASSERT_EQ("-407",   fmt::format(-263, f10));
-    ASSERT_EQ("-00407", fmt::format(-263, f10, 6));
-    ASSERT_EQ("-407",   fmt::format(-263, f11));
-    ASSERT_EQ("-00407", fmt::format(-263, f11, 6));
-
-    // combination coverage
-
-    std::vector<fmt::integer_formatter<fmt::oct_t>> fmts {
-        f00, f01, f10, f11};
-    std::vector<size_t> widths = {0, 5, 12};
-    std::vector<long> xs = prepare_test_ints(10);
-
-    batch_test_int_format(fmts, widths, xs);
+    IntFmtTests(fmt::oct(), 8);
 }
-
 
 TEST(IntFmt, Hex) {
-
-    // formatters
-
-    auto f00 = fmt::hex();
-    ASSERT_EQ(16,    f00.base());
-    ASSERT_EQ(false, f00.pad_zeros());
-    ASSERT_EQ(false, f00.plus_sign());
-
-    auto f01 = fmt::hex().plus_sign(true);
-    ASSERT_EQ(16,    f01.base());
-    ASSERT_EQ(false, f01.pad_zeros());
-    ASSERT_EQ(true,  f01.plus_sign());
-
-    auto f10 = fmt::hex().pad_zeros(true);
-    ASSERT_EQ(16,    f10.base());
-    ASSERT_EQ(true,  f10.pad_zeros());
-    ASSERT_EQ(false, f10.plus_sign());
-
-    auto f11 = fmt::hex().plus_sign(true).pad_zeros(true);
-    ASSERT_EQ(16,    f11.base());
-    ASSERT_EQ(true,  f11.pad_zeros());
-    ASSERT_EQ(true,  f11.plus_sign());
-
-    // examples check
-    // (1234)_10 = (4d2)_16
-
-    ASSERT_EQ("4d2",    fmt::format(1234, f00));
-    ASSERT_EQ("   4d2", fmt::format(1234, f00, 6));
-    ASSERT_EQ("+4d2",   fmt::format(1234, f01));
-    ASSERT_EQ("  +4d2", fmt::format(1234, f01, 6));
-    ASSERT_EQ("4d2",    fmt::format(1234, f10));
-    ASSERT_EQ("0004d2", fmt::format(1234, f10, 6));
-    ASSERT_EQ("+4d2",   fmt::format(1234, f11));
-    ASSERT_EQ("+004d2", fmt::format(1234, f11, 6));
-
-    ASSERT_EQ("-4d2",   fmt::format(-1234, f00));
-    ASSERT_EQ("  -4d2", fmt::format(-1234, f00, 6));
-    ASSERT_EQ("-4d2",   fmt::format(-1234, f01));
-    ASSERT_EQ("  -4d2", fmt::format(-1234, f01, 6));
-    ASSERT_EQ("-4d2",   fmt::format(-1234, f10));
-    ASSERT_EQ("-004d2", fmt::format(-1234, f10, 6));
-    ASSERT_EQ("-4d2",   fmt::format(-1234, f11));
-    ASSERT_EQ("-004d2", fmt::format(-1234, f11, 6));
-
-    // combination coverage
-
-    std::vector<fmt::integer_formatter<fmt::hex_t>> fmts {
-        f00, f01, f10, f11};
-    std::vector<size_t> widths = {0, 5, 12};
-    std::vector<long> xs = prepare_test_ints(10);
-
-    batch_test_int_format(fmts, widths, xs);
+    IntFmtTests(fmt::hex(), 16);
 }
-
 
 TEST(IntFmt, UHex) {
-
-    // formatters
-
-    auto f00 = fmt::Hex();
-    ASSERT_EQ(16,    f00.base());
-    ASSERT_EQ(false, f00.pad_zeros());
-    ASSERT_EQ(false, f00.plus_sign());
-
-    auto f01 = fmt::Hex().plus_sign(true);
-    ASSERT_EQ(16,    f01.base());
-    ASSERT_EQ(false, f01.pad_zeros());
-    ASSERT_EQ(true,  f01.plus_sign());
-
-    auto f10 = fmt::Hex().pad_zeros(true);
-    ASSERT_EQ(16,    f10.base());
-    ASSERT_EQ(true,  f10.pad_zeros());
-    ASSERT_EQ(false, f10.plus_sign());
-
-    auto f11 = fmt::Hex().plus_sign(true).pad_zeros(true);
-    ASSERT_EQ(16,    f11.base());
-    ASSERT_EQ(true,  f11.pad_zeros());
-    ASSERT_EQ(true,  f11.plus_sign());
-
-    // examples check
-    // (1234)_10 = (4D2)_16
-
-    ASSERT_EQ("4D2",    fmt::format(1234, f00));
-    ASSERT_EQ("   4D2", fmt::format(1234, f00, 6));
-    ASSERT_EQ("+4D2",   fmt::format(1234, f01));
-    ASSERT_EQ("  +4D2", fmt::format(1234, f01, 6));
-    ASSERT_EQ("4D2",    fmt::format(1234, f10));
-    ASSERT_EQ("0004D2", fmt::format(1234, f10, 6));
-    ASSERT_EQ("+4D2",   fmt::format(1234, f11));
-    ASSERT_EQ("+004D2", fmt::format(1234, f11, 6));
-
-    ASSERT_EQ("-4D2",   fmt::format(-1234, f00));
-    ASSERT_EQ("  -4D2", fmt::format(-1234, f00, 6));
-    ASSERT_EQ("-4D2",   fmt::format(-1234, f01));
-    ASSERT_EQ("  -4D2", fmt::format(-1234, f01, 6));
-    ASSERT_EQ("-4D2",   fmt::format(-1234, f10));
-    ASSERT_EQ("-004D2", fmt::format(-1234, f10, 6));
-    ASSERT_EQ("-4D2",   fmt::format(-1234, f11));
-    ASSERT_EQ("-004D2", fmt::format(-1234, f11, 6));
+    IntFmtTests(fmt::Hex(), 16);
 }
-
 
 
 // Floating-point formatting
@@ -509,141 +327,88 @@ void batch_test_float_format(const std::vector<fmt::float_formatter<Tag>>& fmts,
 }
 
 
+template<class Fmt>
+void FloatFmtTests(const Fmt& fbase) {
+    // formatters
+
+    auto f00 = fbase;
+    auto f00_0 = f00.precision(0);
+    auto f00_2 = f00.precision(2);
+    auto f00_9 = f00.precision(9);
+
+    verify_float_formatter(f00,   6, false, false);
+    verify_float_formatter(f00_0, 0, false, false);
+    verify_float_formatter(f00_2, 2, false, false);
+    verify_float_formatter(f00_9, 9, false, false);
+
+    auto f01 = fbase.plus_sign(true);
+    auto f01_0 = f01.precision(0);
+    auto f01_2 = f01.precision(2);
+    auto f01_9 = f01.precision(9);
+
+    verify_float_formatter(f01,   6, false, true);
+    verify_float_formatter(f01_0, 0, false, true);
+    verify_float_formatter(f01_2, 2, false, true);
+    verify_float_formatter(f01_9, 9, false, true);
+
+    auto f10 = fbase.pad_zeros(true);
+    auto f10_0 = f10.precision(0);
+    auto f10_2 = f10.precision(2);
+    auto f10_9 = f10.precision(9);
+
+    verify_float_formatter(f10,   6, true, false);
+    verify_float_formatter(f10_0, 0, true, false);
+    verify_float_formatter(f10_2, 2, true, false);
+    verify_float_formatter(f10_9, 9, true, false);
+
+    auto f11 = fbase.pad_zeros(true).plus_sign(true);
+    auto f11_0 = f11.precision(0);
+    auto f11_2 = f11.precision(2);
+    auto f11_9 = f11.precision(9);
+
+    verify_float_formatter(f11,   6, true, true);
+    verify_float_formatter(f11_0, 0, true, true);
+    verify_float_formatter(f11_2, 2, true, true);
+    verify_float_formatter(f11_9, 9, true, true);
+
+    // special case
+
+    const double Inf = std::numeric_limits<double>::infinity();
+    const double NaN = std::numeric_limits<double>::quiet_NaN();
+
+    ASSERT_EQ(3, f00.formatted_length(Inf));
+    ASSERT_EQ(4, f00.formatted_length(-Inf));
+    ASSERT_EQ(3, f00.formatted_length(NaN));
+
+    // combination coverage
+
+    std::vector<Fmt> fmts {
+        f00, f00_0, f00_2, f00_9,
+        f01, f01_0, f01_2, f01_9,
+        f10, f10_0, f10_2, f10_9,
+        f11, f11_0, f11_2, f11_9
+    };
+
+    std::vector<size_t> widths{0, 4, 8, 12, 20};
+    std::vector<double> xs = prepare_test_floats();
+
+    batch_test_float_format(fmts, widths, xs);
+}
+
+
 TEST(FloatFmt, Fixed) {
-
-    // formatters
-
-    auto f00 = fmt::fixed();
-    auto f00_0 = f00.precision(0);
-    auto f00_2 = f00.precision(2);
-    auto f00_9 = f00.precision(9);
-
-    verify_float_formatter(f00,   6, false, false);
-    verify_float_formatter(f00_0, 0, false, false);
-    verify_float_formatter(f00_2, 2, false, false);
-    verify_float_formatter(f00_9, 9, false, false);
-
-    auto f01 = fmt::fixed().plus_sign(true);
-    auto f01_0 = f01.precision(0);
-    auto f01_2 = f01.precision(2);
-    auto f01_9 = f01.precision(9);
-
-    verify_float_formatter(f01,   6, false, true);
-    verify_float_formatter(f01_0, 0, false, true);
-    verify_float_formatter(f01_2, 2, false, true);
-    verify_float_formatter(f01_9, 9, false, true);
-
-    auto f10 = fmt::fixed().pad_zeros(true);
-    auto f10_0 = f10.precision(0);
-    auto f10_2 = f10.precision(2);
-    auto f10_9 = f10.precision(9);
-
-    verify_float_formatter(f10,   6, true, false);
-    verify_float_formatter(f10_0, 0, true, false);
-    verify_float_formatter(f10_2, 2, true, false);
-    verify_float_formatter(f10_9, 9, true, false);
-
-    auto f11 = fmt::fixed().pad_zeros(true).plus_sign(true);
-    auto f11_0 = f11.precision(0);
-    auto f11_2 = f11.precision(2);
-    auto f11_9 = f11.precision(9);
-
-    verify_float_formatter(f11,   6, true, true);
-    verify_float_formatter(f11_0, 0, true, true);
-    verify_float_formatter(f11_2, 2, true, true);
-    verify_float_formatter(f11_9, 9, true, true);
-
-    // special case
-
-    const double Inf = std::numeric_limits<double>::infinity();
-    const double NaN = std::numeric_limits<double>::quiet_NaN();
-
-    ASSERT_EQ(3, f00.formatted_length(Inf));
-    ASSERT_EQ(4, f00.formatted_length(-Inf));
-    ASSERT_EQ(3, f00.formatted_length(NaN));
-
-    // combination coverage
-
-    std::vector<fmt::float_formatter<fmt::fixed_t>> fmts {
-        f00, f00_0, f00_2, f00_9,
-        f01, f01_0, f01_2, f01_9,
-        f10, f10_0, f10_2, f10_9,
-        f11, f11_0, f11_2, f11_9
-    };
-
-    std::vector<size_t> widths{0, 4, 8, 12, 20};
-    std::vector<double> xs = prepare_test_floats();
-
-    batch_test_float_format(fmts, widths, xs);
+    FloatFmtTests(fmt::fixed());
 }
 
-
-TEST(FloatFmt, Scientific) {
-
-    // formatters
-
-    auto f00 = fmt::sci();
-    auto f00_0 = f00.precision(0);
-    auto f00_2 = f00.precision(2);
-    auto f00_9 = f00.precision(9);
-
-    verify_float_formatter(f00,   6, false, false);
-    verify_float_formatter(f00_0, 0, false, false);
-    verify_float_formatter(f00_2, 2, false, false);
-    verify_float_formatter(f00_9, 9, false, false);
-
-    auto f01 = fmt::sci().plus_sign(true);
-    auto f01_0 = f01.precision(0);
-    auto f01_2 = f01.precision(2);
-    auto f01_9 = f01.precision(9);
-
-    verify_float_formatter(f01,   6, false, true);
-    verify_float_formatter(f01_0, 0, false, true);
-    verify_float_formatter(f01_2, 2, false, true);
-    verify_float_formatter(f01_9, 9, false, true);
-
-    auto f10 = fmt::sci().pad_zeros(true);
-    auto f10_0 = f10.precision(0);
-    auto f10_2 = f10.precision(2);
-    auto f10_9 = f10.precision(9);
-
-    verify_float_formatter(f10,   6, true, false);
-    verify_float_formatter(f10_0, 0, true, false);
-    verify_float_formatter(f10_2, 2, true, false);
-    verify_float_formatter(f10_9, 9, true, false);
-
-    auto f11 = fmt::sci().pad_zeros(true).plus_sign(true);
-    auto f11_0 = f11.precision(0);
-    auto f11_2 = f11.precision(2);
-    auto f11_9 = f11.precision(9);
-
-    verify_float_formatter(f11,   6, true, true);
-    verify_float_formatter(f11_0, 0, true, true);
-    verify_float_formatter(f11_2, 2, true, true);
-    verify_float_formatter(f11_9, 9, true, true);
-
-    // special case
-
-    const double Inf = std::numeric_limits<double>::infinity();
-    const double NaN = std::numeric_limits<double>::quiet_NaN();
-
-    ASSERT_EQ(3, f00.formatted_length(Inf));
-    ASSERT_EQ(4, f00.formatted_length(-Inf));
-    ASSERT_EQ(3, f00.formatted_length(NaN));
-
-    // combination coverage
-
-    std::vector<fmt::float_formatter<fmt::sci_t>> fmts {
-        f00, f00_0, f00_2, f00_9,
-        f01, f01_0, f01_2, f01_9,
-        f10, f10_0, f10_2, f10_9,
-        f11, f11_0, f11_2, f11_9
-    };
-
-    std::vector<size_t> widths{0, 4, 8, 12, 20};
-    std::vector<double> xs = prepare_test_floats();
-
-    batch_test_float_format(fmts, widths, xs);
+TEST(FloatFmt, Sci) {
+    FloatFmtTests(fmt::sci());
 }
 
+TEST(FloatFmt, UFixed) {
+    FloatFmtTests(fmt::Fixed());
+}
+
+TEST(FloatFmt, USci) {
+    FloatFmtTests(fmt::Sci());
+}
 

@@ -5,6 +5,91 @@
 using namespace clue;
 using std::size_t;
 
+// Auxiliary functions for testing
+
+const char *cfmt_lsym(const integer_formatter<fmt::dec_t>&) {
+    return "%ld";
+}
+
+const char *cfmt_lsym(const integer_formatter<fmt::oct_t>&) {
+    return "%lo";
+}
+
+const char *cfmt_lsym(const integer_formatter<fmt::hex_t>&) {
+    return "%lx";
+}
+
+const char *cfmt_lsym(const integer_formatter<fmt::Hex_t>&) {
+    return "%lX";
+}
+
+template<class F>
+std::string ref_int_format(const F& f, size_t w, long x) {
+    // generate the reference format in a safe but inefficient way
+
+    // format the main digits
+    const char *cf = cfmt_lsym(f);
+    std::string main = c_fmt(cf, (x >= 0 ? x : -x));
+    size_t ml = main.size();
+
+    // get the sign string
+    std::string sign = x < 0 ? std::string("-") :
+        (f.plus_sign() ? std::string("+") : std::string());
+    size_t sl = sign.size() + ml;
+
+    // compose
+    if (f.pad_zeros()) {
+        std::string ps = w > sl ? std::string(w-sl, '0') : std::string();
+        return sign + ps + main;
+    } else {
+        std::string ps = w > sl ? std::string(w-sl, ' ') : std::string();
+        return ps + sign + main;
+    }
+}
+
+template<typename F, typename X>
+::testing::AssertionResult intfmt_assertion_failure(
+    const char *title, const F& f, size_t width, long x,
+    const char *fexpr, const char *wexpr, const char *xexpr,
+    const X& actual, const X& expect) {
+
+    return ::testing::AssertionFailure()
+        << "Mismatched " << title << " for "
+        << "[" << xexpr << " = " << x << "] "
+        << "with " << fexpr << ": \n"
+        << "  base: " << f.base() << "\n"
+        << "  plus_sign: " << f.plus_sign() << "\n"
+        << "  pad_zeros: " << f.pad_zeros() << "\n"
+        << "  width: " << wexpr << "=" << width << "\n"
+        << "Result:\n"
+        << "  ACTUAL = \"" << actual << "\"\n"
+        << "  EXPECT = \"" << expect << "\"";
+}
+
+template<typename F>
+::testing::AssertionResult CheckIntFormat(
+    const char *fexpr, const char *wexpr, const char *xexpr,
+    const F& f,  size_t width, long x) {
+
+    std::string refstr = ref_int_format(f, width, x);
+    std::string r = f.format(x, width);
+    if (refstr != r) {
+        return intfmt_assertion_failure(
+            "formatted string",
+            f, width, x, fexpr, wexpr, xexpr,
+            r, refstr);
+    }
+    size_t flen = f.formatted_length(x, width);
+    if (refstr.size() != flen) {
+        return intfmt_assertion_failure(
+            "formatted length",
+            f, width, x, fexpr, wexpr, xexpr,
+            flen, refstr.size());
+    }
+    return ::testing::AssertionSuccess();
+}
+
+
 TEST(StringFmt, C_Fmt) {
     ASSERT_EQ("", c_fmt(""));
     ASSERT_EQ("123", c_fmt("%d", 123));
@@ -12,59 +97,6 @@ TEST(StringFmt, C_Fmt) {
     ASSERT_EQ("12.5000", c_fmt("%.4f", 12.5));
 }
 
-void prepend(char c, std::string& s) {
-    s = std::string(1, c) + s;
-}
-
-void pad(std::string& s, size_t w, char c=' ') {
-    if (s.size() < w) {
-        s = std::string(w - s.size(), c) + s;
-    }
-}
-
-void test_format(const integer_formatter<fmt::dec_t>& f, size_t width, long x) {
-    std::string fmt("%");
-    if (f.plus_sign()) fmt += '+';
-    if (f.pad_zeros()) fmt += '0';
-    if (width > 0) fmt += std::to_string(width);
-    fmt += "ld";
-
-    std::string refstr = c_fmt(fmt.c_str(), x);
-    ASSERT_EQ(refstr.size(), f.formatted_length(x, width));
-    ASSERT_EQ(refstr, f.format(x, width));
-}
-
-template<class F>
-void test_format_nondec(const F& f, const char *cf, size_t width, long x) {
-    std::string refstr = c_fmt(cf, (x >= 0 ? x : -x));
-    if (f.pad_zeros()) {
-        if (x < 0) {
-            if (width > 1) pad(refstr, width-1, '0');
-            prepend('-', refstr);
-        } else if (f.plus_sign()) {
-            if (width > 1) pad(refstr, width-1, '0');
-            prepend('+', refstr);
-        } else {
-            pad(refstr, width, '0');
-        }
-    } else {
-        if (x < 0) prepend('-', refstr);
-        else if (f.plus_sign()) prepend('+', refstr);
-        pad(refstr, width);
-    }
-
-     ASSERT_EQ(refstr.size(), f.formatted_length(x, width));
-     ASSERT_EQ(refstr, f.format(x, width));
-}
-
-
-void test_format(const integer_formatter<fmt::oct_t>& f, size_t width, long x) {
-    test_format_nondec(f, "%lo", width, x);
-}
-
-void test_format(const integer_formatter<fmt::hex_t>& f, size_t width, long x) {
-    test_format_nondec(f, "%lx", width, x);
-}
 
 std::vector<long> prepare_test_ints(size_t base, bool show=false) {
     std::vector<long> xs;
@@ -115,6 +147,19 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
     return xs_aug;
 }
 
+template<class Tag>
+void batch_test_int_format(const std::vector<integer_formatter<Tag>>& fmts,
+                     const std::vector<size_t>& ws,
+                     const std::vector<long>& xs) {
+
+    for (const auto& fmt: fmts) {
+        for (size_t w: ws) {
+            for (long x: xs) {
+                ASSERT_PRED_FORMAT3(CheckIntFormat, fmt, w, x);
+            }
+        }
+    }
+}
 
 TEST(IntFmt, Dec) {
 
@@ -162,23 +207,12 @@ TEST(IntFmt, Dec) {
 
     // combination coverage
 
+    std::vector<integer_formatter<fmt::dec_t>> fmts {
+        f00, f01, f10, f11};
+    std::vector<size_t> widths = {0, 5, 12};
     std::vector<long> xs = prepare_test_ints(10);
 
-    for (long x : xs) test_format(f00,  0, x);
-    for (long x : xs) test_format(f00,  5, x);
-    for (long x : xs) test_format(f00, 12, x);
-
-    for (long x : xs) test_format(f01,  0, x);
-    for (long x : xs) test_format(f01,  5, x);
-    for (long x : xs) test_format(f01, 12, x);
-
-    for (long x : xs) test_format(f10,  0, x);
-    for (long x : xs) test_format(f10,  5, x);
-    for (long x : xs) test_format(f10, 12, x);
-
-    for (long x : xs) test_format(f11,  0, x);
-    for (long x : xs) test_format(f11,  5, x);
-    for (long x : xs) test_format(f11, 12, x);
+    batch_test_int_format(fmts, widths, xs);
 }
 
 
@@ -229,23 +263,12 @@ TEST(IntFmt, Oct) {
 
     // combination coverage
 
-    std::vector<long> xs = prepare_test_ints(8);
+    std::vector<integer_formatter<fmt::oct_t>> fmts {
+        f00, f01, f10, f11};
+    std::vector<size_t> widths = {0, 5, 12};
+    std::vector<long> xs = prepare_test_ints(10);
 
-    for (long x : xs) test_format(f00,  0, x);
-    for (long x : xs) test_format(f00,  5, x);
-    for (long x : xs) test_format(f00, 12, x);
-
-    for (long x : xs) test_format(f01,  0, x);
-    for (long x : xs) test_format(f01,  5, x);
-    for (long x : xs) test_format(f01, 12, x);
-
-    for (long x : xs) test_format(f10,  0, x);
-    for (long x : xs) test_format(f10,  5, x);
-    for (long x : xs) test_format(f10, 12, x);
-
-    for (long x : xs) test_format(f11,  0, x);
-    for (long x : xs) test_format(f11,  5, x);
-    for (long x : xs) test_format(f11, 12, x);
+    batch_test_int_format(fmts, widths, xs);
 }
 
 
@@ -296,23 +319,12 @@ TEST(IntFmt, Hex) {
 
     // combination coverage
 
-    std::vector<long> xs = prepare_test_ints(16);
+    std::vector<integer_formatter<fmt::hex_t>> fmts {
+        f00, f01, f10, f11};
+    std::vector<size_t> widths = {0, 5, 12};
+    std::vector<long> xs = prepare_test_ints(10);
 
-    for (long x : xs) test_format(f00,  0, x);
-    for (long x : xs) test_format(f00,  5, x);
-    for (long x : xs) test_format(f00, 12, x);
-
-    for (long x : xs) test_format(f01,  0, x);
-    for (long x : xs) test_format(f01,  5, x);
-    for (long x : xs) test_format(f01, 12, x);
-
-    for (long x : xs) test_format(f10,  0, x);
-    for (long x : xs) test_format(f10,  5, x);
-    for (long x : xs) test_format(f10, 12, x);
-
-    for (long x : xs) test_format(f11,  0, x);
-    for (long x : xs) test_format(f11,  5, x);
-    for (long x : xs) test_format(f11, 12, x);
+    batch_test_int_format(fmts, widths, xs);
 }
 
 

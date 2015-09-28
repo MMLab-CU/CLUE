@@ -6,6 +6,8 @@
 #include <cstdio>
 #include <string>
 #include <cstdarg>
+#include <cmath>
+#include <cstdint>
 
 namespace clue {
 
@@ -57,6 +59,14 @@ struct Hex_t {
     static constexpr unsigned int base = 16;
 };
 
+
+// fixed-point notation
+struct fixed_t {};
+
+// scientific notation
+struct sci_t {};
+
+
 } // end namespace fmt
 
 
@@ -74,6 +84,8 @@ inline charT* fill_chars(size_t n, charT ch, charT *buf) {
         buf[i] = ch;
     return buf + n;
 }
+
+// Digit traits
 
 template<typename Tag>
 struct digit_traits;
@@ -180,6 +192,9 @@ struct digit_traits<fmt::Hex_t> {
     }
 };
 
+
+// Integer formatting
+
 template<typename Tag, typename T>
 inline size_t int_formatted_length(T x, bool plus_sign) {
     // integer format length (no padding)
@@ -256,12 +271,42 @@ inline size_t format_int(T x, bool pad_zeros, bool plus_sign, size_t width,
     }
 }
 
+// Floating-point formatting
+
+inline size_t float_intpart_ndigits(double x) {
+    if (x < 10.0) {
+        return 1;
+    } else if (x < 9.22337e18) {
+        uint64_t n = static_cast<uint64_t>(x);
+        return digit_traits<fmt::dec_t>::positive_ndigits(n);
+    } else {
+        return std::floor(std::log10(x)) + 1;
+    }
+}
+
+template<typename T>
+inline size_t float_formatted_length(fmt::fixed_t, T x, size_t precision, bool plus_sign) {
+    // precondition: x is finite
+    return (plus_sign || ::std::signbit(x) ? 0 : 1) +  // sign
+        float_intpart_ndigits(::std::abs(x)) +      // unsigned integer part
+        (precision > 0 ? precision + 1 : 0);        // fractional part
+}
+
+template<typename T>
+inline size_t float_formatted_length(fmt::sci_t, T x, size_t precision, bool plus_sign) {
+    // precondition: x is finite
+    double ax = ::std::abs(x);
+    return (plus_sign || ::std::signbit(x) ? 2 : 1) +            // integer part
+        (precision > 0 ? precision + 1 : 0) +                    // fractional part
+        (ax == 0.0 ? 4 : (ax < 1.0e-99 || x > 9.0e99 ? 5: 4));   // exponent part
+}
+
 } // end namespace details
 
 
 //===============================================
 //
-//  format specifiers
+//  integer format specifiers
 //
 //===============================================
 
@@ -351,6 +396,56 @@ constexpr integer_formatter<fmt::hex_t> hex() noexcept {
 constexpr integer_formatter<fmt::Hex_t> Hex() noexcept {
     return integer_formatter<fmt::Hex_t>();
 }
+
+
+//===============================================
+//
+//  floating point format specifiers
+//
+//===============================================
+
+template<typename Tag>
+class float_formatter {
+private:
+    using size_t = ::std::size_t;
+    size_t precision_;
+    bool pad_zeros_;
+    bool plus_sign_;
+
+public:
+    constexpr float_formatter() :
+        precision_(6),
+        pad_zeros_(false),
+        plus_sign_(false) {}
+
+    constexpr float_formatter(size_t prec, bool pzeros, bool psign) :
+        precision_(prec),
+        pad_zeros_(pzeros),
+        plus_sign_(psign) {}
+
+    constexpr size_t precision() const noexcept { return precision_; }
+    constexpr bool pad_zeros() const noexcept { return pad_zeros_; }
+    constexpr bool plus_sign() const noexcept { return plus_sign_; }
+
+    constexpr float_formatter precision(size_t v) const noexcept {
+        return float_formatter(v, pad_zeros_, plus_sign_);
+    }
+
+    constexpr float_formatter pad_zeros(bool v) const noexcept {
+        return float_formatter(precision_, v, plus_sign_);
+    }
+
+    constexpr float_formatter plus_sign(bool v) const noexcept {
+        return float_formatter(precision_, pad_zeros_, v);
+    }
+
+    template<typename T>
+    enable_if_t<::std::is_arithmetic<T>::value, size_t>
+    formatted_length(T x) const noexcept {
+        return details::float_formatted_length(Tag{}, x, precision_, plus_sign_);
+    }
+};
+
 
 
 }

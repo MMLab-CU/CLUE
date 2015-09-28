@@ -47,7 +47,7 @@ TEST(Grisu, DtoA) {
     for (const auto& e: entries) {
         double x = e.first;
         const char *refstr = e.second;
-        Grisu_DtoA(x, result);
+        dtoa(x, result);
         // std::printf("x = %g, r = \"%s\", grisu = \"%s\"\n", x, refstr, result);
         ASSERT_STREQ(refstr, result);
     }

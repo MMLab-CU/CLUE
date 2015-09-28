@@ -18,7 +18,7 @@ namespace grisu_impl {
 
 //===============================================
 //
-//   class DiyFp
+//   class diy_fp
 //
 //===============================================
 
@@ -31,20 +31,20 @@ constexpr charT u2digit(unsigned int x) noexcept {
 }
 
 
-struct DiyFp {
+struct diy_fp {
     // fields
 
     uint64_t f;
     int e;
 
     // constructors
-    constexpr DiyFp() noexcept :
+    constexpr diy_fp() noexcept :
         f(0), e(0) {}
 
-    constexpr DiyFp(uint64_t fp, int exp) noexcept :
+    constexpr diy_fp(uint64_t fp, int exp) noexcept :
         f(fp), e(exp) {}
 
-    explicit DiyFp(double d) noexcept {
+    explicit diy_fp(double d) noexcept {
         union {
             double d;
             uint64_t u64;
@@ -64,20 +64,20 @@ struct DiyFp {
 
     // operations
 
-    constexpr DiyFp operator-(const DiyFp& rhs) const {
-        return DiyFp(f - rhs.f, e);
+    constexpr diy_fp operator-(const diy_fp& rhs) const {
+        return diy_fp(f - rhs.f, e);
     }
 
     //
     // platform-dependent optimized multiplication
     //
-    DiyFp operator*(const DiyFp& rhs) const {
+    diy_fp operator*(const diy_fp& rhs) const {
 #if defined(_MSC_VER) && defined(_M_AMD64)
         uint64_t h;
         uint64_t l = _umul128(f, rhs.f, &h);
         if (l & (uint64_t(1) << 63)) // rounding
             h++;
-        return DiyFp(h, e + rhs.e + 64);
+        return diy_fp(h, e + rhs.e + 64);
 #elif (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)) && defined(__x86_64__)
         __extension__ typedef unsigned __int128 uint128;
         uint128 p = static_cast<uint128>(f) * static_cast<uint128>(rhs.f);
@@ -85,7 +85,7 @@ struct DiyFp {
         uint64_t l = static_cast<uint64_t>(p);
         if (l & (uint64_t(1) << 63)) // rounding
             h++;
-        return DiyFp(h, e + rhs.e + 64);
+        return diy_fp(h, e + rhs.e + 64);
 #else
         const uint64_t M32 = 0xFFFFFFFF;
         const uint64_t a = f >> 32;
@@ -98,20 +98,20 @@ struct DiyFp {
         const uint64_t bd = b * d;
         uint64_t tmp = (bd >> 32) + (ad & M32) + (bc & M32);
         tmp += 1U << 31;  /// mult_round
-        return DiyFp(ac + (ad >> 32) + (bc >> 32) + (tmp >> 32), e + rhs.e + 64);
+        return diy_fp(ac + (ad >> 32) + (bc >> 32) + (tmp >> 32), e + rhs.e + 64);
 #endif
     }
 
-    DiyFp Normalize() const {
+    diy_fp normalize() const {
 #if defined(_MSC_VER) && defined(_M_AMD64)
         unsigned long index;
         _BitScanReverse64(&index, f);
-        return DiyFp(f << (63 - index), e - (63 - index));
+        return diy_fp(f << (63 - index), e - (63 - index));
 #elif defined(__GNUC__) && __GNUC__ >= 4
         int s = __builtin_clzll(f);
-        return DiyFp(f << s, e - s);
+        return diy_fp(f << s, e - s);
 #else
-        DiyFp res = *this;
+        diy_fp res = *this;
         while (!(res.f & (static_cast<uint64_t>(1) << 63))) {
             res.f <<= 1;
             res.e--;
@@ -120,8 +120,8 @@ struct DiyFp {
 #endif
     }
 
-    DiyFp NormalizeBoundary() const {
-        DiyFp res = *this;
+    diy_fp normalize_boundary() const {
+        diy_fp res = *this;
         while (!(res.f & (kDpHiddenBit << 1))) {
             res.f <<= 1;
             res.e--;
@@ -131,16 +131,16 @@ struct DiyFp {
         return res;
     }
 
-    void NormalizedBoundaries(DiyFp* minus, DiyFp* plus) const {
-        DiyFp pl = DiyFp((f << 1) + 1, e - 1).NormalizeBoundary();
-        DiyFp mi = (f == kDpHiddenBit) ? DiyFp((f << 2) - 1, e - 2) : DiyFp((f << 1) - 1, e - 1);
+    void normalized_boundaries(diy_fp* minus, diy_fp* plus) const {
+        diy_fp pl = diy_fp((f << 1) + 1, e - 1).normalize_boundary();
+        diy_fp mi = (f == kDpHiddenBit) ? diy_fp((f << 2) - 1, e - 2) : diy_fp((f << 1) - 1, e - 1);
         mi.f <<= mi.e - pl.e;
         mi.e = pl.e;
         *plus = pl;
         *minus = mi;
     }
 
-    double ToDouble() const {
+    double to_double() const {
         union {
             double d;
             uint64_t u64;
@@ -161,10 +161,10 @@ struct DiyFp {
     static constexpr uint64_t kDpSignificandMask = CLUE_UINT64_HL(0x000FFFFF, 0xFFFFFFFF);
     static constexpr uint64_t kDpHiddenBit = CLUE_UINT64_HL(0x00100000, 0x00000000);
 
-}; // end class DiyFp
+}; // end class diy_fp
 
 
-inline DiyFp GetCachedPowerByIndex(size_t index) {
+inline diy_fp get_cached_power_byindex(size_t index) {
     // 10^-348, 10^-340, ..., 10^340
     static const uint64_t kCachedPowers_F[] = {
         CLUE_UINT64_HL(0xfa8fd5a0, 0x081c0288), CLUE_UINT64_HL(0xbaaee17f, 0xa23ebf76),
@@ -223,10 +223,10 @@ inline DiyFp GetCachedPowerByIndex(size_t index) {
         641,   667,   694,   720,   747,   774,   800,   827,   853,   880,
         907,   933,   960,   986,  1013,  1039,  1066
     };
-    return DiyFp(kCachedPowers_F[index], kCachedPowers_E[index]);
+    return diy_fp(kCachedPowers_F[index], kCachedPowers_E[index]);
 }
 
-inline DiyFp GetCachedPower(int e, int* K) {
+inline diy_fp get_cached_power(int e, int* K) {
     double dk = (-61 - e) * 0.30102999566398114 + 347;
     int k = static_cast<int>(dk);
     if (dk - k > 0.0)
@@ -235,13 +235,13 @@ inline DiyFp GetCachedPower(int e, int* K) {
     unsigned index = static_cast<unsigned>((k >> 3) + 1);
     *K = -(-348 + static_cast<int>(index << 3));
 
-    return GetCachedPowerByIndex(index);
+    return get_cached_power_byindex(index);
 }
 
-inline DiyFp GetCachedPower10(int exp, int *outExp) {
+inline diy_fp get_cached_pow10(int exp, int *outExp) {
      unsigned index = (static_cast<unsigned>(exp) + 348u) / 8u;
      *outExp = -348 + static_cast<int>(index) * 8;
-     return GetCachedPowerByIndex(index);
+     return get_cached_power_byindex(index);
 }
 
 
@@ -252,7 +252,7 @@ inline DiyFp GetCachedPower10(int exp, int *outExp) {
 //===============================================
 
 template<typename charT>
-inline void GrisuRound(charT* buffer, int len, uint64_t delta, uint64_t rest, uint64_t ten_kappa, uint64_t wp_w) {
+inline void grisu_round(charT* buffer, int len, uint64_t delta, uint64_t rest, uint64_t ten_kappa, uint64_t wp_w) {
     while (rest < wp_w && delta - rest >= ten_kappa &&
            (rest + ten_kappa < wp_w ||  /// closer
             wp_w - rest > rest + ten_kappa - wp_w)) {
@@ -261,7 +261,7 @@ inline void GrisuRound(charT* buffer, int len, uint64_t delta, uint64_t rest, ui
     }
 }
 
-inline unsigned CountDecimalDigit32(uint32_t n) {
+inline unsigned ndigits_u32(uint32_t n) {
     if (n < 10) return 1;
     if (n < 100) return 2;
     if (n < 1000) return 3;
@@ -274,15 +274,15 @@ inline unsigned CountDecimalDigit32(uint32_t n) {
 }
 
 template<typename charT>
-inline void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, charT* buffer, int* len, int* K) {
+inline void digit_gen(const diy_fp& W, const diy_fp& Mp, uint64_t delta, charT* buffer, int* len, int* K) {
     static const uint32_t kPow10[] = {
         1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000
     };
-    const DiyFp one(uint64_t(1) << -Mp.e, Mp.e);
-    const DiyFp wp_w = Mp - W;
+    const diy_fp one(uint64_t(1) << -Mp.e, Mp.e);
+    const diy_fp wp_w = Mp - W;
     uint32_t p1 = static_cast<uint32_t>(Mp.f >> -one.e);
     uint64_t p2 = Mp.f & (one.f - 1);
-    unsigned kappa = CountDecimalDigit32(p1); // kappa in [0, 9]
+    unsigned kappa = ndigits_u32(p1); // kappa in [0, 9]
     *len = 0;
 
     while (kappa > 0) {
@@ -305,7 +305,7 @@ inline void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, charT* buf
         uint64_t tmp = (static_cast<uint64_t>(p1) << -one.e) + p2;
         if (tmp <= delta) {
             *K += kappa;
-            GrisuRound(buffer, *len, delta, tmp,
+            grisu_round(buffer, *len, delta, tmp,
                 static_cast<uint64_t>(kPow10[kappa]) << -one.e, wp_w.f);
             return;
         }
@@ -322,7 +322,7 @@ inline void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, charT* buf
         kappa--;
         if (p2 < delta) {
             *K += kappa;
-            GrisuRound(buffer, *len, delta, p2,
+            grisu_round(buffer, *len, delta, p2,
                 one.f,
                 wp_w.f * kPow10[-static_cast<int>(kappa)]);
             return;
@@ -331,22 +331,22 @@ inline void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, charT* buf
 }
 
 template<typename charT>
-inline void Grisu2(double value, charT* buffer, int* length, int* K) {
-    const DiyFp v(value);
-    DiyFp w_m, w_p;
-    v.NormalizedBoundaries(&w_m, &w_p);
+inline void grisu2(double value, charT* buffer, int* length, int* K) {
+    const diy_fp v(value);
+    diy_fp w_m, w_p;
+    v.normalized_boundaries(&w_m, &w_p);
 
-    const DiyFp c_mk = GetCachedPower(w_p.e, K);
-    const DiyFp W = v.Normalize() * c_mk;
-    DiyFp Wp = w_p * c_mk;
-    DiyFp Wm = w_m * c_mk;
+    const diy_fp c_mk = get_cached_power(w_p.e, K);
+    const diy_fp W = v.normalize() * c_mk;
+    diy_fp Wp = w_p * c_mk;
+    diy_fp Wm = w_m * c_mk;
     Wm.f++;
     Wp.f--;
-    DigitGen(W, Wp, Wp.f - Wm.f, buffer, length, K);
+    digit_gen(W, Wp, Wp.f - Wm.f, buffer, length, K);
 }
 
 template<typename charT>
-inline charT* WriteExponent(int K_, charT* buffer) {
+inline charT* write_exp(int K_, charT* buffer) {
     if (K_ < 0) *buffer++ = '-';
     unsigned int K = static_cast<unsigned int>(K_ < 0 ? -K_ : K_);
 
@@ -369,7 +369,7 @@ inline charT* WriteExponent(int K_, charT* buffer) {
 }
 
 template<typename charT>
-inline void Prettify(charT* buffer, int length, int k) {
+inline void prettify(charT* buffer, int length, int k) {
     const int kk = length + k;  // 10^(kk-1) <= v < 10^kk
 
     if (length <= kk && kk <= 21) {
@@ -400,19 +400,19 @@ inline void Prettify(charT* buffer, int length, int k) {
     else if (length == 1) {
         // 1e30
         buffer[1] = (charT)('e');
-        WriteExponent(kk - 1, &buffer[2]);
+        write_exp(kk - 1, &buffer[2]);
     }
     else {
         // 1234e30 -> 1.234e33
         ::std::memmove(&buffer[2], &buffer[1], static_cast<size_t>(length - 1) * sizeof(charT));
         buffer[1] = (charT)('.');
         buffer[length + 1] = (charT)('e');
-        WriteExponent(kk - 1, &buffer[0 + length + 2]);
+        write_exp(kk - 1, &buffer[0 + length + 2]);
     }
 }
 
 template<typename charT>
-inline void Grisu_DtoA(double value, charT* buffer) {
+inline void dtoa(double value, charT* buffer) {
     if (::std::isfinite(value)) {
         if (value == 0.0) {  // 0.0 or -0.0
             if (::std::signbit(value)) *buffer++ = (charT)('-');
@@ -424,8 +424,8 @@ inline void Grisu_DtoA(double value, charT* buffer) {
                 value = -value;
             }
             int length, K;
-            Grisu2(value, buffer, &length, &K);
-            Prettify(buffer, length, K);
+            grisu2(value, buffer, &length, &K);
+            prettify(buffer, length, K);
         }
     } else if (::std::isinf(value) ) {
         if (::std::signbit(value)) *buffer++ = (charT)('-');

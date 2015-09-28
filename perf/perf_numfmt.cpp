@@ -209,7 +209,7 @@ int main() {
     std::printf("with-clue-grisu:\n");
     static char tmpbuf[256];
     auto f_grisu = [&]() {
-        for (double x: reals) grisu_impl::Grisu_DtoA(x, tmpbuf);
+        for (double x: reals) grisu_impl::dtoa(x, tmpbuf);
     };
     auto r_grisu = calibrated_time(f_grisu);
     report("grisu", reals.size(), r_grisu);

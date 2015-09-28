@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cassert>
+#include <stdexcept>
 
 namespace clue {
 

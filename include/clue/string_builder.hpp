@@ -5,7 +5,6 @@
 #include <clue/formatting.hpp>
 #include <array>
 #include <new>  // for bad_alloc
-#include <stdexcept>
 
 namespace clue {
 

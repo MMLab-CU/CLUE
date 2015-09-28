@@ -384,7 +384,7 @@ public:
             n = ::std::signbit(x) || bool(flags_ & plus_sign) ? 4 : 3;
         } else {
             assert(::std::isnan(x));
-            n = 3;
+            n = plus_sign ? 4 : 3;
         }
         return n > width_ ? n : width_;
     }

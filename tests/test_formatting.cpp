@@ -54,7 +54,7 @@ template<typename F>
     const unsigned radix = f.radix_value;
     std::string refstr = ref_int_format(f, x);
 
-    size_t flen = f.formatted_length(x);
+    size_t flen = f.max_formatted_length(x);
     if (refstr.size() != flen) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted length for "
@@ -119,9 +119,9 @@ template<typename F>
     size_t w = f.width();
     std::string refstr = ref_float_format(f, x);
     size_t rl = refstr.size();
-    size_t fl_max = rl <= 16 ? rl + 1 : rl + 2;
+    size_t fl_max = rl <= 8 ? rl + 1 : rl + 2;
 
-    size_t flen = f.formatted_length(x);
+    size_t flen = f.max_formatted_length(x);
     if (!(flen >= rl && flen <= fl_max)) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted length for "

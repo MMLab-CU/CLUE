@@ -133,13 +133,13 @@ inline void extract_digits_hex(T x, bool upper, charT *buf, size_t n) {
 //
 //===============================================
 
-inline size_t fixed_fmt_length(double x, size_t precision, bool plus_sign) noexcept {
+inline size_t maxfmtlength_fixed(double x, size_t precision, bool plus_sign) noexcept {
     double ax = ::std::abs(x);
     size_t n = 0;
     if (ax < 9.5) {  // 9.5x is possible to rounded up to 10 with low precision setting
         n = 1;
-    } else if (ax < 9.22337e18) {
-        uint64_t rint = static_cast<uint64_t>(::std::round(ax));
+    } else if (ax < 9e18) {
+        uint64_t rint = static_cast<uint64_t>(::std::ceil(ax));
         n = ndigits_dec(rint);
     } else {
         n = std::floor(std::log10(ax)) + 2;
@@ -149,20 +149,10 @@ inline size_t fixed_fmt_length(double x, size_t precision, bool plus_sign) noexc
     return n;
 }
 
-inline size_t sci_fmt_length(double x, size_t precision, bool plus_sign) noexcept {
-    double ax = ::std::abs(x);
-    size_t n = 1;
+inline size_t maxfmtlength_sci(double x, size_t precision, bool plus_sign) noexcept {
+    size_t n = 6;  // "1e+???"
     if (precision > 0) n += (precision + 1);
     if (::std::signbit(x) || plus_sign) n += 1;
-
-    // exponent part
-    if (ax == 0.0) {
-        n += 4;
-    } else if (ax < 1.0e-99 || ax > 9.0e99) {
-        n += 5;
-    } else {
-        n += 4;
-    }
     return n;
 }
 

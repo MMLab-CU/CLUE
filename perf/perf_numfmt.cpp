@@ -117,25 +117,25 @@ public:
     }
 
     void put(int x, dec_t) {
-        size_t n = dec_.formatted_length(x);
+        size_t n = dec_.max_formatted_length(x);
         if (n < 128)
             dec_.formatted_write(x, buf, 128);
     }
 
     void put(int x, hex_t) {
-        size_t n = hex_.formatted_length(x);
+        size_t n = hex_.max_formatted_length(x);
         if (n < 128)
             hex_.formatted_write(x, buf, 128);
     }
 
     void put(double x, fixed_t) {
-        size_t n = fixed_.formatted_length(x);
+        size_t n = fixed_.max_formatted_length(x);
         if (n < 128)
             fixed_.formatted_write(x, buf, 128);
     }
 
     void put(double x, sci_t) {
-        size_t n = sci_.formatted_length(x);
+        size_t n = sci_.max_formatted_length(x);
         if (n < 128)
             sci_.formatted_write(x, buf, 128);
     }

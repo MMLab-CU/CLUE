@@ -150,7 +150,7 @@ public:
     // formatting
 
     template<typename T>
-    size_t formatted_length(T x) const noexcept {
+    size_t max_formatted_length(T x) const noexcept {
         size_t n = ndigits(x, radix_type{});
         if (x < 0 || any(plus_sign)) n++;
         return n > width_ ? n : width_;
@@ -214,8 +214,8 @@ struct float_fmt_traits {};
 
 template<>
 struct float_fmt_traits<fixed_t> {
-    static size_t fmt_length(double x, size_t precision, bool plus_sign) noexcept {
-        return fixed_fmt_length(x, precision, plus_sign);
+    static size_t maxfmtlength(double x, size_t precision, bool plus_sign) noexcept {
+        return maxfmtlength_fixed(x, precision, plus_sign);
     }
 
     static constexpr char printf_sym(bool upper) noexcept {
@@ -225,8 +225,8 @@ struct float_fmt_traits<fixed_t> {
 
 template<>
 struct float_fmt_traits<sci_t> {
-    static size_t fmt_length(double x, size_t precision, bool plus_sign) noexcept {
-        return sci_fmt_length(x, precision, plus_sign);
+    static size_t maxfmtlength(double x, size_t precision, bool plus_sign) noexcept {
+        return maxfmtlength_sci(x, precision, plus_sign);
     }
 
     static constexpr char printf_sym(bool upper) noexcept {
@@ -282,10 +282,10 @@ public:
 
     // formatting
 
-    size_t formatted_length(double x) const noexcept {
+    size_t max_formatted_length(double x) const noexcept {
         size_t n = 0;
         if (::std::isfinite(x)) {
-            n = fmt_traits_t::fmt_length(x, precision_, any(plus_sign));
+            n = fmt_traits_t::maxfmtlength(x, precision_, any(plus_sign));
         } else if (::std::isinf(x)) {
             n = ::std::signbit(x) || any(plus_sign) ? 4 : 3;
         } else {
@@ -338,7 +338,7 @@ struct is_formattable<T, float_formatter<Tag>> : public ::std::is_arithmetic<T> 
 template<typename T, typename Fmt>
 inline enable_if_t<is_formattable<T, Fmt>::value, ::std::string>
 format(const T& x, const Fmt& fmt) {
-    size_t fmt_len = fmt.formatted_length(x);
+    size_t fmt_len = fmt.max_formatted_length(x);
     ::std::string s(fmt_len, '\0');
     size_t wlen = fmt.formatted_write(x, const_cast<char*>(s.data()), fmt_len + 1);
     CLUE_ASSERT(wlen <= fmt_len);

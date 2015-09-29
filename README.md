@@ -26,7 +26,7 @@ Below is a list of components available in the library.
 - ``optional`` class template.
 - ``string_view`` class template.
 - Extensions of string functionalities (*e.g.* trimming and tokenizers).
-- Simple string formatting.
+- String formatting, and in particular, efficient integer and floating point formatting (*e.g.* Grisu algorithm).
 - Efficient string builder.
 - ``value_range`` class template.
 - ``array_view`` class template.

@@ -115,3 +115,64 @@ TEST(StringBuilder, WriteStrings) {
     ASSERT_EQ(string_view(sb.data(), sb.size()), sb.str_view());
 }
 
+
+TEST(RefStringBuilder, Basics) {
+
+    char buf[6];
+
+    ref_string_builder sb(buf, 6);
+
+    ASSERT_TRUE(sb.empty());
+    ASSERT_EQ(6, sb.capacity());
+    ASSERT_EQ(0, sb.size());
+    ASSERT_EQ("", sb.str());
+    ASSERT_EQ(string_view(sb.data(), 0), sb.str_view());
+
+    sb.reset();
+
+    ASSERT_TRUE(sb.empty());
+    ASSERT_EQ(6, sb.capacity());
+    ASSERT_EQ(0, sb.size());
+    ASSERT_EQ("", sb.str());
+    ASSERT_EQ(string_view(sb.data(), 0), sb.str_view());
+
+    sb.reserve(4);
+
+    ASSERT_TRUE(sb.empty());
+    ASSERT_EQ(6, sb.capacity());
+    ASSERT_EQ(0, sb.size());
+    ASSERT_EQ("", sb.str());
+    ASSERT_EQ(string_view(sb.data(), 0), sb.str_view());
+
+    ASSERT_THROW(sb.reserve(12), std::runtime_error);
+
+    ASSERT_TRUE(sb.empty());
+    ASSERT_EQ(6, sb.capacity());
+    ASSERT_EQ(0, sb.size());
+    ASSERT_EQ("", sb.str());
+    ASSERT_EQ(string_view(sb.data(), 0), sb.str_view());
+
+    sb.write("abc");
+
+    ASSERT_FALSE(sb.empty());
+    ASSERT_EQ(6, sb.capacity());
+    ASSERT_EQ(3, sb.size());
+    ASSERT_EQ("abc", sb.str());
+    ASSERT_EQ(string_view(sb.data(), 3), sb.str_view());
+
+    ASSERT_THROW(sb.write("xyzw"), std::runtime_error);
+
+    ASSERT_FALSE(sb.empty());
+    ASSERT_EQ(6, sb.capacity());
+    ASSERT_EQ(3, sb.size());
+    ASSERT_EQ("abc", sb.str());
+    ASSERT_EQ(string_view(sb.data(), 3), sb.str_view());
+
+    sb.reset();
+
+    ASSERT_TRUE(sb.empty());
+    ASSERT_EQ(6, sb.capacity());
+    ASSERT_EQ(0, sb.size());
+    ASSERT_EQ("", sb.str());
+    ASSERT_EQ(string_view(sb.data(), 0), sb.str_view());
+}

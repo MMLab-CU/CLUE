@@ -2,7 +2,7 @@
 #define CLUE_STRING_BUILDER__
 
 #include <clue/string_view.hpp>
-#include <clue/formatting.hpp>
+#include <clue/formatting_base.hpp>
 #include <cstring>
 #include <stdexcept>
 #include <array>

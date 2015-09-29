@@ -1,6 +1,6 @@
 // Compares the performance of number formatting
 
-#include <clue/formatting.hpp>
+#include <clue/formatting_base.hpp>
 #include <clue/timing.hpp>
 #include <iostream>
 #include <random>

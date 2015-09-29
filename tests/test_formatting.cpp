@@ -1,4 +1,4 @@
-#include <clue/formatting.hpp>
+#include <clue/formatting_base.hpp>
 #include <vector>
 #include <limits>
 #include <gtest/gtest.h>

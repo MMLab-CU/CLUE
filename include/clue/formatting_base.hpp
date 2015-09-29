@@ -1,5 +1,5 @@
-#ifndef CLUE_FORMATTING__
-#define CLUE_FORMATTING__
+#ifndef CLUE_FORMATTING_BASE__
+#define CLUE_FORMATTING_BASE__
 
 #include <clue/string_view.hpp>
 #include <clue/internal/numfmt.hpp>

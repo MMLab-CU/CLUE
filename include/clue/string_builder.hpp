@@ -2,6 +2,7 @@
 #define CLUE_STRING_BUILDER__
 
 #include <clue/string_view.hpp>
+#include <clue/formatting.hpp>
 #include <cstring>
 #include <stdexcept>
 #include <array>
@@ -103,6 +104,20 @@ public:
     void write(const ::std::basic_string<charT, Traits, Allocator>& s) {
         write(s.data(), s.size());
     }
+
+    template<typename T, typename Fmt>
+    void writef(const T& x, Fmt&& fmt) {
+        size_t max_n = fmt.max_formatted_length(x);
+        charT *p = take_next(max_n);
+        size_t n = fmt.formatted_write(x, p, max_n);
+        advance(n);
+    }
+
+    template<typename T>
+    void writef(const T& x) {
+        writef(x, fmt::default_formatter(x));
+    }
+
 
     // Modifiers
 

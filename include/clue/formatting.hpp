@@ -318,26 +318,20 @@ constexpr float_formatter<sci_t> sci_fmt() noexcept {
 
 //===============================================
 //
-//  integer format specifiers
+//  Generic formatting
 //
 //===============================================
 
-
 // Generic formatting function
 
-template<typename T, typename Fmt>
-struct is_formattable : public ::std::false_type {};
-
-template<typename T, unsigned int N>
-struct is_formattable<T, int_formatter<N>> : public ::std::is_integral<T> {};
-
-template<typename T, typename Tag>
-struct is_formattable<T, float_formatter<Tag>> : public ::std::is_arithmetic<T> {};
-
+template<typename T>
+constexpr enable_if_t<::std::is_integral<T>::value, int_formatter<10> >
+default_formatter(const T& x) noexcept {
+    return dec_fmt();
+};
 
 template<typename T, typename Fmt>
-inline enable_if_t<is_formattable<T, Fmt>::value, ::std::string>
-format(const T& x, const Fmt& fmt) {
+inline ::std::string str(const T& x, const Fmt& fmt) {
     size_t fmt_len = fmt.max_formatted_length(x);
     ::std::string s(fmt_len, '\0');
     size_t wlen = fmt.formatted_write(x, const_cast<char*>(s.data()), fmt_len + 1);
@@ -346,6 +340,11 @@ format(const T& x, const Fmt& fmt) {
         s.resize(wlen);
     }
     return ::std::move(s);
+}
+
+template<typename T>
+inline ::std::string str(const T& x) {
+    return str(x, default_formatter(x));
 }
 
 

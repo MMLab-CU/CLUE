@@ -70,7 +70,7 @@ template<typename F>
             << " (\"" << refstr << "\")";
     }
 
-    std::string r = format(x, f);
+    std::string r = fmt::str(x, f);
     if (refstr != r) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted string for "
@@ -138,7 +138,7 @@ template<typename F>
             << " (\"" << refstr << "\")";
     }
 
-    std::string r = format(x, f);
+    std::string r = fmt::str(x, f);
 
     // std::printf("%s  |   %s\n", refstr.c_str(), r.c_str());
 
@@ -412,4 +412,13 @@ TEST(FloatFmt, UFixed) {
 TEST(FloatFmt, USci) {
     FloatFmtTests(fmt::sci_fmt() | fmt::upper_case);
 }
+
+
+TEST(DefaultFormat, Numbers) {
+    ASSERT_EQ("0", fmt::str(0));
+    ASSERT_EQ("123", fmt::str(123));
+    ASSERT_EQ("-456", fmt::str(-456));
+}
+
+
 

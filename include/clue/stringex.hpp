@@ -295,6 +295,105 @@ trim(const ::std::basic_string<charT, Traits, Allocator>& str) {
 }
 
 
+// tokenize functions
+
+namespace details {
+
+template<typename charT, typename Traits=::std::char_traits<charT>>
+struct is_in_cstr_ {
+    const charT *cstr_;
+    bool operator()(charT c) const noexcept {
+        const charT *p = cstr_;
+        while (*p && !Traits::eq(c, *p)) p++;
+        return static_cast<bool>(*p);
+    }
+};
+
+template<typename charT, typename Traits=::std::char_traits<charT>>
+struct is_eq_char_ {
+    charT c_;
+    constexpr bool operator()(charT c) const noexcept {
+        return Traits::eq(c, c_);
+    }
+};
+
+template<typename charT, typename Pred, typename F>
+void foreach_token_of_(const charT *str, Pred is_delim, F&& f) {
+    // skip leading delimiters
+    const charT *p = str;
+    while (*p && is_delim(*p)) p++;
+
+    // for each token
+    while (*p) {
+        const charT *q = p + 1;
+        while (*q && !is_delim(*q)) q++;
+        size_t tk_len = static_cast<size_t>(q - p);
+        if (!(f(p, tk_len))) break;
+
+        // skip delimiters
+        p = q;
+        while (*p && is_delim(*p)) p++;
+    }
+}
+
+template<typename charT, typename Traits, typename Pred, typename F>
+void foreach_token_of_(basic_string_view<charT, Traits> sv, Pred is_delim, F&& f) {
+    // skip leading delimiters
+    const charT *p = sv.data();
+    const charT *pend = p + sv.size();
+
+    while (p != pend && is_delim(*p)) p++;
+
+    // for each token
+    while (p != pend) {
+        const charT *q = p + 1;
+        while (q != pend && !is_delim(*q)) q++;
+        size_t tk_len = static_cast<size_t>(q - p);
+        if (!(f(p, tk_len))) break;
+
+        // skip delimiters
+        p = q;
+        while (p != pend && is_delim(*p)) p++;
+    }
+}
+
+};
+
+
+template<typename charT, typename F>
+inline void foreach_token_of(const charT *str,  charT delim, F&& f) {
+    details::foreach_token_of_(str,
+        details::is_eq_char_<charT>{delim}, ::std::forward<F>(f));
+}
+
+template<typename charT, typename F>
+inline void foreach_token_of(const charT *str, const charT *delims, F&& f) {
+    details::foreach_token_of_(str,
+        details::is_in_cstr_<charT>{delims}, ::std::forward<F>(f));
+}
+
+template<typename charT, typename Traits, typename F>
+inline void foreach_token_of(basic_string_view<charT, Traits> sv, charT delim, F&& f) {
+    details::foreach_token_of_(sv,
+        details::is_eq_char_<charT, Traits>{delim}, ::std::forward<F>(f));
+}
+
+template<typename charT, typename Traits, typename F>
+inline void foreach_token_of(basic_string_view<charT, Traits> sv, const charT *delims, F&& f) {
+    details::foreach_token_of_(sv,
+        details::is_in_cstr_<charT, Traits>{delims}, ::std::forward<F>(f));
+}
+
+template<typename charT, typename Traits, typename Allocator, typename F>
+inline void foreach_token_of(::std::basic_string<charT, Traits, Allocator>& str, charT delim, F&& f) {
+    foreach_token_of(view(str), delim, ::std::forward<F>(f));
+}
+
+template<typename charT, typename Traits, typename Allocator, typename F>
+inline void foreach_token_of(::std::basic_string<charT, Traits, Allocator>& str, const charT* delims, F&& f) {
+    foreach_token_of(view(str), delims, ::std::forward<F>(f));
+}
+
 }
 
 #endif

@@ -187,3 +187,50 @@ TEST(StringEx, Trim) {
     test_trim<string_view>();
     test_trim<string>();
 }
+
+
+TEST(StringEx, Tokenize) {
+
+    const char *cstr = "abc ef 1234 xyz";
+    string_view sv(cstr, 10);   // "abc ef 123"
+    std::string str = sv.to_string();
+    std::vector<std::string> tks0{"abc", "ef", "1234", "xyz"};
+    std::vector<std::string> tks1{"abc", "ef", "123"};
+
+    std::vector<std::string> v;
+    auto f = [&](const char *p, size_t n) {
+        v.push_back(std::string(p, n));
+        return true;
+    };
+
+    v.clear();
+    clue::foreach_token_of(cstr, ' ', f);
+    ASSERT_EQ(tks0, v);
+
+    v.clear();
+    clue::foreach_token_of(cstr, " ", f);
+    ASSERT_EQ(tks0, v);
+
+    v.clear();
+    clue::foreach_token_of(sv, ' ', f);
+    ASSERT_EQ(tks1, v);
+
+    v.clear();
+    clue::foreach_token_of(sv, " ", f);
+    ASSERT_EQ(tks1, v);
+
+    v.clear();
+    clue::foreach_token_of(str, ' ', f);
+    ASSERT_EQ(tks1, v);
+
+    v.clear();
+    clue::foreach_token_of(str, " ", f);
+    ASSERT_EQ(tks1, v);
+
+    const char *xstr = " abc ; xy, uvw ,";
+
+    v.clear();
+    clue::foreach_token_of(xstr, ";, ", f);
+    std::vector<std::string> tks2{"abc", "xy", "uvw"};
+    ASSERT_EQ(tks2, v);
+}

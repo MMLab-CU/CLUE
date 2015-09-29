@@ -72,3 +72,47 @@ Trim Strings
     Trim the trailing spaces of ``str``, where ``str`` can be either a standard string or a string view.
 
     :return: the trimmed sub-string. It is a view when ``str`` is a string view, or a copy of the sub-string when ``str`` is an instance of a standard string.
+
+
+Tokenize
+---------
+
+Extracting tokens from a string is a basic and important task in many text processing applications. ANSI C provides a ``strtok`` function for tokenizing, which, however, will destruct the source string. Some tokenizing functions in other libraries may return a vector of strings. This way involves making copies of all extracted tokens, which is often unnecessary.
+
+In this library, we provide tokenizing functions in a new form that takes advantage of the lambda functions introduced in C++11. This new way is both efficient and user friendly. Here is an example:
+
+.. code-block:: cpp
+
+    using namespace clue;
+
+    const char *str = "123, 456, 789, 2468";
+
+    std::vector<long> values;
+    foreach_token_of(str, ", ", [&](const char *p, size_t len){
+        // directly convert the token to an integer,
+        // without making a copy of the token
+        values.push_back(std::strtol(p, nullptr, 10));
+
+        // always continue to take in next token
+        // if return false, the tokenizing process will stop
+        return true;
+    });
+
+
+Formally, the function signature is given as below.
+
+.. cpp:function:: foreach_token_of(str, delimiters, f)
+
+    Extract tokens from the string str, with given delimiter, and apply f to each token.
+
+    :param str:  The input string, which can be either of the following type:
+
+        - C-string (*e.g.* ``const char*``)
+        - Standard string (*e.g.* ``std:string``)
+        - String view (*e.g.* ``string_view``)
+
+    :param delimiters: The delimiters for separating tokens, which can be either a character or a C-string (if a character ``c`` matches any char in the given ``delimiters``, then ``c`` is considered as a delimiter).
+
+    :param f:  The call back function for processing tokens. Here, ``f`` should be a function, a lambda function, or a functor that takes in two inputs (the base address of the token and its length), and returns a boolean value that indicates whether to continue.
+
+    This function stops when all tokens have been extracted and processed *or* when the callback function ``f`` returns ``false``.

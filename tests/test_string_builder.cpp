@@ -134,11 +134,6 @@ TEST(StringBuilder, WriteSeq) {
     sb.writeln(4, " + ", 5, " = ", 9);
 
     ASSERT_EQ("1+2=3\n4 + 5 = 9\n", sb.str());
-
-    sb.reset();
-    sb.writeln(with_sep(" "), 1, '+', 2, '=', 3);
-    sb.writeln(with_sep(", "), 1, '+', 2, '=', 3);
-    ASSERT_EQ("1 + 2 = 3\n1, +, 2, =, 3\n", sb.str());
 }
 
 

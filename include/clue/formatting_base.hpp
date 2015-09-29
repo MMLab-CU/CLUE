@@ -329,13 +329,16 @@ constexpr float_formatter<sci_t> sci_fmt() noexcept {
 // Generic formatting function
 
 template<typename T>
+struct is_default_formattable : public ::std::is_arithmetic<T> {};
+
+template<typename T>
 constexpr enable_if_t<::std::is_integral<T>::value, int_formatter<10> >
 default_formatter(const T& x) noexcept {
     return dec_fmt();
 };
 
 template<typename T, typename Fmt>
-inline ::std::string str(const T& x, const Fmt& fmt) {
+inline ::std::string strf(const T& x, const Fmt& fmt) {
     size_t fmt_len = fmt.max_formatted_length(x);
     ::std::string s(fmt_len, '\0');
     size_t wlen = fmt.formatted_write(x, const_cast<char*>(s.data()), fmt_len + 1);
@@ -347,12 +350,17 @@ inline ::std::string str(const T& x, const Fmt& fmt) {
 }
 
 template<typename T>
-inline ::std::string str(const T& x) {
-    return str(x, default_formatter(x));
+inline enable_if_t<is_default_formattable<T>::value, ::std::string>
+str(const T& x) {
+    return strf(x, default_formatter(x));
 }
 
 
 // str for strings
+
+inline ::std::string str() {
+    return ::std::string();
+}
 
 inline ::std::string str(char c) {
     return ::std::string(1, c);

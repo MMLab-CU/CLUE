@@ -1,4 +1,4 @@
-#include <clue/formatting_base.hpp>
+#include <clue/formatting.hpp>
 #include <vector>
 #include <limits>
 #include <gtest/gtest.h>
@@ -70,7 +70,7 @@ template<typename F>
             << " (\"" << refstr << "\")";
     }
 
-    std::string r = fmt::str(x, f);
+    std::string r = fmt::strf(x, f);
     if (refstr != r) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted string for "
@@ -138,7 +138,7 @@ template<typename F>
             << " (\"" << refstr << "\")";
     }
 
-    std::string r = fmt::str(x, f);
+    std::string r = fmt::strf(x, f);
 
     // std::printf("%s  |   %s\n", refstr.c_str(), r.c_str());
 
@@ -427,5 +427,11 @@ TEST(DefaultFormat, Numbers) {
     ASSERT_EQ("-456", fmt::str(-456));
 }
 
-
+TEST(DefaultFormat, StrConcat) {
+    ASSERT_EQ("", fmt::str());
+    ASSERT_EQ("123", fmt::str(123));
+    ASSERT_EQ("abc.xyz", fmt::str("abc", ".xyz"));
+    ASSERT_EQ("abc.xyz", fmt::str("abc", '.', "xyz"));
+    ASSERT_EQ("1+2 = 3", fmt::str(1, '+', 2, " = ", 3));
+}
 

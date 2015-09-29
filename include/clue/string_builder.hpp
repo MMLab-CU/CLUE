@@ -10,6 +10,18 @@
 
 namespace clue {
 
+// sequence tags
+
+template<typename charT>
+struct with_sep_t {
+    const charT* sep;
+};
+
+template<typename charT>
+constexpr with_sep_t<charT> with_sep(const charT* sep) noexcept {
+    return with_sep_t<charT>{sep};
+}
+
 
 //===============================================
 //
@@ -116,6 +128,49 @@ public:
     template<typename T>
     void write(const T& x) {
         writef(x, fmt::default_formatter(x));
+    }
+
+    // Write sequences
+
+    template<typename T>
+    void write_seq(T&& x) {
+        write(x);
+    }
+
+    template<typename T, typename... Rest>
+    void write_seq(T&& x, Rest&&... rest) {
+        write(x);
+        write_seq(::std::forward<Rest>(rest)...);
+    }
+
+    void write_seq(with_sep_t<charT> ws) { }
+
+    template<typename T>
+    void write_seq(with_sep_t<charT> ws, T&& x) {
+        write(x);
+    }
+
+    template<typename T, typename... Rest>
+    void write_seq(with_sep_t<charT> ws, T&& x, Rest&&... rest) {
+        write(x);
+        write(ws.sep);
+        write_seq(ws, ::std::forward<Rest>(rest)...);
+    }
+
+    void writeln() {
+        write('\n');
+    }
+
+    template<typename... Args>
+    void writeln(Args&&... args) {
+        write_seq(::std::forward<Args>(args)...);
+        writeln();
+    }
+
+    template<typename... Args>
+    void writeln(with_sep_t<charT> ws, Args&&... args) {
+        write_seq(ws, ::std::forward<Args>(args)...);
+        writeln();
     }
 
 

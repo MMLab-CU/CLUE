@@ -1,6 +1,7 @@
 #ifndef CLUE_FORMATTING__
 #define CLUE_FORMATTING__
 
+#include <clue/string_view.hpp>
 #include <clue/internal/numfmt.hpp>
 #include <clue/internal/grisu.hpp>
 #include <string>
@@ -10,6 +11,23 @@
 namespace clue {
 
 namespace fmt {
+
+
+//===============================================
+//
+//  Formatting flags
+//
+//===============================================
+
+enum {
+    upper_case = 0x01,
+    pad_zeros = 0x02,
+    plus_sign = 0x04,
+    left_just = 0x08,
+    quoted = 0x10
+};
+
+typedef unsigned int flag_t;
 
 //===============================================
 //
@@ -31,20 +49,6 @@ inline ::std::string sprintf(const char *fmt, ...) {
     return ::std::move(str);
 }
 
-//===============================================
-//
-//  Number formatting flags
-//
-//===============================================
-
-enum {
-    upper_case = 0x01,
-    pad_zeros = 0x02,
-    plus_sign = 0x04,
-    left_just = 0x08
-};
-
-typedef unsigned int flag_t;
 
 //===============================================
 //
@@ -345,6 +349,26 @@ inline ::std::string str(const T& x, const Fmt& fmt) {
 template<typename T>
 inline ::std::string str(const T& x) {
     return str(x, default_formatter(x));
+}
+
+
+// str for strings
+
+inline ::std::string str(char c) {
+    return ::std::string(1, c);
+}
+
+inline ::std::string str(const char* sz) {
+    return ::std::string(sz);
+}
+
+inline ::std::string str(string_view sv) {
+    return ::std::string(sv.data(), sv.size());
+}
+
+template<class Allocator>
+inline ::std::string str(const ::std::basic_string<char, ::std::char_traits<char>, Allocator>& s) {
+    return ::std::string(s.data(), s.size());
 }
 
 

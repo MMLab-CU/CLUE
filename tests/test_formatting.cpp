@@ -414,6 +414,13 @@ TEST(FloatFmt, USci) {
 }
 
 
+TEST(DefaultFormat, Strings) {
+    ASSERT_EQ("a", fmt::str('a'));
+    ASSERT_EQ("abc", fmt::str("abc"));
+    ASSERT_EQ("abc", fmt::str(string_view("abc")));
+    ASSERT_EQ("abc", fmt::str(std::string("abc")));
+}
+
 TEST(DefaultFormat, Numbers) {
     ASSERT_EQ("0", fmt::str(0));
     ASSERT_EQ("123", fmt::str(123));

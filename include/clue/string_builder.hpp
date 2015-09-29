@@ -108,13 +108,13 @@ public:
     template<typename T, typename Fmt>
     void writef(const T& x, Fmt&& fmt) {
         size_t max_n = fmt.max_formatted_length(x);
-        charT *p = take_next(max_n);
-        size_t n = fmt.formatted_write(x, p, max_n);
+        charT *p = take_next(max_n + 1);
+        size_t n = fmt.formatted_write(x, p, max_n + 1);
         advance(n);
     }
 
     template<typename T>
-    void writef(const T& x) {
+    void write(const T& x) {
         writef(x, fmt::default_formatter(x));
     }
 

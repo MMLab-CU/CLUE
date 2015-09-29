@@ -116,6 +116,17 @@ TEST(StringBuilder, WriteStrings) {
 }
 
 
+TEST(StringBuilder, WriteNumbers) {
+    string_builder sb;
+
+    sb.write(-123);
+    sb.write(' ');
+    sb.write(456);
+
+    ASSERT_EQ("-123 456", sb.str());
+}
+
+
 TEST(RefStringBuilder, Basics) {
 
     char buf[6];

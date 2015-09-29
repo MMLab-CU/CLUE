@@ -76,21 +76,19 @@ public:
     // Write
 
     void write(charT c) {
-        reserve(len_ + 1);
-        proxy_.data()[len_++] = c;
+        *(take_next(1)) = c;
+        advance(1);
     }
 
     void write(charT c, size_type n) {
-        reserve(len_ + n);
-        charT *p = proxy_.data() + len_;
-        for (size_type i = 0; i < n; ++i) *(p++) = c;
-        len_ += n;
+        charT *p = take_next(n);
+        for (size_type i = 0; i < n; ++i) p[i] = c;
+        advance(n);
     }
 
     void write(const charT *s, size_type n) {
-        reserve(len_ + n);
-        ::std::memcpy(proxy_.data() + len_, s, n * sizeof(charT));
-        len_ += n;
+        ::std::memcpy(take_next(n), s, n * sizeof(charT));
+        advance(n);
     }
 
     void write(const charT *s) {
@@ -108,17 +106,26 @@ public:
 
     // Modifiers
 
-    void reset() noexcept {
-        len_ = 0;
-        proxy_.reset();
-    }
-
     void clear() noexcept {
         len_ = 0;
     }
 
+    void reset() noexcept {
+        clear();
+        proxy_.reset();
+    }
+
     void reserve(size_type n) {
         proxy_.reserve(n, len_);
+    }
+
+    charT* take_next(size_type n) {
+        reserve(len_ + n);
+        return proxy_.data() + len_;
+    }
+
+    void advance(size_type n) {
+        len_ += n;
     }
 
 }; // end class generic_string_builder
@@ -231,9 +238,10 @@ public:
     void reset() noexcept { }
 
     void reserve(size_t n, size_t len) {
-        if (n > cap_)
+        if (n > cap_) {
             throw ::std::runtime_error(
                 "ref_memory: attempted to reserve beyond buffer boundary.");
+        }
     }
 };
 

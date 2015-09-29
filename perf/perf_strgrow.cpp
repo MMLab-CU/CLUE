@@ -133,6 +133,36 @@ public:
     }
 };
 
+
+class WithRefStringBuilder {
+private:
+    std::vector<char> buf_;
+    ref_string_builder builder_;
+
+public:
+    WithRefStringBuilder(size_t cap) :
+        buf_(cap), builder_(buf_.data(), cap) {}
+
+    const char *repr() const {
+        return "with-refbuilder";
+    }
+
+    void reset() {
+        builder_.reset();
+    }
+
+    string str() const {
+        return builder_.str();
+    }
+
+    void append(const string& s) {
+        builder_.write(s);
+        builder_.write(' ');
+    }
+};
+
+
+
 template<class S>
 void verify_correctness(S&& s, const vector<string>& tokens, const string& expect_str) {
     s.reset();
@@ -179,11 +209,15 @@ int main() {
 
     // competitors
 
+    const size_t N = 1000000;
+    const size_t slen = 4;
+
     WithStringStream  with_strstream;
     WithStringBuf     with_strbuf;
-    WithStringBuilder with_strbuilder;
     WithString        with_string;
     WithVectorChar    with_vecchar;
+    WithStringBuilder with_strbuilder;
+    WithRefStringBuilder with_refbuilder(N * (slen + 2));
 
     // verify the correctness
 
@@ -198,14 +232,13 @@ int main() {
     verify_correctness(with_strstream,  tokens0, expect_str);
     verify_correctness(with_strbuf,     tokens0, expect_str);
     verify_correctness(with_strbuilder, tokens0, expect_str);
+    verify_correctness(with_refbuilder, tokens0, expect_str);
     verify_correctness(with_string,     tokens0, expect_str);
     verify_correctness(with_vecchar,    tokens0, expect_str);
 
     // prepare data for performance measurement
 
     cout << "Preparing data ..." << endl;
-    const size_t N = 1000000;
-    const size_t slen = 4;
     char tkbuf[slen + 1];
 
     vector<string> tokens;
@@ -219,9 +252,9 @@ int main() {
     measure_performance(with_strstream,  tokens);
     measure_performance(with_strbuf,     tokens);
     measure_performance(with_strbuilder, tokens);
+    measure_performance(with_refbuilder, tokens);
     measure_performance(with_string,     tokens);
     measure_performance(with_vecchar,    tokens);
-
 
     return 0;
 }

@@ -27,6 +27,7 @@ Below is a list of components available in the library.
 - ``string_view`` class template.
 - Extensions of string functionalities (*e.g.* trimming and tokenizers).
 - Simple string formatting.
+- Efficient string builder.
 - ``value_range`` class template.
 - ``array_view`` class template.
 - ``reindexed_view`` class template.

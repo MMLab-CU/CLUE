@@ -312,6 +312,22 @@ public:
     }
 };
 
+
+class grisu_formatter {
+public:
+    size_t max_formatted_length(double x) const noexcept {
+        return 27;
+    }
+
+    template<typename charT>
+    size_t formatted_write(double x, charT *buf, size_t buf_len) const {
+        size_t n = (size_t)grisu_impl::dtoa(x, buf);
+        CLUE_ASSERT(n < buf_len);
+        return n;
+    }
+};
+
+
 constexpr float_formatter<fixed_t> fixed_fmt() noexcept {
     return float_formatter<fixed_t>();
 }
@@ -319,6 +335,11 @@ constexpr float_formatter<fixed_t> fixed_fmt() noexcept {
 constexpr float_formatter<sci_t> sci_fmt() noexcept {
     return float_formatter<sci_t>();
 }
+
+constexpr grisu_formatter grisu_fmt() noexcept {
+    return grisu_formatter{};
+}
+
 
 //===============================================
 //
@@ -336,6 +357,13 @@ constexpr enable_if_t<::std::is_integral<T>::value, int_formatter<10> >
 default_formatter(const T& x) noexcept {
     return dec_fmt();
 };
+
+template<typename T>
+constexpr enable_if_t<::std::is_floating_point<T>::value, grisu_formatter>
+default_formatter(const T& x) noexcept {
+    return grisu_fmt();
+};
+
 
 template<typename T, typename Fmt>
 inline ::std::string strf(const T& x, const Fmt& fmt) {

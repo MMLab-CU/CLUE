@@ -413,6 +413,22 @@ TEST(FloatFmt, USci) {
     FloatFmtTests(fmt::sci_fmt() | fmt::upper_case);
 }
 
+TEST(FloatFmt, Grisu) {
+    char buf[32];
+    auto fmt = fmt::grisu_fmt();
+
+    std::vector<double> xs = prepare_test_floats();
+    for (double x: xs) {
+        fmt.formatted_write(x, buf, 32);
+        double rx = ::std::strtod(buf, nullptr);
+        if (::std::isnan(x)) {
+            ASSERT_TRUE(::std::isnan(rx));
+        } else {
+            ASSERT_EQ(x, rx);
+        }
+    }
+}
+
 
 TEST(DefaultFormat, Strings) {
     ASSERT_EQ("a", fmt::str('a'));
@@ -425,6 +441,8 @@ TEST(DefaultFormat, Numbers) {
     ASSERT_EQ("0", fmt::str(0));
     ASSERT_EQ("123", fmt::str(123));
     ASSERT_EQ("-456", fmt::str(-456));
+    ASSERT_EQ("12.75", fmt::str(12.75));
+    ASSERT_EQ("-2.25", fmt::str(-2.25));
 }
 
 TEST(DefaultFormat, StrConcat) {

@@ -364,12 +364,11 @@ inline charT* write_exp(int K_, charT* buffer) {
     } else {
         *buffer++ = u2digit<charT>(K);
     }
-    *buffer = (charT)('\0');
     return buffer;
 }
 
 template<typename charT>
-inline void prettify(charT* buffer, int length, int k) {
+inline charT* prettify(charT* buffer, int length, int k) {
     const int kk = length + k;  // 10^(kk-1) <= v < 10^kk
 
     if (length <= kk && kk <= 21) {
@@ -378,14 +377,14 @@ inline void prettify(charT* buffer, int length, int k) {
             buffer[i] = (charT)('0');
         buffer[kk]     = (charT)('.');
         buffer[kk + 1] = (charT)('0');
-        buffer[kk + 2] = (charT)('\0');
+        buffer += (kk + 2);
     }
     else if (0 < kk && kk <= 21) {
         // 1234e-2 -> 12.34
         ::std::memmove(&buffer[kk + 1], &buffer[kk],
             static_cast<size_t>(length - kk) * sizeof(charT));
         buffer[kk] = (charT)('.');
-        buffer[length + 1] = (charT)('\0');
+        buffer += (length + 1);
     }
     else if (-6 < kk && kk <= 0) {
         // 1234e-6 -> 0.001234
@@ -395,29 +394,33 @@ inline void prettify(charT* buffer, int length, int k) {
         buffer[1] = (charT)('.');
         for (int i = 2; i < offset; i++)
             buffer[i] = (charT)('0');
-        buffer[length + offset] = charT('\0');
+        buffer += (length + offset);
     }
     else if (length == 1) {
         // 1e30
         buffer[1] = (charT)('e');
-        write_exp(kk - 1, &buffer[2]);
+        buffer = write_exp(kk - 1, &buffer[2]);
     }
     else {
         // 1234e30 -> 1.234e33
         ::std::memmove(&buffer[2], &buffer[1], static_cast<size_t>(length - 1) * sizeof(charT));
         buffer[1] = (charT)('.');
         buffer[length + 1] = (charT)('e');
-        write_exp(kk - 1, &buffer[0 + length + 2]);
+        buffer = write_exp(kk - 1, &buffer[0 + length + 2]);
     }
+    *buffer = static_cast<charT>('\0');
+    return buffer;
 }
 
 template<typename charT>
-inline void dtoa(double value, charT* buffer) {
+inline size_t dtoa(double value, charT* buffer) {
+    charT *pbegin = buffer;
     if (::std::isfinite(value)) {
         if (value == 0.0) {  // 0.0 or -0.0
             if (::std::signbit(value)) *buffer++ = (charT)('-');
             static charT zerosrc[4] = {'0', '.', '0', '\0'};
             ::std::memcpy(buffer, zerosrc, 4 * sizeof(charT));
+            return static_cast<size_t>(buffer + 3 - pbegin);
         } else {
             if (value < 0) {
                 *buffer++ = (charT)('-');
@@ -425,16 +428,19 @@ inline void dtoa(double value, charT* buffer) {
             }
             int length, K;
             grisu2(value, buffer, &length, &K);
-            prettify(buffer, length, K);
+            charT *pend = prettify(buffer, length, K);
+            return static_cast<size_t>(pend - pbegin);
         }
     } else if (::std::isinf(value) ) {
         if (::std::signbit(value)) *buffer++ = (charT)('-');
         static charT infsrc[4] = {'I', 'n', 'f', '\0'};
         ::std::memcpy(buffer, infsrc, 4 * sizeof(charT));
+        return static_cast<size_t>(buffer + 3 - pbegin);
     } else {
         CLUE_ASSERT(::std::isnan(value));
         static charT nansrc[4] = {'N', 'a', 'N', '\0'};
         ::std::memcpy(buffer, nansrc, 4 * sizeof(charT));
+        return 3;
     }
 }
 

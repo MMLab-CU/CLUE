@@ -122,8 +122,10 @@ TEST(StringBuilder, WriteNumbers) {
     sb.write(-123);
     sb.write(' ');
     sb.write(456);
+    sb.write(' ');
+    sb.write(123.75);
 
-    ASSERT_EQ("-123 456", sb.str());
+    ASSERT_EQ("-123 456 123.75", sb.str());
 }
 
 

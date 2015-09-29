@@ -15,6 +15,7 @@ TEST(Grisu, DtoA) {
     std::vector<entry_t> entries {
         // simple cases
         {      0.0,        "0.0"},
+        {     -0.0,       "-0.0"},
         {      1.0,        "1.0"},
         {     -2.0,       "-2.0"},
         {     12.5,       "12.5"},
@@ -42,14 +43,18 @@ TEST(Grisu, DtoA) {
         {  NaN,  "NaN" }
     };
 
-    static char result[512];
+    static char result[32];
 
     for (const auto& e: entries) {
         double x = e.first;
         const char *refstr = e.second;
-        dtoa(x, result);
+        size_t nch = dtoa(x, result);
+
         // std::printf("x = %g, r = \"%s\", grisu = \"%s\"\n", x, refstr, result);
+        ASSERT_LT(nch, 25);
+        ASSERT_EQ('\0', result[nch]);
         ASSERT_STREQ(refstr, result);
+        ASSERT_EQ(std::strlen(refstr), nch);
     }
 }
 

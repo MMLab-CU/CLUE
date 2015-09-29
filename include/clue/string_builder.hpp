@@ -3,6 +3,7 @@
 
 #include <clue/string_view.hpp>
 #include <cstring>
+#include <stdexcept>
 #include <array>
 #include <new>  // for bad_alloc
 
@@ -11,25 +12,21 @@ namespace clue {
 
 //===============================================
 //
-//  String builders
+//  Generic String Builders
 //
 //===============================================
 
-// declarations
-
-template<typename charT, typename Traits=std::char_traits<charT>>
-class basic_string_builder;
-
-typedef basic_string_builder<char>     string_builder;
-typedef basic_string_builder<wchar_t>  wstring_builder;
-typedef basic_string_builder<char16_t> u16string_builder;
-typedef basic_string_builder<char32_t> u32string_builder;
-
-
-// class definition
-
-template<typename charT, typename Traits>
-class basic_string_builder {
+/*
+ * About MemProxy concept:
+ *
+ * - default constructible (derive class may initialize it after construction)
+ * - mb.data() noexcept;
+ * - mb.capacity() noexcept;
+ * - mb.reset() noexcept;
+ * - mb.reserve(newcap, len);
+ */
+template<typename charT, typename Traits, typename MemProxy>
+class generic_string_builder {
 public:
     // types
     typedef Traits traits_type;
@@ -41,30 +38,19 @@ public:
     typedef ::std::size_t size_type;
     typedef ::std::ptrdiff_t difference_type;
 
-private:
-    static constexpr size_type short_len_ = 32;
-
-    size_t cap_;
+protected:
+    MemProxy proxy_;
     size_t len_;
-    std::array<charT, short_len_> sbuf_;
-    charT *buf_;
 
 public:
-    basic_string_builder() noexcept :
-        cap_(short_len_), len_(0), buf_(sbuf_.data()) {};
-
-    ~basic_string_builder() {
-        reset();
-    }
-
-    basic_string_builder(const basic_string_builder&) = delete;
-    basic_string_builder& operator = (const basic_string_builder&) = delete;
+    generic_string_builder() noexcept :
+        len_(0) {};
 
 public:
     // Properties
 
     constexpr const charT *data() const noexcept {
-        return buf_;
+        return proxy_.data();
     }
 
     constexpr size_type size() const noexcept {
@@ -76,34 +62,34 @@ public:
     }
 
     constexpr size_type capacity() const noexcept {
-        return cap_;
+        return proxy_.capacity();
     }
 
     constexpr basic_string_view<charT, Traits> str_view() const noexcept {
-        return basic_string_view<charT, Traits>(buf_, len_);
+        return basic_string_view<charT, Traits>(proxy_.data(), len_);
     }
 
     constexpr ::std::basic_string<charT, Traits> str() const {
-        return ::std::basic_string<charT, Traits>(buf_, len_);
+        return ::std::basic_string<charT, Traits>(proxy_.data(), len_);
     }
 
     // Write
 
     void write(charT c) {
         reserve(len_ + 1);
-        buf_[len_++] = c;
+        proxy_.data()[len_++] = c;
     }
 
     void write(charT c, size_type n) {
         reserve(len_ + n);
-        charT *p = buf_ + len_;
+        charT *p = proxy_.data() + len_;
         for (size_type i = 0; i < n; ++i) *(p++) = c;
         len_ += n;
     }
 
     void write(const charT *s, size_type n) {
         reserve(len_ + n);
-        ::std::memcpy(buf_ + len_, s, n * sizeof(charT));
+        ::std::memcpy(proxy_.data() + len_, s, n * sizeof(charT));
         len_ += n;
     }
 
@@ -123,12 +109,8 @@ public:
     // Modifiers
 
     void reset() noexcept {
-        if (use_dyn_memory()) {
-            ::std::free(buf_);
-            buf_ = sbuf_.data();
-        }
-        cap_ = short_len_;
         len_ = 0;
+        proxy_.reset();
     }
 
     void clear() noexcept {
@@ -136,18 +118,75 @@ public:
     }
 
     void reserve(size_type n) {
+        proxy_.reserve(n, len_);
+    }
+
+}; // end class generic_string_builder
+
+
+//===============================================
+//
+//  Memory proxy classes
+//
+//===============================================
+
+namespace details {
+
+using ::std::size_t;
+
+template<typename T>
+class basic_memory_proxy {
+private:
+    static constexpr size_t short_len_ = 32;
+    size_t cap_;
+    std::array<T, short_len_> sbuf_;
+    T *buf_;
+
+public:
+    basic_memory_proxy() noexcept :
+        cap_(short_len_), buf_(sbuf_.data()) {}
+
+    ~basic_memory_proxy() noexcept {
+        reset();
+    }
+
+    basic_memory_proxy(const basic_memory_proxy&) = delete;
+    basic_memory_proxy& operator = (const basic_memory_proxy&) = delete;
+
+public:
+    constexpr const T* data() const noexcept {
+        return buf_;
+    }
+
+    T* data() noexcept {
+        return buf_;
+    }
+
+    constexpr size_t capacity() const noexcept {
+        return cap_;
+    }
+
+    void reset() noexcept {
+        if (use_dyn_memory()) {
+            ::std::free(buf_);
+            buf_ = sbuf_.data();
+        }
+        cap_ = short_len_;
+    }
+
+    void reserve(size_t n, size_t len) {
         if (n > cap_) {
-            size_type newcap = cap_ * 2;
+            size_t newcap = cap_ * 2;
             while (newcap < n) newcap *= 2;
 
             if (use_dyn_memory()) {
-                charT* newbuf = (charT*)realloc(buf_, sizeof(charT) * newcap);
+                T* newbuf = (T*)::std::realloc(buf_, sizeof(T) * newcap);
                 if (newbuf == nullptr) throw ::std::bad_alloc();
                 buf_ = newbuf;
             } else {
-                charT *newbuf = (charT*)malloc(sizeof(charT) * newcap);
+                T *newbuf = (T*)::std::malloc(sizeof(T) * newcap);
                 if (newbuf == nullptr) throw ::std::bad_alloc();
-                Traits::copy(newbuf, buf_, len_);
+                ::std::memcpy(newbuf, buf_, sizeof(T) * len);
                 buf_ = newbuf;
             }
             cap_ = newcap;
@@ -158,8 +197,97 @@ private:
     constexpr bool use_dyn_memory() const {
         return cap_ > short_len_;
     }
+};
 
-}; // end class string_builder
+
+template<typename T>
+class ref_memory_proxy {
+private:
+    T *buf_;
+    size_t cap_;
+
+public:
+    constexpr ref_memory_proxy() noexcept :
+        buf_(nullptr), cap_(0) {}
+
+    void init(T *buf, size_t cap) noexcept {
+        buf_ = buf;
+        cap_ = cap;
+    }
+
+public:
+    constexpr const T* data() const noexcept {
+        return buf_;
+    }
+
+    T* data() noexcept {
+        return buf_;
+    }
+
+    constexpr size_t capacity() const noexcept {
+        return cap_;
+    }
+
+    void reset() noexcept { }
+
+    void reserve(size_t n, size_t len) {
+        if (n > cap_)
+            throw ::std::runtime_error(
+                "ref_memory: attempted to reserve beyond buffer boundary.");
+    }
+};
+
+
+} // end namespace details
+
+
+//===============================================
+//
+//  Specific builder classes
+//
+//===============================================
+
+// basic builder
+
+template<typename charT, typename Traits=std::char_traits<charT>>
+class basic_string_builder :
+    public generic_string_builder<charT, Traits, details::basic_memory_proxy<charT>> {
+
+    using base_ = generic_string_builder<charT, Traits, details::basic_memory_proxy<charT>>;
+
+public:
+    basic_string_builder() {}
+    ~basic_string_builder() {}
+
+    basic_string_builder(const basic_string_builder&) = delete;
+    basic_string_builder& operator= (const basic_string_builder&) = delete;
+};
+
+typedef basic_string_builder<char>     string_builder;
+typedef basic_string_builder<wchar_t>  wstring_builder;
+typedef basic_string_builder<char16_t> u16string_builder;
+typedef basic_string_builder<char32_t> u32string_builder;
+
+
+// ref builder
+
+template<typename charT, typename Traits=std::char_traits<charT>>
+class basic_ref_string_builder :
+    public generic_string_builder<charT, Traits, details::ref_memory_proxy<charT>> {
+
+    using base_ = generic_string_builder<charT, Traits, details::ref_memory_proxy<charT>>;
+
+public:
+    basic_ref_string_builder(charT *buf, size_t cap) noexcept {
+        this->proxy_.init(buf, cap);
+    }
+};
+
+typedef basic_ref_string_builder<char>     ref_string_builder;
+typedef basic_ref_string_builder<wchar_t>  ref_wstring_builder;
+typedef basic_ref_string_builder<char16_t> ref_u16string_builder;
+typedef basic_ref_string_builder<char32_t> ref_u32string_builder;
+
 
 }
 

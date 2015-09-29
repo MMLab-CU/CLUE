@@ -37,10 +37,14 @@ inline ::std::string sprintf(const char *fmt, ...) {
 //
 //===============================================
 
-constexpr unsigned int upper_case = 0x01;
-constexpr unsigned int pad_zeros  = 0x02;
-constexpr unsigned int plus_sign  = 0x04;
-constexpr unsigned int left_just  = 0x08;
+enum {
+    upper_case = 0x01,
+    pad_zeros = 0x02,
+    plus_sign = 0x04,
+    left_just = 0x08
+};
+
+typedef unsigned int flag_t;
 
 //===============================================
 //
@@ -110,7 +114,7 @@ template<unsigned int N>
 class int_formatter {
 private:
     size_t width_;
-    unsigned int flags_;
+    flag_t flags_;
 
 public:
     static constexpr unsigned int radix_value = N;
@@ -121,22 +125,26 @@ public:
     constexpr int_formatter() noexcept :
         width_(0), flags_(0) {}
 
-    constexpr int_formatter(size_t width, unsigned flags) :
+    constexpr int_formatter(size_t width, flag_t flags) :
         width_(width), flags_(flags) {}
 
-    constexpr unsigned width() const noexcept { return width_; }
-    constexpr unsigned flags() const noexcept { return flags_; }
+    constexpr size_t width() const noexcept { return width_; }
+    constexpr flag_t flags() const noexcept { return flags_; }
 
     constexpr int_formatter width(size_t v) const noexcept {
         return int_formatter(v, flags_);
     }
 
-    constexpr int_formatter flags(unsigned v) const noexcept {
+    constexpr int_formatter flags(flag_t v) const noexcept {
         return int_formatter(width_, v);
     }
 
-    constexpr int_formatter operator | (unsigned v) const noexcept {
+    constexpr int_formatter operator | (flag_t v) const noexcept {
         return int_formatter(width_, flags_ | v);
+    }
+
+    constexpr bool any(flag_t msk) const noexcept {
+        return static_cast<bool>(flags_ & msk);
     }
 
     // formatting
@@ -144,7 +152,7 @@ public:
     template<typename T>
     size_t formatted_length(T x) const noexcept {
         size_t n = ndigits(x, radix_type{});
-        if (x < 0 || (flags_ & plus_sign)) n++;
+        if (x < 0 || any(plus_sign)) n++;
         return n > width_ ? n : width_;
     }
 
@@ -152,14 +160,14 @@ public:
     size_t formatted_write(T x, charT *buf, size_t buf_len) const {
         auto ax = details::uabs(x);
         size_t nd = ndigits(ax, radix_type{});
-        char sign = x < 0 ? '-' : ((flags_ & plus_sign) ? '+' : '\0');
+        char sign = x < 0 ? '-' : (any(plus_sign) ? '+' : '\0');
         size_t flen = nd + (sign ? 1 : 0);
         assert(buf_len > flen);
 
         charT *p = buf;
         if (width_ > flen) {
             size_t plen = width_ - flen;
-            if (flags_ & pad_zeros) {
+            if (any(pad_zeros)) {
                 // pad zeros
                 if (sign) *(p++) = sign;
                 for (size_t i = 0; i < plen; ++i) *(p++) = (charT)('0');
@@ -172,7 +180,7 @@ public:
             // no padding
             if (sign) *(p++) = sign;
         }
-        details::extract_digits(ax, radix_type{}, (bool)(flags_ & upper_case), p, nd);
+        details::extract_digits(ax, radix_type{}, any(upper_case), p, nd);
         p[nd] = '\0';
         return p + nd - buf;
     }
@@ -226,19 +234,6 @@ struct float_fmt_traits<sci_t> {
     }
 };
 
-// buf at least 16 bytes
-template<typename Tag>
-inline void float_cfmt(char* buf, size_t width, size_t prec, unsigned int flags) {
-    assert(prec < 100);
-    assert(width < 1000);
-
-    const bool psign = (bool)(flags & plus_sign);
-    const bool pzeros = (bool)(flags & pad_zeros);
-    const char fsym = float_fmt_traits<Tag>::printf_sym((bool)(flags & upper_case));
-
-    float_cfmt_impl(buf, fsym, width, prec, psign, pzeros);
-}
-
 } // end namespace details
 
 
@@ -248,7 +243,7 @@ private:
     typedef details::float_fmt_traits<Tag> fmt_traits_t;
     size_t width_;
     size_t precision_;
-    unsigned int flags_;
+    flag_t flags_;
 
 public:
     typedef Tag tag_type;
@@ -258,12 +253,12 @@ public:
     constexpr float_formatter() noexcept :
         width_(0), precision_(6), flags_(0) {}
 
-    constexpr float_formatter(size_t width, size_t precision, unsigned flags) :
+    constexpr float_formatter(size_t width, size_t precision, flag_t flags) :
         width_(width), precision_(precision), flags_(flags) {}
 
-    constexpr unsigned width() const noexcept { return width_; }
-    constexpr unsigned flags() const noexcept { return flags_; }
-    constexpr unsigned precision() const noexcept { return precision_; }
+    constexpr size_t width() const noexcept { return width_; }
+    constexpr size_t precision() const noexcept { return precision_; }
+    constexpr flag_t flags() const noexcept { return flags_; }
 
     constexpr float_formatter width(size_t v) const noexcept {
         return float_formatter(v, precision_, flags_);
@@ -273,12 +268,16 @@ public:
         return float_formatter(width_, v, flags_);
     }
 
-    constexpr float_formatter flags(unsigned v) const noexcept {
+    constexpr float_formatter flags(flag_t v) const noexcept {
         return float_formatter(width_, precision_, v);
     }
 
-    constexpr float_formatter operator | (unsigned v) const noexcept {
+    constexpr float_formatter operator | (flag_t v) const noexcept {
         return float_formatter(width_, precision_, flags_ | v);
+    }
+
+    constexpr bool any(flag_t msk) const noexcept {
+        return static_cast<bool>(flags_ & msk);
     }
 
     // formatting
@@ -286,12 +285,12 @@ public:
     size_t formatted_length(double x) const noexcept {
         size_t n = 0;
         if (::std::isfinite(x)) {
-            n = fmt_traits_t::fmt_length(x, precision_, flags_ & plus_sign);
+            n = fmt_traits_t::fmt_length(x, precision_, any(plus_sign));
         } else if (::std::isinf(x)) {
-            n = ::std::signbit(x) || bool(flags_ & plus_sign) ? 4 : 3;
+            n = ::std::signbit(x) || any(plus_sign) ? 4 : 3;
         } else {
             CLUE_ASSERT(::std::isnan(x));
-            n = plus_sign ? 4 : 3;
+            n = any(plus_sign) ? 4 : 3;
         }
         return n > width_ ? n : width_;
     }
@@ -299,7 +298,10 @@ public:
     template<typename charT>
     size_t formatted_write(double x, charT *buf, size_t buf_len) const {
         char cfmt[16];
-        details::float_cfmt<Tag>(cfmt, width_, precision_, flags_);
+        const char fsym =
+                details::float_fmt_traits<Tag>::printf_sym(any(upper_case));
+        details::float_cfmt_impl(cfmt, fsym, width_, precision_,
+                any(plus_sign), any(pad_zeros));
         size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
         CLUE_ASSERT(n < buf_len);
         return n;

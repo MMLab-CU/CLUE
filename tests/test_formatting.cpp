@@ -61,8 +61,8 @@ template<typename F>
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
             << "  radix: " << radix << "\n"
-            << "  plus_sign: " << (bool)(f.flags() & fmt::plus_sign) << "\n"
-            << "  pad_zeros: " << (bool)(f.flags() & fmt::pad_zeros) << "\n"
+            << "  plus_sign: " << (bool)(f.any(fmt::plus_sign)) << "\n"
+            << "  pad_zeros: " << (bool)(f.any(fmt::pad_zeros)) << "\n"
             << "  width: " << f.width() << "\n"
             << "Result:\n"
             << "  ACTUAL = " << flen << "\n"
@@ -77,8 +77,8 @@ template<typename F>
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
             << "  radix: " << radix << "\n"
-            << "  plus_sign: " << (bool)(f.flags() & fmt::plus_sign) << "\n"
-            << "  pad_zeros: " << (bool)(f.flags() & fmt::pad_zeros) << "\n"
+            << "  plus_sign: " << (bool)(f.any(fmt::plus_sign)) << "\n"
+            << "  pad_zeros: " << (bool)(f.any(fmt::pad_zeros)) << "\n"
             << "  width: " << f.width() << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
@@ -90,23 +90,23 @@ template<typename F>
 
 
 
-inline const char* notation(const fmt::float_formatter<fmt::fixed_t>&, bool up) {
-    return up ? "F" : "f";
+inline const char* notation(const fmt::float_formatter<fmt::fixed_t>& f) {
+    return f.any(fmt::upper_case) ? "F" : "f";
 }
-inline const char* notation(const fmt::float_formatter<fmt::sci_t>&, bool up)   {
-    return up ? "E" : "e";
+inline const char* notation(const fmt::float_formatter<fmt::sci_t>& f)   {
+    return f.any(fmt::upper_case) ? "E" : "e";
 }
 
 template<class F>
 std::string ref_float_format(const F& f, double x) {
-    std::string sfmt(notation(f, bool(f.flags() & fmt::upper_case)));
+    std::string sfmt(notation(f));
     size_t w = f.width();
     sfmt = std::string(".") + std::to_string(f.precision()) + sfmt;
     if (w > 0) {
         sfmt = std::to_string(w) + sfmt;
-        if (f.flags() & fmt::pad_zeros) sfmt = std::string("0") + sfmt;
+        if (f.any(fmt::pad_zeros)) sfmt = std::string("0") + sfmt;
     }
-    if (f.flags() & fmt::plus_sign) sfmt = std::string("+") + sfmt;
+    if (f.any(fmt::plus_sign)) sfmt = std::string("+") + sfmt;
     sfmt = std::string("%") + sfmt;
     // std::printf("sfmt = %s\n", sfmt.c_str());
     return fmt::sprintf(sfmt.c_str(), x);
@@ -116,7 +116,6 @@ template<typename F>
 ::testing::AssertionResult CheckFloatFormat(
     const char *fexpr, const char *xexpr, const F& f, double x) {
 
-    const char *nch = notation(f, bool(f.flags() & fmt::upper_case));
     size_t w = f.width();
     std::string refstr = ref_float_format(f, x);
     size_t rl = refstr.size();
@@ -128,7 +127,7 @@ template<typename F>
             << "Mismatched formatted length for "
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
-            << "  notation: " << nch << "\n"
+            << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
             << "  plus_sign: " << bool(f.flags() & fmt::plus_sign) << "\n"
             << "  pad_zeros: " << bool(f.flags() & fmt::pad_zeros) << "\n"
@@ -148,7 +147,7 @@ template<typename F>
             << "Mismatched formatted string for "
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
-            << "  notation: " << nch << "\n"
+            << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
             << "  plus_sign: " << bool(f.flags() & fmt::plus_sign) << "\n"
             << "  pad_zeros: " << bool(f.flags() & fmt::pad_zeros) << "\n"
@@ -228,23 +227,23 @@ void IntFmtTests(const Fmt& fbase, unsigned b) {
 
     auto f00 = fbase;
     ASSERT_EQ(0, f00.width());
-    ASSERT_FALSE(f00.flags() & fmt::pad_zeros);
-    ASSERT_FALSE(f00.flags() & fmt::plus_sign);
+    ASSERT_FALSE(f00.any(fmt::pad_zeros));
+    ASSERT_FALSE(f00.any(fmt::plus_sign));
 
     auto f01 = fbase | fmt::plus_sign;
     ASSERT_EQ(0, f01.width());
-    ASSERT_FALSE(f01.flags() & fmt::pad_zeros);
-    ASSERT_TRUE (f01.flags() & fmt::plus_sign);
+    ASSERT_FALSE(f01.any(fmt::pad_zeros));
+    ASSERT_TRUE (f01.any(fmt::plus_sign));
 
     auto f10 = fbase | fmt::pad_zeros;
     ASSERT_EQ(0, f10.width());
-    ASSERT_TRUE (f10.flags() & fmt::pad_zeros);
-    ASSERT_FALSE(f10.flags() & fmt::plus_sign);
+    ASSERT_TRUE (f10.any(fmt::pad_zeros));
+    ASSERT_FALSE(f10.any(fmt::plus_sign));
 
     auto f11 = fbase | fmt::plus_sign | fmt::pad_zeros;
     ASSERT_EQ(0, f11.width());
-    ASSERT_TRUE(f11.flags() & fmt::plus_sign);
-    ASSERT_TRUE(f11.flags() & fmt::pad_zeros);
+    ASSERT_TRUE(f11.any(fmt::plus_sign));
+    ASSERT_TRUE(f11.any(fmt::pad_zeros));
 
     // combination coverage
 
@@ -287,8 +286,8 @@ TEST(IntFmt, UHex) {
 template<class F>
 void verify_float_formatter(const F& f, size_t p, bool pzeros, bool psign) {
     ASSERT_EQ(p, f.precision());
-    ASSERT_EQ(pzeros, bool(f.flags() & fmt::pad_zeros));
-    ASSERT_EQ(psign,  bool(f.flags() & fmt::plus_sign));
+    ASSERT_EQ(pzeros, f.any(fmt::pad_zeros));
+    ASSERT_EQ(psign,  f.any(fmt::plus_sign));
 }
 
 std::vector<double> prepare_test_floats() {

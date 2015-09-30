@@ -341,7 +341,6 @@ template<typename T, typename F>
     return ::testing::AssertionSuccess();
 }
 
-
 std::vector<double> prepare_test_floats() {
     std::vector<double> xs;
     xs.push_back(0.0);
@@ -429,4 +428,108 @@ TEST(FloatFmt, FixedFmt) {
 TEST(FloatFmt, SciFmt) {
     test_float_fmt_x(fmt::sci());
 }
+
+
+template<class F>
+void test_exact_float_fmt(const F& f) {
+    const size_t buf_len = 32;
+    char buf[buf_len];
+
+    std::vector<double> xs = prepare_test_floats();
+    std::vector<size_t> widths = {0, 5, 12};
+
+    for (double x: xs) {
+        f.formatted_write(x, buf, buf_len);
+        std::string s0(buf);
+        size_t l0 = s0.size();
+
+        double rx = ::std::stod(s0);
+        if (::std::isnan(x)) {
+            ASSERT_TRUE(::std::isnan(rx));
+        } else {
+            ASSERT_EQ(x, rx);
+        }
+
+        for (size_t w: widths) {
+            f.formatted_write(x, w, false, buf, buf_len);
+            std::string s_r(buf);
+            if (w <= l0) {
+                ASSERT_EQ(s0, s_r);
+            } else {
+                ASSERT_EQ(std::string(w - l0, ' ') + s0, s_r);
+            }
+
+            f.formatted_write(x, w, true, buf, buf_len);
+            std::string s_l(buf);
+            if (w <= l0) {
+                ASSERT_EQ(s0, s_l);
+            } else {
+                ASSERT_EQ(s0 + std::string(w - l0, ' '), s_l);
+            }
+        }
+    }
+}
+
+TEST(FloatFmt, GrisuExamples) {
+
+    typedef std::pair<double, const char*> entry_t;
+
+    double Inf = std::numeric_limits<double>::infinity();
+    double NaN = std::numeric_limits<double>::quiet_NaN();
+
+    std::vector<entry_t> entries {
+        // simple cases
+        {      0.0,        "0.0"},
+        {     -0.0,       "-0.0"},
+        {      1.0,        "1.0"},
+        {     -2.0,       "-2.0"},
+        {     12.5,       "12.5"},
+        {    -36.75,     "-36.75"},
+        {  12345.678,  "12345.678"},
+        // bigger numbers
+        {  1.0e20,         "100000000000000000000.0" },
+        {  1.2345e20,      "123450000000000000000.0" },
+        {  -1.2345e20,     "-123450000000000000000.0" },
+        {  1.0e22,         "1e22" },
+        {  1.0e30,         "1e30" },
+        {  1.28e22,        "1.28e22" },
+        {  1234.5678e20,   "1.2345678e23" },
+        {  1.0e123,        "1e123" },
+        // smaller numbers
+        { 1.0e-20,         "1e-20" },
+        { 1.0e-30,         "1e-30" },
+        { 1.2345e-20,      "1.2345e-20" },
+        { -1.2345e-20,     "-1.2345e-20" },
+        { -1234.56789e-28, "-1.23456789e-25"},
+        { 1.0e-123,        "1e-123" },
+        // special numbers
+        {  Inf,  "Inf" },
+        { -Inf, "-Inf" },
+        {  NaN,  "NaN" }
+    };
+
+    static char result[32];
+    fmt::grisu_formatter f;
+
+    for (const auto& e: entries) {
+        double x = e.first;
+        const char *refstr = e.second;
+        size_t nch = f.formatted_write(x, result, 32);
+
+        // std::printf("x = %g, r = \"%s\", grisu = \"%s\"\n", x, refstr, result);
+        ASSERT_LT(nch, 25);
+        ASSERT_EQ('\0', result[nch]);
+        ASSERT_STREQ(refstr, result);
+        ASSERT_EQ(std::strlen(refstr), nch);
+    }
+}
+
+TEST(FloatFmt, GrisuFmt) {
+    static_assert(std::is_same<fmt::grisu_formatter, fmt::default_float_formatter>::value,
+        "Default float formatter should be the Grisu formatter");
+    test_exact_float_fmt(fmt::grisu_formatter{});
+}
+
+
+
 

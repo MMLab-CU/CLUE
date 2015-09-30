@@ -38,6 +38,23 @@ inline size_t copy_str(charT *buf, const char* str, size_t n) {
     return n;
 }
 
+template<typename charT>
+inline size_t rejustify(charT *buf, size_t n, size_t width, bool ljust) {
+    if (n < width) {
+        size_t np = width - n;
+        if (ljust) {
+            fill_chars(buf + n, np, ' ');
+        } else {
+            ::std::memmove(buf + np, buf, n * sizeof(charT));
+            fill_chars(buf, np, ' ');
+        }
+        buf[width] = static_cast<charT>('\0');
+        return width;
+    } else {
+        return n;
+    }
+}
+
 }
 
 

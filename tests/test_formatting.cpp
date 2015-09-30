@@ -154,22 +154,6 @@ TEST(FloatFmt, USci) {
     FloatFmtTests(fmt::sci() | fmt::uppercase);
 }
 
-TEST(FloatFmt, Grisu) {
-    char buf[32];
-    fmt::grisu_formatter fmt;
-
-    std::vector<double> xs = prepare_test_floats();
-    for (double x: xs) {
-        fmt.formatted_write(x, buf, 32);
-        double rx = ::std::strtod(buf, nullptr);
-        if (::std::isnan(x)) {
-            ASSERT_TRUE(::std::isnan(rx));
-        } else {
-            ASSERT_EQ(x, rx);
-        }
-    }
-}
-
 
 TEST(Formatting, Strings) {
     ASSERT_EQ("a", fmt::str('a'));

@@ -243,8 +243,7 @@ public:
     template<typename charT>
     size_t formatted_write(double x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
         char cfmt[16];
-        const char fsym =
-                details::float_fmt_traits<Tag>::printf_sym(any(uppercase));
+        const char fsym = details::float_fmt_traits<Tag>::printf_sym(any(uppercase));
         details::float_cfmt_impl(cfmt, fsym, width, precision_,
                 ljust, any(showpos), any(padzeros));
         size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
@@ -265,6 +264,13 @@ public:
         size_t n = (size_t)grisu_impl::dtoa(x, buf);
         CLUE_ASSERT(n < buf_len);
         return n;
+    }
+
+    template<typename charT>
+    size_t formatted_write(double x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
+        size_t n = formatted_write(x, buf, buf_len);
+        CLUE_ASSERT(n < buf_len && width < buf_len);
+        return details::rejustify(buf, n, width, ljust);
     }
 };
 

@@ -56,95 +56,62 @@ inline ::std::string sprintf(const char *fmt, ...) {
 //
 //===============================================
 
-template<unsigned int N>
-struct radix_t : ::std::integral_constant<unsigned int, N> {};
-
-using bin_t = radix_t<2>;
-using oct_t = radix_t<8>;
-using dec_t = radix_t<10>;
-using hex_t = radix_t<16>;
-
-bin_t bin{};
-oct_t oct{};
-dec_t dec{};
-hex_t hex{};
-
 // ndigits
 
 template<typename T>
-inline size_t ndigits(T x, dec_t) noexcept {
-    return details::ndigits_dec(details::uabs(x));
+inline size_t ndigits(T x, const unsigned base) noexcept {
+    auto u = details::uabs(x);
+    switch (base) {
+        case  8: return details::ndigits_oct(u);
+        case 10: return details::ndigits_dec(u);
+        case 16: return details::ndigits_hex(u);
+    }
+    return 0;
 }
-
-template<typename T>
-inline size_t ndigits(T x, oct_t) noexcept {
-    return details::ndigits_oct(details::uabs(x));
-}
-
-template<typename T>
-inline size_t ndigits(T x, hex_t) {
-    return details::ndigits_hex(details::uabs(x));
-}
-
 
 namespace details {
-
-// extract_digits
-//
-// Note: for extract_digits, x must be non-negative.
-//       negative x would result in undefined behavior.
-//
-template<typename T, typename charT>
-inline void extract_digits(T x, dec_t, bool upper, charT *buf, size_t n) {
-    extract_digits_dec(x, buf, n);
-}
-
-template<typename T, typename charT>
-inline void extract_digits(T x, oct_t, bool upper, charT *buf, size_t n) {
-    extract_digits_oct(x, buf, n);
-}
-
-template<typename T, typename charT>
-inline void extract_digits(T x, hex_t, bool upper, charT *buf, size_t n) {
-    extract_digits_hex(x, upper, buf, n);
-}
 
 } // end namespace details
 
 
 // length of formatted integer
 
-template<unsigned int N>
 class int_formatter {
 private:
+    unsigned base_;
     size_t width_;
     flag_t flags_;
 
 public:
-    static constexpr unsigned int radix_value = N;
-    typedef radix_t<N> radix_type;
-
     // construction & properties
 
     constexpr int_formatter() noexcept :
-        width_(0), flags_(0) {}
+        base_(10), width_(0), flags_(0) {}
 
-    constexpr int_formatter(size_t width, flag_t flags) :
-        width_(width), flags_(flags) {}
+    explicit constexpr int_formatter(unsigned base) noexcept :
+        base_(base), width_(0), flags_(0) {}
 
+    constexpr int_formatter(unsigned base, size_t width, flag_t flags) :
+        base_(base), width_(width), flags_(flags) {}
+
+    constexpr unsigned base() const noexcept { return base_; }
     constexpr size_t width() const noexcept { return width_; }
     constexpr flag_t flags() const noexcept { return flags_; }
 
+    constexpr int_formatter base(unsigned v) const noexcept {
+        return int_formatter(v, width_, flags_);
+    }
+
     constexpr int_formatter width(size_t v) const noexcept {
-        return int_formatter(v, flags_);
+        return int_formatter(base_, v, flags_);
     }
 
     constexpr int_formatter flags(flag_t v) const noexcept {
-        return int_formatter(width_, v);
+        return int_formatter(base_, width_, v);
     }
 
     constexpr int_formatter operator | (flag_t v) const noexcept {
-        return int_formatter(width_, flags_ | v);
+        return int_formatter(base_, width_, flags_ | v);
     }
 
     constexpr bool any(flag_t msk) const noexcept {
@@ -155,7 +122,7 @@ public:
 
     template<typename T>
     size_t max_formatted_length(T x) const noexcept {
-        size_t n = ndigits(x, radix_type{});
+        size_t n = ndigits(x, base_);
         if (x < 0 || any(plus_sign)) n++;
         return n > width_ ? n : width_;
     }
@@ -163,7 +130,7 @@ public:
     template<typename T, typename charT>
     size_t formatted_write(T x, charT *buf, size_t buf_len) const {
         auto ax = details::uabs(x);
-        size_t nd = ndigits(ax, radix_type{});
+        size_t nd = ndigits(ax, base_);
         char sign = x < 0 ? '-' : (any(plus_sign) ? '+' : '\0');
         size_t flen = nd + (sign ? 1 : 0);
         assert(buf_len > flen);
@@ -184,16 +151,15 @@ public:
             // no padding
             if (sign) *(p++) = sign;
         }
-        details::extract_digits(ax, radix_type{}, any(upper_case), p, nd);
+        details::extract_digits(ax, base_, any(upper_case), p, nd);
         p[nd] = '\0';
         return p + nd - buf;
     }
 };
 
-constexpr int_formatter<8>  oct_fmt() noexcept { return int_formatter<8>();  }
-constexpr int_formatter<10> dec_fmt() noexcept { return int_formatter<10>(); }
-constexpr int_formatter<16> hex_fmt() noexcept { return int_formatter<16>(); }
-
+constexpr int_formatter oct_fmt() noexcept { return int_formatter(8);  }
+constexpr int_formatter dec_fmt() noexcept { return int_formatter(10); }
+constexpr int_formatter hex_fmt() noexcept { return int_formatter(16); }
 
 //===============================================
 //
@@ -327,6 +293,8 @@ public:
     }
 };
 
+using default_float_formatter = grisu_formatter;
+
 
 constexpr float_formatter<fixed_t> fixed_fmt() noexcept {
     return float_formatter<fixed_t>();
@@ -336,7 +304,7 @@ constexpr float_formatter<sci_t> sci_fmt() noexcept {
     return float_formatter<sci_t>();
 }
 
-constexpr grisu_formatter grisu_fmt() noexcept {
+constexpr grisu_formatter default_float_fmt() noexcept {
     return grisu_formatter{};
 }
 
@@ -353,7 +321,7 @@ template<typename T>
 struct is_default_formattable : public ::std::is_arithmetic<T> {};
 
 template<typename T>
-constexpr enable_if_t<::std::is_integral<T>::value, int_formatter<10> >
+constexpr enable_if_t<::std::is_integral<T>::value, int_formatter>
 default_formatter(const T& x) noexcept {
     return dec_fmt();
 };
@@ -361,7 +329,7 @@ default_formatter(const T& x) noexcept {
 template<typename T>
 constexpr enable_if_t<::std::is_floating_point<T>::value, grisu_formatter>
 default_formatter(const T& x) noexcept {
-    return grisu_fmt();
+    return default_float_fmt();
 };
 
 

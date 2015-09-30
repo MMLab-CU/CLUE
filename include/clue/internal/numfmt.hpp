@@ -126,6 +126,20 @@ inline void extract_digits_hex(T x, bool upper, charT *buf, size_t n) {
     buf[m] = x < 10 ? (charT)('0' + x) : (charT)(a + (x - 10));
 }
 
+// extract_digits
+//
+// Note: for extract_digits, x must be non-negative.
+//       negative x would result in undefined behavior.
+//
+template<typename T, typename charT>
+inline void extract_digits(T x, unsigned base, bool upper, charT *buf, size_t n) {
+    switch (base) {
+        case  8: extract_digits_oct(x, buf, n); break;
+        case 10: extract_digits_dec(x, buf, n); break;
+        case 16: extract_digits_hex(x, upper, buf, n); break;
+    }
+}
+
 
 //===============================================
 //

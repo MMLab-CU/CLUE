@@ -7,8 +7,6 @@
 
 using namespace clue;
 
-using fmt::dec_t;
-using fmt::hex_t;
 using fmt::fixed_t;
 using fmt::sci_t;
 
@@ -21,20 +19,24 @@ public:
         return "with-sprintf";
     }
 
-    void put(int x, dec_t) {
+    void put_dec(int x) {
         std::snprintf(buf, 128, "%d", x);
     }
 
-    void put(int x, hex_t) {
+    void put_hex(int x) {
         std::snprintf(buf, 128, "%x", x);
     }
 
-    void put(double x, fixed_t) {
+    void put_fixed(double x) {
         std::snprintf(buf, 128, "%f", x);
     }
 
-    void put(double x, sci_t) {
+    void put_sci(double x) {
         std::snprintf(buf, 128, "%e", x);
+    }
+
+    void put_exact(double x) {
+        std::snprintf(buf, 128, "%.17g", x);
     }
 };
 
@@ -47,28 +49,34 @@ public:
         return "with-sprintf:checked";
     }
 
-    void put(int x, dec_t) {
+    void put_dec(int x) {
         size_t n = (size_t)(std::snprintf(nullptr, 0, "%d", x));
         if (n < 128)
             std::snprintf(buf, 128, "%d", x);
     }
 
-    void put(int x, hex_t) {
+    void put_hex(int x) {
         size_t n = (size_t)(std::snprintf(nullptr, 0, "%x", x));
         if (n < 128)
             std::snprintf(buf, 128, "%x", x);
     }
 
-    void put(double x, fixed_t) {
+    void put_fixed(double x) {
         size_t n = (size_t)(std::snprintf(nullptr, 0, "%f", x));
         if (n < 128)
             std::snprintf(buf, 128, "%f", x);
     }
 
-    void put(double x, sci_t) {
+    void put_sci(double x) {
         size_t n = (size_t)(std::snprintf(nullptr, 0, "%e", x));
         if (n < 128)
             std::snprintf(buf, 128, "%e", x);
+    }
+
+    void put_exact(double x) {
+        size_t n = (size_t)(std::snprintf(nullptr, 0, "%.17g", x));
+        if (n < 128)
+            std::snprintf(buf, 128, "%.17g", x);
     }
 };
 
@@ -76,68 +84,86 @@ public:
 class WithClueFmt {
 private:
     char buf[128];
-    fmt::int_formatter<10> dec_;
-    fmt::int_formatter<16> hex_;
+    fmt::int_formatter dec_;
+    fmt::int_formatter hex_;
     fmt::float_formatter<fmt::fixed_t> fixed_;
     fmt::float_formatter<fmt::sci_t> sci_;
+    fmt::default_float_formatter exact_;
 
 public:
+    WithClueFmt() :
+        dec_(10), hex_(16) {}
+
     const char *name() const {
         return "with-clue-fmt";
     }
 
-    void put(int x, dec_t) {
+    void put_dec(int x) {
         dec_.formatted_write(x, buf, 128);
     }
 
-    void put(int x, hex_t) {
+    void put_hex(int x) {
         hex_.formatted_write(x, buf, 128);
     }
 
-    void put(double x, fixed_t) {
+    void put_fixed(double x) {
         fixed_.formatted_write(x, buf, 128);
     }
 
-    void put(double x, sci_t) {
+    void put_sci(double x) {
         sci_.formatted_write(x, buf, 128);
+    }
+
+    void put_exact(double x) {
+        exact_.formatted_write(x, buf, 128);
     }
 };
 
 class WithClueFmtChecked {
 private:
     char buf[128];
-    fmt::int_formatter<10> dec_;
-    fmt::int_formatter<16> hex_;
+    fmt::int_formatter dec_;
+    fmt::int_formatter hex_;
     fmt::float_formatter<fmt::fixed_t> fixed_;
     fmt::float_formatter<fmt::sci_t> sci_;
+    fmt::default_float_formatter exact_;
 
 public:
+    WithClueFmtChecked() :
+        dec_(10), hex_(16) {}
+
     const char *name() const {
         return "with-clue-fmt:checked";
     }
 
-    void put(int x, dec_t) {
+    void put_dec(int x) {
         size_t n = dec_.max_formatted_length(x);
         if (n < 128)
             dec_.formatted_write(x, buf, 128);
     }
 
-    void put(int x, hex_t) {
+    void put_hex(int x) {
         size_t n = hex_.max_formatted_length(x);
         if (n < 128)
             hex_.formatted_write(x, buf, 128);
     }
 
-    void put(double x, fixed_t) {
+    void put_fixed(double x) {
         size_t n = fixed_.max_formatted_length(x);
         if (n < 128)
             fixed_.formatted_write(x, buf, 128);
     }
 
-    void put(double x, sci_t) {
+    void put_sci(double x) {
         size_t n = sci_.max_formatted_length(x);
         if (n < 128)
             sci_.formatted_write(x, buf, 128);
+    }
+
+    void put_exact(double x) {
+        size_t n = exact_.max_formatted_length(x);
+        if (n < 128)
+            exact_.formatted_write(x, buf, 128);
     }
 };
 
@@ -155,19 +181,23 @@ void measure_performance(Impl&& impl,
                          const std::vector<double>& reals) {
 
     auto f_dec = [&]() {
-        for (int x: ints) impl.put(x, dec_t{});
+        for (int x: ints) impl.put_dec(x);
     };
 
     auto f_hex = [&]() {
-        for (int x: ints) impl.put(x, hex_t{});
+        for (int x: ints) impl.put_hex(x);
     };
 
     auto f_fixed = [&]() {
-        for (double x: reals) impl.put(x, fixed_t{});
+        for (double x: reals) impl.put_fixed(x);
     };
 
     auto f_sci = [&]() {
-        for (double x: reals) impl.put(x, sci_t{});
+        for (double x: reals) impl.put_sci(x);
+    };
+
+    auto f_exact = [&]() {
+        for (double x: reals) impl.put_exact(x);
     };
 
     std::printf("%s:\n", impl.name());
@@ -177,6 +207,9 @@ void measure_performance(Impl&& impl,
 
     auto r_hex = calibrated_time(f_hex);
     report("hex", ints.size(), r_hex);
+
+    auto r_exact = calibrated_time(f_exact);
+    report("exact", reals.size(), r_exact);
 
     auto r_fixed = calibrated_time(f_fixed);
     report("fixed", reals.size(), r_fixed);
@@ -205,14 +238,6 @@ int main() {
 
     measure_performance(WithSprintfChecked(), ints, reals);
     measure_performance(WithClueFmtChecked(), ints, reals);
-
-    std::printf("with-clue-grisu:\n");
-    static char tmpbuf[256];
-    auto f_grisu = [&]() {
-        for (double x: reals) grisu_impl::dtoa(x, tmpbuf);
-    };
-    auto r_grisu = calibrated_time(f_grisu);
-    report("grisu", reals.size(), r_grisu);
 
     return 0;
 }

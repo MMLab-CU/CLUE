@@ -8,18 +8,14 @@ using std::size_t;
 
 // Auxiliary functions for testing
 
-const char *cfmt_lsym(const fmt::int_formatter<10>&) {
-    return "%ld";
+const char *cfmt_lsym(const fmt::int_formatter& f) {
+    switch (f.base()) {
+        case  8: return "%lo";
+        case 10: return "%ld";
+        case 16: return f.any(fmt::upper_case) ? "%lX" : "%lx";
+    }
+    return "";
 }
-
-const char *cfmt_lsym(const fmt::int_formatter<8>&) {
-    return "%lo";
-}
-
-const char *cfmt_lsym(const fmt::int_formatter<16>& f) {
-    return f.flags() & fmt::upper_case ? "%lX" : "%lx";
-}
-
 
 template<class F>
 std::string ref_int_format(const F& f, long x) {
@@ -51,7 +47,6 @@ template<typename F>
 ::testing::AssertionResult CheckIntFormat(
     const char *fexpr, const char *xexpr, const F& f, long x) {
 
-    const unsigned radix = f.radix_value;
     std::string refstr = ref_int_format(f, x);
 
     size_t flen = f.max_formatted_length(x);
@@ -60,7 +55,7 @@ template<typename F>
             << "Mismatched formatted length for "
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
-            << "  radix: " << radix << "\n"
+            << "  base: " << f.base() << "\n"
             << "  plus_sign: " << (bool)(f.any(fmt::plus_sign)) << "\n"
             << "  pad_zeros: " << (bool)(f.any(fmt::pad_zeros)) << "\n"
             << "  width: " << f.width() << "\n"
@@ -76,7 +71,7 @@ template<typename F>
             << "Mismatched formatted string for "
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
-            << "  radix: " << radix << "\n"
+            << "  base: " << f.base() << "\n"
             << "  plus_sign: " << (bool)(f.any(fmt::plus_sign)) << "\n"
             << "  pad_zeros: " << (bool)(f.any(fmt::pad_zeros)) << "\n"
             << "  width: " << f.width() << "\n"
@@ -415,7 +410,7 @@ TEST(FloatFmt, USci) {
 
 TEST(FloatFmt, Grisu) {
     char buf[32];
-    auto fmt = fmt::grisu_fmt();
+    fmt::grisu_formatter fmt;
 
     std::vector<double> xs = prepare_test_floats();
     for (double x: xs) {

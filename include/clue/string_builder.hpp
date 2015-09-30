@@ -1,10 +1,7 @@
 #ifndef CLUE_STRING_BUILDER__
 #define CLUE_STRING_BUILDER__
 
-#include <clue/string_view.hpp>
-#include <clue/formatting_base.hpp>
-#include <cstring>
-#include <stdexcept>
+#include <clue/numformat.hpp>
 #include <array>
 #include <new>  // for bad_alloc
 
@@ -139,7 +136,7 @@ public:
 
     template<typename T, typename Fmt>
     generic_string_builder& operator << (fmt::with_fmt_t<T, Fmt> wfmt) {
-        writef(wfmt.value, wfmt.fmt);
+        writef(wfmt.value, wfmt.formatter);
         return *this;
     }
 

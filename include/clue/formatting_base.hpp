@@ -39,6 +39,26 @@ inline size_t copy_str(charT *buf, const char* str, size_t n) {
 }
 
 template<typename charT>
+inline size_t justified_copy_str(charT *buf, const char* str, size_t n, size_t width, bool ljust) {
+    if (width > n) {
+        size_t np = width - n;
+        if (ljust) {
+            for (size_t i = 0; i < n; ++i) {
+                buf[i] = static_cast<charT>(str[i]);
+            }
+            buf = fill_chars(buf + n, np, ' ');
+            *buf = static_cast<charT>('\0');
+        } else {
+            buf = fill_chars(buf, np, ' ');
+            copy_str(buf, str, n);
+        }
+        return width;
+    } else {
+        return copy_str(buf, str, n);
+    }
+}
+
+template<typename charT>
 inline size_t rejustify(charT *buf, size_t n, size_t width, bool ljust) {
     if (n < width) {
         size_t np = width - n;
@@ -113,6 +133,17 @@ public:
         } else {
             CLUE_ASSERT(buf_len > 5);
             return details::copy_str(buf, "false", 5);
+        }
+    }
+
+    template<typename charT>
+    size_t formatted_write(bool x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
+        if (x) {
+            CLUE_ASSERT(buf_len > 4);
+            return details::justified_copy_str(buf, "true", 4, width, ljust);
+        } else {
+            CLUE_ASSERT(buf_len > 5);
+            return details::justified_copy_str(buf, "false", 5, width, ljust);
         }
     }
 };

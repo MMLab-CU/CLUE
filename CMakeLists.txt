@@ -63,6 +63,7 @@ set(UNIT_TESTS
     test_optional
     test_string_view
     test_stringex
+    test_formatting
     test_numformat    
     # test_string_builder  
     test_value_range

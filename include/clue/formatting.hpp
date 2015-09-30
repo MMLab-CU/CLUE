@@ -35,7 +35,7 @@ str(const T& x) {
 
 template<typename T, typename Fmt>
 inline ::std::string str(fmt::with_fmt_t<T, Fmt> wfmt) {
-    return strf(wfmt.value, wfmt.fmt);
+    return strf(wfmt.value, wfmt.formatter);
 }
 
 namespace details {

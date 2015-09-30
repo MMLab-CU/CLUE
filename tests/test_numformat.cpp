@@ -1,4 +1,5 @@
 #include <clue/numformat.hpp>
+#include <limits>
 #include <gtest/gtest.h>
 
 using namespace clue;

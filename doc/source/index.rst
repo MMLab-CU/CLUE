@@ -15,6 +15,7 @@ Contents:
    optional.rst
    string_view.rst
    stringex.rst
+   formatting.rst
    value_range.rst
    array_view.rst
    reindexed_view.rst

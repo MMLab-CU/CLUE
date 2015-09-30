@@ -64,13 +64,14 @@ set(UNIT_TESTS
     test_string_view
     test_stringex
     test_formatting
-    test_numformat    
-    test_string_builder  
+    test_numformat
+    test_string_builder
     test_value_range
     test_array_view
     test_reindexed_view
     test_meta
     test_meta_seq
+    test_include_all
 )
 
 foreach (tname ${UNIT_TESTS})

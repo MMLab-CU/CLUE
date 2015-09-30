@@ -1,37 +1,14 @@
 #ifndef CLUE_INTERNAL_NUMFMT__
 #define CLUE_INTERNAL_NUMFMT__
 
-#include <clue/config.hpp>
-#include <clue/type_traits.hpp>
-#include <cstdio>
+#include <clue/formatting_base.hpp>
 #include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <cstdint>
 
 namespace clue {
 namespace fmt {
 namespace details {
 
 using ::std::size_t;
-
-template<typename charT>
-inline charT* fill_chars(charT* buf, size_t n, char c) {
-    charT _c = static_cast<charT>(c);
-    for (size_t i = 0; i < n; ++i) {
-        buf[i] = _c;
-    }
-    return buf + n;
-}
-
-template<typename charT>
-inline size_t copy_str(charT *buf, const char* str, size_t n) {
-    for (size_t i = 0; i < n; ++i) {
-        buf[i] = static_cast<charT>(str[i]);
-    }
-    buf[n] = static_cast<charT>('\0');
-    return n;
-}
 
 //===============================================
 //

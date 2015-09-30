@@ -63,7 +63,8 @@ set(UNIT_TESTS
     test_optional
     test_string_view
     test_stringex
-    test_intfmt    
+    test_intfmt 
+    test_floatfmt   
     # test_string_builder  
     test_value_range
     test_array_view

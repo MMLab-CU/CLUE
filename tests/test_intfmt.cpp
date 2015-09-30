@@ -174,7 +174,7 @@ void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
     ASSERT_EQ(showpos_,  f.any(fmt::showpos));
 
     // combination coverage
-    std::vector<size_t> widths = {0, 5, 12};
+    std::vector<size_t> widths = {0, 4, 8, 12, 20, 26};
 
     std::vector<long> xs = prepare_test_ints(base_);
     for (long x: xs) {

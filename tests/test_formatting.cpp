@@ -19,92 +19,9 @@ using std::size_t;
 
 
 
-inline char notation(const fmt::fixed_formatter& f) {
-    return f.any(fmt::uppercase) ? 'F' : 'f';
-}
-inline char notation(const fmt::sci_formatter& f)   {
-    return f.any(fmt::uppercase) ? 'E' : 'e';
-}
 
-template<class F>
-std::string ref_float_format(const F& f, double x) {
-    size_t w = f.width();
-    size_t pw = w;
 
-    char cfmt[16];
-    char *p = cfmt;
-    *p++ = '%';
-    if (f.any(fmt::showpos)) *p++ = '+';
-    if (f.any(fmt::leftjust)) *p++ = '-';
-    else if (f.any(fmt::padzeros)) *p++ = '0';
 
-    if (pw > 0) {
-        if (pw >= 10) {
-            *p++ = char('0' + (pw / 10));
-            pw %= 10;
-        }
-        *p++ = char('0' + pw);
-    }
-
-    size_t prec = f.precision();
-    *p++ = '.';
-    if (prec >= 10) {
-        *p++ = char('0' + (prec / 10));
-        prec %= 10;
-    }
-    *p++ = char('0' + prec);
-
-    *p++ = notation(f);
-    *p = '\0';
-
-    return fmt::c_sprintf(cfmt, x);
-}
-
-template<typename F>
-::testing::AssertionResult CheckFloatFormat(
-    const char *fexpr, const char *xexpr, const F& f, double x) {
-
-    size_t w = f.width();
-    std::string refstr = ref_float_format(f, x);
-    size_t rl = refstr.size();
-    size_t fl_max = rl <= 8 ? rl + 1 : rl + 2;
-
-    size_t flen = f.max_formatted_length(x);
-    if (!(flen >= rl && flen <= fl_max)) {
-        return ::testing::AssertionFailure()
-            << "Mismatched formatted length for "
-            << "[" << xexpr << " = " << x << "] "
-            << "with " << fexpr << ": \n"
-            << "  notation: " << notation(f) << "\n"
-            << "  precision: " << f.precision() << "\n"
-            << "  showpos: " << bool(f.flags() & fmt::showpos) << "\n"
-            << "  padzeros: " << bool(f.flags() & fmt::padzeros) << "\n"
-            << "  width: " << w << "\n"
-            << "Result:\n"
-            << "  ACTUAL = " << flen << "\n"
-            << "  EXPECT = " << refstr.length()
-            << " (\"" << refstr << "\")";
-    }
-
-    std::string r = fmt::strf(x, f);
-    // std::printf("'%s'  |   '%s'\n", refstr.c_str(), r.c_str());
-
-    if (!(flen >= rl && flen <= fl_max)) {
-        return ::testing::AssertionFailure()
-            << "Mismatched formatted string for "
-            << "[" << xexpr << " = " << x << "] "
-            << "with " << fexpr << ": \n"
-            << "  notation: " << notation(f) << "\n"
-            << "  precision: " << f.precision() << "\n"
-            << "  showpos: " << bool(f.flags() & fmt::showpos) << "\n"
-            << "  padzeros: " << bool(f.flags() & fmt::padzeros) << "\n"
-            << "  width: " << w << "\n"
-            << "Result:\n"
-            << "  ACTUAL = \"" << r << "\"\n"
-            << "  EXPECT = \"" << refstr << "\"";
-    }
-    return ::testing::AssertionSuccess();
-}
 
 
 // C-string formatting
@@ -135,35 +52,6 @@ void verify_float_formatter(const F& f, size_t p, bool pzeros, bool psign) {
     ASSERT_EQ(pzeros, f.any(fmt::padzeros));
     ASSERT_EQ(psign,  f.any(fmt::showpos));
 }
-
-std::vector<double> prepare_test_floats() {
-    std::vector<double> xs;
-    xs.push_back(0.0);
-
-    std::vector<int> pows{1, 2, 3, 4, 6, 8, 12, 16, 32, 64, 128, 200};
-    for (int i: pows) {
-        double e = std::pow(10.0, i);
-        xs.push_back(e);
-        xs.push_back(0.5134 * e);
-        xs.push_back(0.9716 * e);
-        xs.push_back(1.2438 * e);
-        xs.push_back(3.8752 * e);
-        xs.push_back(std::nextafter(e, 2.0 * e));
-        xs.push_back(std::nextafter(e, 0.5 * e));
-    }
-    xs.push_back(std::numeric_limits<double>::epsilon());
-    xs.push_back(std::numeric_limits<double>::infinity());
-
-    std::vector<double> xs_aug;
-    for (double x: xs) {
-        xs_aug.push_back(x);
-        xs_aug.push_back(-x);
-    }
-    xs_aug.push_back(std::numeric_limits<double>::quiet_NaN());
-
-    return xs_aug;
-}
-
 
 template<class Tag>
 void batch_test_float_format(const std::vector<fmt::float_formatter<Tag>>& fmts,

@@ -73,7 +73,7 @@ public:
         return ::std::basic_string<charT>(proxy_.data(), len_);
     }
 
-    // Write
+    // Lower-level write
 
     void write(charT c) {
         *(take_next(1)) = c;
@@ -95,16 +95,6 @@ public:
         write(s, traits_type::length(s));
     }
 
-    template<typename Traits>
-    void write(const basic_string_view<charT, Traits>& s) {
-        write(s.data(), s.size());
-    }
-
-    template<typename Traits, typename Allocator>
-    void write(const ::std::basic_string<charT, Traits, Allocator>& s) {
-        write(s.data(), s.size());
-    }
-
     template<typename T, typename Fmt>
     void writef(const T& x, Fmt&& fmt) {
         size_t max_n = fmt.max_formatted_length(x);
@@ -113,12 +103,37 @@ public:
         advance(n);
     }
 
+
+    // formatted output
+
     template<typename T>
     enable_if_t<
         fmt::is_default_formattable<decay_t<T>, charT>::value,
         generic_string_builder&>
     operator << (const T& x) {
         writef(x, fmt::default_formatter(x));
+        return *this;
+    }
+
+    generic_string_builder& operator << (charT c) {
+        write(c);
+        return *this;
+    }
+
+    generic_string_builder& operator << (const charT* s) {
+        write(s);
+        return *this;
+    }
+
+    template<typename Traits>
+    generic_string_builder& operator << (const basic_string_view<charT, Traits>& s) {
+        write(s.data(), s.size());
+        return *this;
+    }
+
+    template<typename Traits, typename Allocator>
+    generic_string_builder& operator << (const ::std::basic_string<charT, Traits, Allocator>& s) {
+        write(s.data(), s.size());
         return *this;
     }
 

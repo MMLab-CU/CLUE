@@ -128,8 +128,7 @@ public:
     }
 
     void append(const string& s) {
-        builder_.write(s);
-        builder_.write(' ');
+        builder_ << s << ' ';
     }
 };
 
@@ -156,8 +155,7 @@ public:
     }
 
     void append(const string& s) {
-        builder_.write(s);
-        builder_.write(' ');
+        builder_ << s << ' ';
     }
 };
 

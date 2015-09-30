@@ -78,7 +78,7 @@ TEST(StringBuilder, WriteStrings) {
     ASSERT_EQ("clue", sb.str());
     ASSERT_EQ(string_view(sb.data(), 4), sb.str_view());
 
-    sb.write('.');
+    sb << '.';
 
     ASSERT_FALSE(sb.empty());
     ASSERT_EQ(short_len, sb.capacity());
@@ -92,7 +92,7 @@ TEST(StringBuilder, WriteStrings) {
         "0123456789-0123456789;"
         "0123456789-0123456789";
 
-    sb.write(std::string(long_text));
+    sb << std::string(long_text);
 
     ASSERT_FALSE(sb.empty());
     ASSERT_EQ(70, sb.size());
@@ -108,7 +108,7 @@ TEST(StringBuilder, WriteStrings) {
         "0123456789-0123456789;"
         "0123456789-0123456789";
 
-    sb.write(long_text2);
+    sb << long_text2;
 
     ASSERT_EQ(256, sb.capacity());
     ASSERT_EQ(std::string("clue.") + long_text + long_text2, sb.str());

@@ -135,6 +135,12 @@ TEST(StringBuilder, WriteSeq) {
     sb << 4 << " + " << 5 << " = " << 9 << "\n";
 
     ASSERT_EQ("1+2=3\n4 + 5 = 9\n", sb.str());
+
+    sb.clear();
+    sb << fmt::with(1, fmt::fixed().precision(4) ) << ", "
+       << fmt::with(2.5, fmt::sci().precision(3) );
+
+    ASSERT_EQ("1.0000, 2.500e+00", sb.str());
 }
 
 

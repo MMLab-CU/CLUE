@@ -293,19 +293,19 @@ void IntFmtTests(const Fmt& fbase, unsigned b) {
 }
 
 TEST(IntFmt, Dec) {
-    IntFmtTests(fmt::dec_fmt(), 10);
+    IntFmtTests(fmt::dec(), 10);
 }
 
 TEST(IntFmt, Oct) {
-    IntFmtTests(fmt::oct_fmt(), 8);
+    IntFmtTests(fmt::oct(), 8);
 }
 
 TEST(IntFmt, Hex) {
-    IntFmtTests(fmt::hex_fmt(), 16);
+    IntFmtTests(fmt::hex(), 16);
 }
 
 TEST(IntFmt, UHex) {
-    IntFmtTests(fmt::hex_fmt() | fmt::upper_case, 16);
+    IntFmtTests(fmt::hex() | fmt::upper_case, 16);
 }
 
 
@@ -426,19 +426,19 @@ void FloatFmtTests(const Fmt& fbase) {
 
 
 TEST(FloatFmt, Fixed) {
-    FloatFmtTests(fmt::fixed_fmt());
+    FloatFmtTests(fmt::fixed());
 }
 
 TEST(FloatFmt, Sci) {
-    FloatFmtTests(fmt::sci_fmt());
+    FloatFmtTests(fmt::sci());
 }
 
 TEST(FloatFmt, UFixed) {
-    FloatFmtTests(fmt::fixed_fmt() | fmt::upper_case);
+    FloatFmtTests(fmt::fixed() | fmt::upper_case);
 }
 
 TEST(FloatFmt, USci) {
-    FloatFmtTests(fmt::sci_fmt() | fmt::upper_case);
+    FloatFmtTests(fmt::sci() | fmt::upper_case);
 }
 
 TEST(FloatFmt, Grisu) {
@@ -458,14 +458,14 @@ TEST(FloatFmt, Grisu) {
 }
 
 
-TEST(DefaultFormat, Strings) {
+TEST(Formatting, Strings) {
     ASSERT_EQ("a", fmt::str('a'));
     ASSERT_EQ("abc", fmt::str("abc"));
     ASSERT_EQ("abc", fmt::str(string_view("abc")));
     ASSERT_EQ("abc", fmt::str(std::string("abc")));
 }
 
-TEST(DefaultFormat, Numbers) {
+TEST(Formatting, Numbers) {
     ASSERT_EQ("true", fmt::str(true));
     ASSERT_EQ("false", fmt::str(false));
 
@@ -477,11 +477,21 @@ TEST(DefaultFormat, Numbers) {
     ASSERT_EQ("-2.25", fmt::str(-2.25));
 }
 
-TEST(DefaultFormat, StrConcat) {
+TEST(Formatting, StrConcat) {
     ASSERT_EQ("", fmt::str());
     ASSERT_EQ("123", fmt::str(123));
     ASSERT_EQ("abc.xyz", fmt::str("abc", ".xyz"));
     ASSERT_EQ("abc.xyz", fmt::str("abc", '.', "xyz"));
     ASSERT_EQ("1+2 = 3", fmt::str(1, '+', 2, " = ", 3));
+
+    auto f = fmt::fixed().precision(2);
+    auto sf1 = fmt::str(with(123, f));
+    ASSERT_EQ("123.00", sf1);
+
+    auto sf2 = fmt::str(with(123, f), with(456, f));
+    ASSERT_EQ("123.00456.00", sf2);
+
+    auto sf3 = fmt::str(with(123, f), ',', with(456, f));
+    ASSERT_EQ("123.00,456.00", sf3);
 }
 

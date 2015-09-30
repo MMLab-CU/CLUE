@@ -178,9 +178,9 @@ public:
     }
 };
 
-constexpr int_formatter oct_fmt() noexcept { return int_formatter(8);  }
-constexpr int_formatter dec_fmt() noexcept { return int_formatter(10); }
-constexpr int_formatter hex_fmt() noexcept { return int_formatter(16); }
+constexpr int_formatter oct() noexcept { return int_formatter(8);  }
+constexpr int_formatter dec() noexcept { return int_formatter(10); }
+constexpr int_formatter hex() noexcept { return int_formatter(16); }
 
 // simplify version which takes advantage of the default setting
 class default_int_formatter {
@@ -373,11 +373,11 @@ using default_float_formatter = grisu_formatter;
 using fixed_formatter = float_formatter<details::fixed_t>;
 using sci_formatter = float_formatter<details::sci_t>;
 
-constexpr fixed_formatter fixed_fmt() noexcept {
+constexpr fixed_formatter fixed() noexcept {
     return fixed_formatter();
 }
 
-constexpr sci_formatter sci_fmt() noexcept {
+constexpr sci_formatter sci() noexcept {
     return sci_formatter();
 }
 
@@ -471,6 +471,19 @@ private:
 //===============================================
 
 // Generic formatting setting
+
+// with function
+
+template<typename T, typename Fmt>
+struct with_fmt_t {
+    const T& value;
+    const Fmt& fmt;
+};
+
+template<typename T, typename Fmt>
+inline with_fmt_t<T, Fmt> with(const T& v, const Fmt& fmt) {
+    return with_fmt_t<T, Fmt>{v, fmt};
+}
 
 // for arithmetic types
 

@@ -210,19 +210,19 @@ TEST(IntFmt, DefaultIntFmt) {
     test_int_fmt(fmt::default_int_formatter{}, 10, false, false);
 }
 
-TEST(IntFmt, Dec) {
+TEST(IntFmt, DecFmt) {
     test_int_fmt_x(fmt::dec(), 10);
 }
 
-TEST(IntFmt, Oct) {
+TEST(IntFmt, OctFmt) {
     test_int_fmt_x(fmt::oct(), 8);
 }
 
-TEST(IntFmt, Hex) {
+TEST(IntFmt, HexFmt) {
     test_int_fmt_x(fmt::hex(), 16);
 }
 
-TEST(IntFmt, UHex) {
+TEST(IntFmt, UHexFmt) {
     test_int_fmt_x(fmt::hex() | fmt::uppercase, 16);
 }
 

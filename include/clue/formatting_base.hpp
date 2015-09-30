@@ -35,7 +35,7 @@ typedef unsigned int flag_t;
 //
 //===============================================
 
-inline ::std::string sprintf(const char *fmt, ...) {
+inline ::std::string c_sprintf(const char *fmt, ...) {
     std::va_list args0, args;
     va_start(args0, fmt);
     va_copy(args, args0);

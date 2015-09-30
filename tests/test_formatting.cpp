@@ -29,7 +29,7 @@ std::string ref_int_format(const F& f, long x) {
 
     // format the main digits
     const char *cf = cfmt_lsym(f);
-    std::string main = fmt::sprintf(cf, (x >= 0 ? x : -x));
+    std::string main = fmt::c_sprintf(cf, (x >= 0 ? x : -x));
     size_t ml = main.size();
 
     // get the sign string
@@ -107,7 +107,7 @@ std::string ref_float_format(const F& f, double x) {
     if (f.any(fmt::plus_sign)) sfmt = std::string("+") + sfmt;
     sfmt = std::string("%") + sfmt;
     // std::printf("sfmt = %s\n", sfmt.c_str());
-    return fmt::sprintf(sfmt.c_str(), x);
+    return fmt::c_sprintf(sfmt.c_str(), x);
 }
 
 template<typename F>
@@ -160,11 +160,11 @@ template<typename F>
 
 // C-string formatting
 
-TEST(StringFmt, Sprintf) {
-    ASSERT_EQ("", fmt::sprintf(""));
-    ASSERT_EQ("123", fmt::sprintf("%d", 123));
-    ASSERT_EQ("2 + 3 = 5", fmt::sprintf("%d + %d = %d", 2, 3, 5));
-    ASSERT_EQ("12.5000", fmt::sprintf("%.4f", 12.5));
+TEST(CFormat, Sprintf) {
+    ASSERT_EQ("", fmt::c_sprintf(""));
+    ASSERT_EQ("123", fmt::c_sprintf("%d", 123));
+    ASSERT_EQ("2 + 3 = 5", fmt::c_sprintf("%d + %d = %d", 2, 3, 5));
+    ASSERT_EQ("12.5000", fmt::c_sprintf("%.4f", 12.5));
 }
 
 

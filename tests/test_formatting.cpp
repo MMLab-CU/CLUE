@@ -52,6 +52,23 @@ TEST(Formatting, DefaultBoolFmt) {
     test_formatter(false, fmt::default_bool_formatter{}, "false");
 }
 
+TEST(Formatting, DefaultCharFmt) {
+    test_formatter('a', fmt::default_char_formatter{}, "a");
+}
+
+
+void test_default_string_formatter(const std::string& src) {
+    test_formatter(src, fmt::default_string_formatter{}, src);
+    test_formatter(string_view(src), fmt::default_string_formatter{}, src);
+    test_formatter(src.c_str(), fmt::default_string_formatter{}, src);
+}
+
+TEST(Formatting, DefaultStringFmt) {
+    test_default_string_formatter("");
+    test_default_string_formatter("a");
+    test_default_string_formatter("abcd");
+}
+
 TEST(Formatting, FmtStr) {
     // char
     ASSERT_EQ("a", fmt::str('a'));

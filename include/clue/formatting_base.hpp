@@ -151,7 +151,7 @@ public:
 
 //===============================================
 //
-//  Char & String formatting
+//  Char formatting
 //
 //===============================================
 
@@ -165,13 +165,43 @@ public:
     template<typename charT>
     size_t formatted_write(charT c, charT *buf, size_t buf_len) const {
         buf[0] = c;
-        buf[1] = '\0';
+        buf[1] = static_cast<charT>('\0');
         return 1;
     }
+
+    template<typename charT>
+    size_t formatted_write(charT c, size_t width, bool ljust, charT *buf, size_t buf_len) const {
+        if (width > 1) {
+            CLUE_ASSERT(buf_len > width);
+            size_t m = width - 1;
+            if (ljust) {
+                buf[0] = c;
+                details::fill_chars(buf + 1, m, ' ');
+            } else {
+                details::fill_chars(buf, m, ' ');
+                buf[m] = c;
+            }
+            buf[width] = static_cast<charT>('\0');
+            return width;
+        } else {
+            return formatted_write(c, buf, buf_len);
+        }
+    }
+
 };
+
+
+//===============================================
+//
+//  String formatting
+//
+//===============================================
+
 
 class default_string_formatter {
 public:
+    // max_formatted_length
+
     template<typename charT>
     constexpr size_t max_formatted_length(const charT *sz) const noexcept {
         return ::std::char_traits<charT>::length(sz);
@@ -189,11 +219,12 @@ public:
         return sv.size();
     }
 
+    // formatted_write
+
     template<typename charT>
     size_t formatted_write(
             const charT* s,
             charT *buf, size_t buf_len) const noexcept {
-
         const charT *p = s;
         const charT *pend = s + buf_len;
         while (*p && p != pend) *buf++ = *p++;
@@ -206,7 +237,6 @@ public:
             const ::std::basic_string<charT, Traits, Allocator>& s,
             charT *buf, size_t buf_len) const noexcept {
         return formatted_write_(s.data(), s.size(), buf, buf_len);
-
     }
 
     template<typename charT, typename Traits>
@@ -216,13 +246,60 @@ public:
         return formatted_write_(sv.data(), sv.size(), buf, buf_len);
     }
 
+    // formatted_write (with width & left-just)
+
+    template<typename charT>
+    size_t formatted_write(
+            const charT* s, size_t width, bool ljust,
+            charT *buf, size_t buf_len) const noexcept {
+        size_t len = ::std::char_traits<charT>::length(s);
+        return formatted_write_(s, len, width, ljust, buf, buf_len);
+    }
+
+    template<typename charT, typename Traits, typename Allocator>
+    size_t formatted_write(
+            const ::std::basic_string<charT, Traits, Allocator>& s,
+            size_t width, bool ljust, charT *buf, size_t buf_len) const noexcept {
+        return formatted_write_(s.data(), s.size(), width, ljust, buf, buf_len);
+    }
+
+    template<typename charT, typename Traits>
+    size_t formatted_write(
+            const basic_string_view<charT, Traits>& sv,
+            size_t width, bool ljust, charT *buf, size_t buf_len) const noexcept {
+        return formatted_write_(sv.data(), sv.size(), width, ljust, buf, buf_len);
+    }
+
 private:
     template<typename charT>
-    size_t formatted_write_(
-            const charT *src, size_t n, charT *buf, size_t buf_len) const noexcept {
+    size_t formatted_write_(const charT *src, size_t n,
+                            charT *buf, size_t buf_len) const noexcept {
         CLUE_ASSERT(n < buf_len);
         ::std::memcpy(buf, src, n * sizeof(charT));
+        buf[n] = static_cast<charT>('\0');
         return n;
+    }
+
+    template<typename charT>
+    size_t formatted_write_(const charT *src, size_t n, size_t width, bool ljust,
+                            charT *buf, size_t buf_len) const noexcept {
+        CLUE_ASSERT(n < buf_len && width < buf_len);
+        if (width > n) {
+            size_t np = width - n;
+            if (ljust) {
+                ::std::memcpy(buf, src, n * sizeof(charT));
+                details::fill_chars(buf + n, np, ' ');
+            } else {
+                details::fill_chars(buf, np, ' ');
+                ::std::memcpy(buf + np, src, n * sizeof(charT));
+            }
+            buf[width] = static_cast<charT>('\0');
+            return width;
+        } else {
+            ::std::memcpy(buf, src, n * sizeof(charT));
+            buf[n] = static_cast<charT>('\0');
+            return n;
+        }
     }
 };
 

@@ -52,6 +52,31 @@ inline ::std::string c_sprintf(const char *fmt, ...) {
 
 //===============================================
 //
+//  Bool formatting
+//
+//===============================================
+
+class default_bool_formatter {
+public:
+    constexpr size_t max_formatted_length(bool x) const noexcept {
+        return x ? 4 : 5;
+    }
+
+    template<typename charT>
+    size_t formatted_write(bool x, charT *buf, size_t buf_len) const {
+        if (x) {
+            CLUE_ASSERT(buf_len > 4);
+            return details::copy_str(buf, "true", 4);
+        } else {
+            CLUE_ASSERT(buf_len > 5);
+            return details::copy_str(buf, "false", 5);
+        }
+    }
+};
+
+
+//===============================================
+//
 //  Integer formatting
 //
 //===============================================
@@ -68,10 +93,6 @@ inline size_t ndigits(T x, const unsigned base) noexcept {
     }
     return 0;
 }
-
-namespace details {
-
-} // end namespace details
 
 
 // length of formatted integer
@@ -467,6 +488,10 @@ constexpr enable_if_t<::std::is_floating_point<T>::value, grisu_formatter>
 default_formatter(const T& x) noexcept {
     return default_float_fmt();
 };
+
+default_bool_formatter default_formatter(bool x) noexcept {
+    return default_bool_formatter();
+}
 
 // for characters
 

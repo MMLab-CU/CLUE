@@ -466,9 +466,13 @@ TEST(DefaultFormat, Strings) {
 }
 
 TEST(DefaultFormat, Numbers) {
+    ASSERT_EQ("true", fmt::str(true));
+    ASSERT_EQ("false", fmt::str(false));
+
     ASSERT_EQ("0", fmt::str(0));
     ASSERT_EQ("123", fmt::str(123));
     ASSERT_EQ("-456", fmt::str(-456));
+
     ASSERT_EQ("12.75", fmt::str(12.75));
     ASSERT_EQ("-2.25", fmt::str(-2.25));
 }

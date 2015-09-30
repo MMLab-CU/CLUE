@@ -15,6 +15,15 @@ namespace details {
 
 using ::std::size_t;
 
+template<typename charT>
+size_t copy_str(charT *buf, const char *str, size_t n) {
+    for (size_t i = 0; i < n; ++i) {
+        buf[i] = static_cast<charT>(str[i]);
+    }
+    buf[n] = static_cast<charT>('\0');
+    return n;
+}
+
 //===============================================
 //
 //  Convert arbitrary integer to unsigned abs
@@ -40,7 +49,6 @@ template<typename T>
 constexpr make_unsigned_t<T> uabs(T x) noexcept {
     return uabs_helper<T>::get(x);
 }
-
 
 //===============================================
 //

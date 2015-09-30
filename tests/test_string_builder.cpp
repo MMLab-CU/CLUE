@@ -119,9 +119,12 @@ TEST(StringBuilder, WriteStrings) {
 TEST(StringBuilder, WriteNumbers) {
     string_builder sb;
 
-    sb << -123 << ' ' << 456 << ' ' << 123.75;
+    sb << -123 << ' '
+       << 456 << ' '
+       << 123.75 << ' '
+       << true << ' ' << false;
 
-    ASSERT_EQ("-123 456 123.75", sb.str());
+    ASSERT_EQ("-123 456 123.75 true false", sb.str());
 }
 
 

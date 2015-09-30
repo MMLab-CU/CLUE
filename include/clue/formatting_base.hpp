@@ -20,11 +20,9 @@ namespace fmt {
 //===============================================
 
 enum {
-    upper_case = 0x01,
-    pad_zeros = 0x02,
-    plus_sign = 0x04,
-    left_just = 0x08,
-    quoted = 0x10
+    uppercase = 0x01,
+    padzeros  = 0x02,
+    showpos   = 0x04
 };
 
 typedef unsigned int flag_t;
@@ -144,7 +142,7 @@ public:
     template<typename T>
     size_t max_formatted_length(T x) const noexcept {
         size_t n = ndigits(x, base_);
-        if (x < 0 || any(plus_sign)) n++;
+        if (x < 0 || any(showpos)) n++;
         return n > width_ ? n : width_;
     }
 
@@ -152,14 +150,14 @@ public:
     size_t formatted_write(T x, charT *buf, size_t buf_len) const {
         auto ax = details::uabs(x);
         size_t nd = ndigits(ax, base_);
-        char sign = x < 0 ? '-' : (any(plus_sign) ? '+' : '\0');
+        char sign = x < 0 ? '-' : (any(showpos) ? '+' : '\0');
         size_t flen = nd + (sign ? 1 : 0);
         assert(buf_len > flen);
 
         charT *p = buf;
         if (width_ > flen) {
             size_t plen = width_ - flen;
-            if (any(pad_zeros)) {
+            if (any(padzeros)) {
                 // pad zeros
                 if (sign) *(p++) = sign;
                 for (size_t i = 0; i < plen; ++i) *(p++) = (charT)('0');
@@ -172,7 +170,7 @@ public:
             // no padding
             if (sign) *(p++) = sign;
         }
-        details::extract_digits(ax, base_, any(upper_case), p, nd);
+        details::extract_digits(ax, base_, any(uppercase), p, nd);
         p[nd] = '\0';
         return p + nd - buf;
     }
@@ -260,8 +258,8 @@ struct float_fmt_traits {};
 
 template<>
 struct float_fmt_traits<fixed_t> {
-    static size_t maxfmtlength(double x, size_t precision, bool plus_sign) noexcept {
-        return maxfmtlength_fixed(x, precision, plus_sign);
+    static size_t maxfmtlength(double x, size_t precision, bool showpos) noexcept {
+        return maxfmtlength_fixed(x, precision, showpos);
     }
 
     static constexpr char printf_sym(bool upper) noexcept {
@@ -271,8 +269,8 @@ struct float_fmt_traits<fixed_t> {
 
 template<>
 struct float_fmt_traits<sci_t> {
-    static size_t maxfmtlength(double x, size_t precision, bool plus_sign) noexcept {
-        return maxfmtlength_sci(x, precision, plus_sign);
+    static size_t maxfmtlength(double x, size_t precision, bool showpos) noexcept {
+        return maxfmtlength_sci(x, precision, showpos);
     }
 
     static constexpr char printf_sym(bool upper) noexcept {
@@ -331,12 +329,12 @@ public:
     size_t max_formatted_length(double x) const noexcept {
         size_t n = 0;
         if (::std::isfinite(x)) {
-            n = fmt_traits_t::maxfmtlength(x, precision_, any(plus_sign));
+            n = fmt_traits_t::maxfmtlength(x, precision_, any(showpos));
         } else if (::std::isinf(x)) {
-            n = ::std::signbit(x) || any(plus_sign) ? 4 : 3;
+            n = ::std::signbit(x) || any(showpos) ? 4 : 3;
         } else {
             CLUE_ASSERT(::std::isnan(x));
-            n = any(plus_sign) ? 4 : 3;
+            n = any(showpos) ? 4 : 3;
         }
         return n > width_ ? n : width_;
     }
@@ -345,9 +343,9 @@ public:
     size_t formatted_write(double x, charT *buf, size_t buf_len) const {
         char cfmt[16];
         const char fsym =
-                details::float_fmt_traits<Tag>::printf_sym(any(upper_case));
+                details::float_fmt_traits<Tag>::printf_sym(any(uppercase));
         details::float_cfmt_impl(cfmt, fsym, width_, precision_,
-                any(plus_sign), any(pad_zeros));
+                any(showpos), any(padzeros));
         size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
         CLUE_ASSERT(n < buf_len);
         return n;

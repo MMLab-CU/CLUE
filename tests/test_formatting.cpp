@@ -16,7 +16,7 @@ const char *cfmt_lsym(const fmt::int_formatter& f) {
     switch (f.base()) {
         case  8: return "%lo";
         case 10: return "%ld";
-        case 16: return f.any(fmt::upper_case) ? "%lX" : "%lx";
+        case 16: return f.any(fmt::uppercase) ? "%lX" : "%lx";
     }
     return "";
 }
@@ -34,11 +34,11 @@ std::string ref_int_format(const F& f, long x) {
 
     // get the sign string
     std::string sign = x < 0 ? std::string("-") :
-        (f.flags() & fmt::plus_sign ? std::string("+") : std::string());
+        (f.flags() & fmt::showpos ? std::string("+") : std::string());
     size_t sl = sign.size() + ml;
 
     // compose
-    if (f.flags() & fmt::pad_zeros) {
+    if (f.flags() & fmt::padzeros) {
         std::string ps = w > sl ? std::string(w-sl, '0') : std::string();
         return sign + ps + main;
     } else {
@@ -60,8 +60,8 @@ template<typename F>
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
             << "  base: " << f.base() << "\n"
-            << "  plus_sign: " << (bool)(f.any(fmt::plus_sign)) << "\n"
-            << "  pad_zeros: " << (bool)(f.any(fmt::pad_zeros)) << "\n"
+            << "  showpos: " << (bool)(f.any(fmt::showpos)) << "\n"
+            << "  padzeros: " << (bool)(f.any(fmt::padzeros)) << "\n"
             << "  width: " << f.width() << "\n"
             << "Result:\n"
             << "  ACTUAL = " << flen << "\n"
@@ -76,8 +76,8 @@ template<typename F>
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
             << "  base: " << f.base() << "\n"
-            << "  plus_sign: " << (bool)(f.any(fmt::plus_sign)) << "\n"
-            << "  pad_zeros: " << (bool)(f.any(fmt::pad_zeros)) << "\n"
+            << "  showpos: " << (bool)(f.any(fmt::showpos)) << "\n"
+            << "  padzeros: " << (bool)(f.any(fmt::padzeros)) << "\n"
             << "  width: " << f.width() << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
@@ -89,10 +89,10 @@ template<typename F>
 
 
 inline const char* notation(const fmt::fixed_formatter& f) {
-    return f.any(fmt::upper_case) ? "F" : "f";
+    return f.any(fmt::uppercase) ? "F" : "f";
 }
 inline const char* notation(const fmt::sci_formatter& f)   {
-    return f.any(fmt::upper_case) ? "E" : "e";
+    return f.any(fmt::uppercase) ? "E" : "e";
 }
 
 template<class F>
@@ -102,9 +102,9 @@ std::string ref_float_format(const F& f, double x) {
     sfmt = std::string(".") + std::to_string(f.precision()) + sfmt;
     if (w > 0) {
         sfmt = std::to_string(w) + sfmt;
-        if (f.any(fmt::pad_zeros)) sfmt = std::string("0") + sfmt;
+        if (f.any(fmt::padzeros)) sfmt = std::string("0") + sfmt;
     }
-    if (f.any(fmt::plus_sign)) sfmt = std::string("+") + sfmt;
+    if (f.any(fmt::showpos)) sfmt = std::string("+") + sfmt;
     sfmt = std::string("%") + sfmt;
     // std::printf("sfmt = %s\n", sfmt.c_str());
     return fmt::c_sprintf(sfmt.c_str(), x);
@@ -127,8 +127,8 @@ template<typename F>
             << "with " << fexpr << ": \n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
-            << "  plus_sign: " << bool(f.flags() & fmt::plus_sign) << "\n"
-            << "  pad_zeros: " << bool(f.flags() & fmt::pad_zeros) << "\n"
+            << "  showpos: " << bool(f.flags() & fmt::showpos) << "\n"
+            << "  padzeros: " << bool(f.flags() & fmt::padzeros) << "\n"
             << "  width: " << w << "\n"
             << "Result:\n"
             << "  ACTUAL = " << flen << "\n"
@@ -147,8 +147,8 @@ template<typename F>
             << "with " << fexpr << ": \n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
-            << "  plus_sign: " << bool(f.flags() & fmt::plus_sign) << "\n"
-            << "  pad_zeros: " << bool(f.flags() & fmt::pad_zeros) << "\n"
+            << "  showpos: " << bool(f.flags() & fmt::showpos) << "\n"
+            << "  padzeros: " << bool(f.flags() & fmt::padzeros) << "\n"
             << "  width: " << w << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
@@ -223,23 +223,23 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
 TEST(IntFmt, DefaultIntFmt) {
     auto fbase = fmt::default_int_fmt();
     ASSERT_EQ(0, fbase.width());
-    ASSERT_FALSE(fbase.any(fmt::pad_zeros));
-    ASSERT_FALSE(fbase.any(fmt::plus_sign));
+    ASSERT_FALSE(fbase.any(fmt::padzeros));
+    ASSERT_FALSE(fbase.any(fmt::showpos));
 
-    auto f01 = fbase | fmt::plus_sign;
+    auto f01 = fbase | fmt::showpos;
     ASSERT_EQ(0, f01.width());
-    ASSERT_FALSE(f01.any(fmt::pad_zeros));
-    ASSERT_TRUE (f01.any(fmt::plus_sign));
+    ASSERT_FALSE(f01.any(fmt::padzeros));
+    ASSERT_TRUE (f01.any(fmt::showpos));
 
-    auto f10 = fbase | fmt::pad_zeros;
+    auto f10 = fbase | fmt::padzeros;
     ASSERT_EQ(0, f10.width());
-    ASSERT_TRUE (f10.any(fmt::pad_zeros));
-    ASSERT_FALSE(f10.any(fmt::plus_sign));
+    ASSERT_TRUE (f10.any(fmt::padzeros));
+    ASSERT_FALSE(f10.any(fmt::showpos));
 
-    auto f11 = fbase | fmt::plus_sign | fmt::pad_zeros;
+    auto f11 = fbase | fmt::showpos | fmt::padzeros;
     ASSERT_EQ(0, f11.width());
-    ASSERT_TRUE(f11.any(fmt::plus_sign));
-    ASSERT_TRUE(f11.any(fmt::pad_zeros));
+    ASSERT_TRUE(f11.any(fmt::showpos));
+    ASSERT_TRUE(f11.any(fmt::padzeros));
 
     // combination coverage
 
@@ -255,23 +255,23 @@ void IntFmtTests(const Fmt& fbase, unsigned b) {
 
     auto f00 = fbase;
     ASSERT_EQ(0, f00.width());
-    ASSERT_FALSE(f00.any(fmt::pad_zeros));
-    ASSERT_FALSE(f00.any(fmt::plus_sign));
+    ASSERT_FALSE(f00.any(fmt::padzeros));
+    ASSERT_FALSE(f00.any(fmt::showpos));
 
-    auto f01 = fbase | fmt::plus_sign;
+    auto f01 = fbase | fmt::showpos;
     ASSERT_EQ(0, f01.width());
-    ASSERT_FALSE(f01.any(fmt::pad_zeros));
-    ASSERT_TRUE (f01.any(fmt::plus_sign));
+    ASSERT_FALSE(f01.any(fmt::padzeros));
+    ASSERT_TRUE (f01.any(fmt::showpos));
 
-    auto f10 = fbase | fmt::pad_zeros;
+    auto f10 = fbase | fmt::padzeros;
     ASSERT_EQ(0, f10.width());
-    ASSERT_TRUE (f10.any(fmt::pad_zeros));
-    ASSERT_FALSE(f10.any(fmt::plus_sign));
+    ASSERT_TRUE (f10.any(fmt::padzeros));
+    ASSERT_FALSE(f10.any(fmt::showpos));
 
-    auto f11 = fbase | fmt::plus_sign | fmt::pad_zeros;
+    auto f11 = fbase | fmt::showpos | fmt::padzeros;
     ASSERT_EQ(0, f11.width());
-    ASSERT_TRUE(f11.any(fmt::plus_sign));
-    ASSERT_TRUE(f11.any(fmt::pad_zeros));
+    ASSERT_TRUE(f11.any(fmt::showpos));
+    ASSERT_TRUE(f11.any(fmt::padzeros));
 
     // combination coverage
 
@@ -305,7 +305,7 @@ TEST(IntFmt, Hex) {
 }
 
 TEST(IntFmt, UHex) {
-    IntFmtTests(fmt::hex() | fmt::upper_case, 16);
+    IntFmtTests(fmt::hex() | fmt::uppercase, 16);
 }
 
 
@@ -314,8 +314,8 @@ TEST(IntFmt, UHex) {
 template<class F>
 void verify_float_formatter(const F& f, size_t p, bool pzeros, bool psign) {
     ASSERT_EQ(p, f.precision());
-    ASSERT_EQ(pzeros, f.any(fmt::pad_zeros));
-    ASSERT_EQ(psign,  f.any(fmt::plus_sign));
+    ASSERT_EQ(pzeros, f.any(fmt::padzeros));
+    ASSERT_EQ(psign,  f.any(fmt::showpos));
 }
 
 std::vector<double> prepare_test_floats() {
@@ -379,7 +379,7 @@ void FloatFmtTests(const Fmt& fbase) {
     verify_float_formatter(f00_2, 2, false, false);
     verify_float_formatter(f00_9, 9, false, false);
 
-    auto f01 = fbase | fmt::plus_sign;
+    auto f01 = fbase | fmt::showpos;
     auto f01_0 = f01.precision(0);
     auto f01_2 = f01.precision(2);
     auto f01_9 = f01.precision(9);
@@ -389,7 +389,7 @@ void FloatFmtTests(const Fmt& fbase) {
     verify_float_formatter(f01_2, 2, false, true);
     verify_float_formatter(f01_9, 9, false, true);
 
-    auto f10 = fbase | fmt::pad_zeros;
+    auto f10 = fbase | fmt::padzeros;
     auto f10_0 = f10.precision(0);
     auto f10_2 = f10.precision(2);
     auto f10_9 = f10.precision(9);
@@ -399,7 +399,7 @@ void FloatFmtTests(const Fmt& fbase) {
     verify_float_formatter(f10_2, 2, true, false);
     verify_float_formatter(f10_9, 9, true, false);
 
-    auto f11 = fbase | fmt::pad_zeros | fmt::plus_sign;
+    auto f11 = fbase | fmt::padzeros | fmt::showpos;
     auto f11_0 = f11.precision(0);
     auto f11_2 = f11.precision(2);
     auto f11_9 = f11.precision(9);
@@ -434,11 +434,11 @@ TEST(FloatFmt, Sci) {
 }
 
 TEST(FloatFmt, UFixed) {
-    FloatFmtTests(fmt::fixed() | fmt::upper_case);
+    FloatFmtTests(fmt::fixed() | fmt::uppercase);
 }
 
 TEST(FloatFmt, USci) {
-    FloatFmtTests(fmt::sci() | fmt::upper_case);
+    FloatFmtTests(fmt::sci() | fmt::uppercase);
 }
 
 TEST(FloatFmt, Grisu) {

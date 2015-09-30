@@ -367,13 +367,93 @@ constexpr grisu_formatter default_float_fmt() noexcept {
 
 //===============================================
 //
+//  Char & String formatting
+//
+//===============================================
+
+class default_char_formatter {
+public:
+    template<typename charT>
+    constexpr size_t max_formatted_length(charT c) const noexcept {
+        return 1;
+    }
+
+    template<typename charT>
+    size_t formatted_write(charT c, charT *buf, size_t buf_len) const {
+        buf[0] = c;
+        buf[1] = '\0';
+        return 1;
+    }
+};
+
+class default_string_formatter {
+public:
+    template<typename charT>
+    constexpr size_t max_formatted_length(const charT *sz) const noexcept {
+        return ::std::char_traits<charT>::length(sz);
+    }
+
+    template<typename charT, typename Traits, typename Allocator>
+    constexpr size_t max_formatted_length(
+            const ::std::basic_string<charT, Traits, Allocator>& s) const noexcept {
+        return s.size();
+    }
+
+    template<typename charT, typename Traits>
+    constexpr size_t max_formatted_length(
+            const basic_string_view<charT, Traits>& sv) const noexcept {
+        return sv.size();
+    }
+
+    template<typename charT>
+    size_t formatted_write(
+            const charT* s,
+            charT *buf, size_t buf_len) const noexcept {
+
+        const charT *p = s;
+        const charT *pend = s + buf_len;
+        while (*p && p != pend) *buf++ = *p++;
+        *buf = '\0';
+        return static_cast<size_t>(p - s);
+    }
+
+    template<typename charT, typename Traits, typename Allocator>
+    size_t formatted_write(
+            const ::std::basic_string<charT, Traits, Allocator>& s,
+            charT *buf, size_t buf_len) const noexcept {
+        return formatted_write_(s.data(), s.size(), buf, buf_len);
+
+    }
+
+    template<typename charT, typename Traits>
+    size_t formatted_write(
+            const basic_string_view<charT, Traits>& sv,
+            charT *buf, size_t buf_len) const noexcept {
+        return formatted_write_(sv.data(), sv.size(), buf, buf_len);
+    }
+
+private:
+    template<typename charT>
+    size_t formatted_write_(
+            const charT *src, size_t n, charT *buf, size_t buf_len) const noexcept {
+        CLUE_ASSERT(n < buf_len);
+        ::std::memcpy(buf, src, n * sizeof(charT));
+        return n;
+    }
+};
+
+
+//===============================================
+//
 //  Generic formatting
 //
 //===============================================
 
-// Generic formatting function
+// Generic formatting setting
 
-template<typename T>
+// for arithmetic types
+
+template<typename T, typename charT>
 struct is_default_formattable : public ::std::is_arithmetic<T> {};
 
 template<typename T>
@@ -388,47 +468,69 @@ default_formatter(const T& x) noexcept {
     return default_float_fmt();
 };
 
+// for characters
 
-template<typename T, typename Fmt>
-inline ::std::string strf(const T& x, const Fmt& fmt) {
-    size_t fmt_len = fmt.max_formatted_length(x);
-    ::std::string s(fmt_len, '\0');
-    size_t wlen = fmt.formatted_write(x, const_cast<char*>(s.data()), fmt_len + 1);
-    CLUE_ASSERT(wlen <= fmt_len);
-    if (wlen < fmt_len) {
-        s.resize(wlen);
-    }
-    return ::std::move(s);
+template<typename charT>
+struct is_default_formattable<charT, charT> : public ::std::true_type {};
+
+constexpr default_char_formatter default_formatter(char) noexcept {
+    return default_char_formatter{};
 }
 
-template<typename T>
-inline enable_if_t<is_default_formattable<T>::value, ::std::string>
-str(const T& x) {
-    return strf(x, default_formatter(x));
+constexpr default_char_formatter default_formatter(wchar_t) noexcept {
+    return default_char_formatter{};
 }
 
-
-// str for strings
-
-inline ::std::string str() {
-    return ::std::string();
+constexpr default_char_formatter default_formatter(char16_t) noexcept {
+    return default_char_formatter{};
 }
 
-inline ::std::string str(char c) {
-    return ::std::string(1, c);
+constexpr default_char_formatter default_formatter(char32_t) noexcept {
+    return default_char_formatter{};
 }
 
-inline ::std::string str(const char* sz) {
-    return ::std::string(sz);
+// for string related types
+
+template<typename charT>
+struct is_default_formattable<charT*, charT> : public ::std::true_type {};
+
+template<typename charT>
+struct is_default_formattable<const charT*, charT> : public ::std::true_type {};
+
+template<typename charT, typename Traits>
+struct is_default_formattable<
+    basic_string_view<charT, Traits>, charT> : public ::std::true_type {};
+
+template<typename charT, typename Traits, typename Allocator>
+struct is_default_formattable<
+    ::std::basic_string<charT, Traits, Allocator>, charT> : public ::std::true_type {};
+
+constexpr default_string_formatter default_formatter(const char*) noexcept {
+    return default_string_formatter{};
 }
 
-inline ::std::string str(string_view sv) {
-    return ::std::string(sv.data(), sv.size());
+constexpr default_string_formatter default_formatter(const wchar_t*) noexcept {
+    return default_string_formatter{};
 }
 
-template<class Allocator>
-inline ::std::string str(const ::std::basic_string<char, ::std::char_traits<char>, Allocator>& s) {
-    return ::std::string(s.data(), s.size());
+constexpr default_string_formatter default_formatter(const char16_t*) noexcept {
+    return default_string_formatter{};
+}
+
+constexpr default_string_formatter default_formatter(const char32_t*) noexcept {
+    return default_string_formatter{};
+}
+
+template<typename charT, typename Traits, typename Allocator>
+constexpr default_string_formatter default_formatter(
+        const ::std::basic_string<charT, Traits, Allocator>&) noexcept {
+    return default_string_formatter{};
+}
+
+template<typename charT, typename Traits>
+constexpr default_string_formatter default_formatter(
+        const basic_string_view<charT, Traits>&) noexcept {
+    return default_string_formatter{};
 }
 
 

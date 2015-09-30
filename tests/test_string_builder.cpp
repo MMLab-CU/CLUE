@@ -119,11 +119,7 @@ TEST(StringBuilder, WriteStrings) {
 TEST(StringBuilder, WriteNumbers) {
     string_builder sb;
 
-    sb.write(-123);
-    sb.write(' ');
-    sb.write(456);
-    sb.write(' ');
-    sb.write(123.75);
+    sb << -123 << ' ' << 456 << ' ' << 123.75;
 
     ASSERT_EQ("-123 456 123.75", sb.str());
 }
@@ -132,8 +128,8 @@ TEST(StringBuilder, WriteNumbers) {
 TEST(StringBuilder, WriteSeq) {
     string_builder sb;
 
-    sb.writeln(1, '+', 2, '=', 3);
-    sb.writeln(4, " + ", 5, " = ", 9);
+    sb << 1 << '+' << 2 << '=' << 3 << "\n";
+    sb << 4 << " + " << 5 << " = " << 9 << "\n";
 
     ASSERT_EQ("1+2=3\n4 + 5 = 9\n", sb.str());
 }

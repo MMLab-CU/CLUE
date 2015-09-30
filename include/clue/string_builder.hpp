@@ -25,11 +25,11 @@ namespace clue {
  * - mb.reset() noexcept;
  * - mb.reserve(newcap, len);
  */
-template<typename charT, typename Traits, typename MemProxy>
+template<typename charT, typename MemProxy>
 class generic_string_builder {
 public:
     // types
-    typedef Traits traits_type;
+    typedef ::std::char_traits<charT> traits_type;
     typedef charT value_type;
     typedef charT* pointer;
     typedef const charT* const_pointer;
@@ -65,12 +65,12 @@ public:
         return proxy_.capacity();
     }
 
-    constexpr basic_string_view<charT, Traits> str_view() const noexcept {
-        return basic_string_view<charT, Traits>(proxy_.data(), len_);
+    constexpr basic_string_view<charT> str_view() const noexcept {
+        return basic_string_view<charT>(proxy_.data(), len_);
     }
 
-    constexpr ::std::basic_string<charT, Traits> str() const {
-        return ::std::basic_string<charT, Traits>(proxy_.data(), len_);
+    constexpr ::std::basic_string<charT> str() const {
+        return ::std::basic_string<charT>(proxy_.data(), len_);
     }
 
     // Write
@@ -92,14 +92,15 @@ public:
     }
 
     void write(const charT *s) {
-        write(s, Traits::length(s));
+        write(s, traits_type::length(s));
     }
 
+    template<typename Traits>
     void write(const basic_string_view<charT, Traits>& s) {
         write(s.data(), s.size());
     }
 
-    template<class Allocator>
+    template<typename Traits, typename Allocator>
     void write(const ::std::basic_string<charT, Traits, Allocator>& s) {
         write(s.data(), s.size());
     }
@@ -113,32 +114,12 @@ public:
     }
 
     template<typename T>
-    enable_if_t<fmt::is_default_formattable<T>::value, void>
-    write(const T& x) {
+    enable_if_t<
+        fmt::is_default_formattable<decay_t<T>, charT>::value,
+        generic_string_builder&>
+    operator << (const T& x) {
         writef(x, fmt::default_formatter(x));
-    }
-
-    // Write sequences
-
-    template<typename T>
-    void write_seq(const T& x) {
-        write(x);
-    }
-
-    template<typename T, typename... Rest>
-    void write_seq(const T& x, Rest&&... rest) {
-        write(x);
-        write_seq(::std::forward<Rest>(rest)...);
-    }
-
-    void writeln() {
-        write('\n');
-    }
-
-    template<typename... Args>
-    void writeln(Args&&... args) {
-        write_seq(::std::forward<Args>(args)...);
-        writeln();
+        return *this;
     }
 
     // Modifiers
@@ -294,11 +275,11 @@ public:
 
 // basic builder
 
-template<typename charT, typename Traits=std::char_traits<charT>>
+template<typename charT>
 class basic_string_builder :
-    public generic_string_builder<charT, Traits, details::basic_memory_proxy<charT>> {
+    public generic_string_builder<charT, details::basic_memory_proxy<charT>> {
 
-    using base_ = generic_string_builder<charT, Traits, details::basic_memory_proxy<charT>>;
+    using base_ = generic_string_builder<charT, details::basic_memory_proxy<charT>>;
 
 public:
     basic_string_builder() {}
@@ -316,11 +297,11 @@ typedef basic_string_builder<char32_t> u32string_builder;
 
 // ref builder
 
-template<typename charT, typename Traits=std::char_traits<charT>>
+template<typename charT>
 class basic_ref_string_builder :
-    public generic_string_builder<charT, Traits, details::ref_memory_proxy<charT>> {
+    public generic_string_builder<charT, details::ref_memory_proxy<charT>> {
 
-    using base_ = generic_string_builder<charT, Traits, details::ref_memory_proxy<charT>>;
+    using base_ = generic_string_builder<charT, details::ref_memory_proxy<charT>>;
 
 public:
     basic_ref_string_builder(charT *buf, size_t cap) noexcept {

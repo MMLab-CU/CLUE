@@ -100,6 +100,14 @@ public:
         advance(n);
     }
 
+    template<typename T, typename Fmt>
+    void writef(const T& x, Fmt&& fmt, size_t width, bool ljust=false) {
+        size_t max_n = fmt.max_formatted_length(x);
+        if (width > max_n) max_n = width;
+        charT *p = take_next(max_n + 1);
+        size_t n = fmt.formatted_write(x, width, ljust, p, max_n + 1);
+        advance(n);
+    }
 
     // formatted output
 
@@ -137,6 +145,12 @@ public:
     template<typename T, typename Fmt>
     generic_string_builder& operator << (fmt::with_fmt_t<T, Fmt> wfmt) {
         writef(wfmt.value, wfmt.formatter);
+        return *this;
+    }
+
+    template<typename T, typename Fmt>
+    generic_string_builder& operator << (fmt::with_fmt_ex_t<T, Fmt> wfmt) {
+        writef(wfmt.value, wfmt.formatter, wfmt.width, wfmt.leftjust);
         return *this;
     }
 

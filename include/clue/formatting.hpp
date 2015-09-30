@@ -21,6 +21,17 @@ inline ::std::string strf(const T& x, const Fmt& fmt) {
     return ::std::move(s);
 }
 
+template<typename T, typename Fmt>
+inline ::std::string strf(const T& x, const Fmt& fmt, size_t width, bool ljust=false) {
+    size_t max_n = fmt.max_formatted_length(x);
+    if (width > max_n) max_n = width;
+    ::std::string s(max_n, '\0');
+    size_t wlen = fmt.formatted_write(x, width, ljust, const_cast<char*>(s.data()), max_n + 1);
+    CLUE_ASSERT(wlen <= max_n);
+    if (wlen < max_n) s.resize(wlen);
+    return ::std::move(s);
+}
+
 inline ::std::string str() {
     return ::std::string();
 }
@@ -36,6 +47,11 @@ str(const T& x) {
 template<typename T, typename Fmt>
 inline ::std::string str(fmt::with_fmt_t<T, Fmt> wfmt) {
     return strf(wfmt.value, wfmt.formatter);
+}
+
+template<typename T, typename Fmt>
+inline ::std::string str(fmt::with_fmt_ex_t<T, Fmt> wfmt) {
+    return strf(wfmt.value, wfmt.formatter, wfmt.width, wfmt.leftjust);
 }
 
 namespace details {

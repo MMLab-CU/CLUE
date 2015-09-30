@@ -161,23 +161,78 @@ constexpr int_formatter oct_fmt() noexcept { return int_formatter(8);  }
 constexpr int_formatter dec_fmt() noexcept { return int_formatter(10); }
 constexpr int_formatter hex_fmt() noexcept { return int_formatter(16); }
 
+// simplify version which takes advantage of the default setting
+class default_int_formatter {
+public:
+    // properties
+
+    constexpr unsigned base() const noexcept { return 10; }
+    constexpr size_t width() const noexcept { return 0; }
+    constexpr flag_t flags() const noexcept { return 0; }
+
+    constexpr int_formatter base(unsigned v) const noexcept {
+        return int_formatter(v, 0, 0);
+    }
+
+    constexpr int_formatter width(size_t v) const noexcept {
+        return int_formatter(10, v, 0);
+    }
+
+    constexpr int_formatter flags(flag_t v) const noexcept {
+        return int_formatter(10, 0, v);
+    }
+
+    constexpr int_formatter operator | (flag_t v) const noexcept {
+        return int_formatter(10, 0, v);
+    }
+
+    constexpr bool any(flag_t msk) const noexcept {
+        return false;
+    }
+
+    // formatting
+
+    template<typename T>
+    size_t max_formatted_length(T x) const noexcept {
+        size_t n = details::ndigits_dec(details::uabs(x));
+        if (x < 0) n++;
+        return n;
+    }
+
+    template<typename T, typename charT>
+    size_t formatted_write(T x, charT *buf, size_t buf_len) const {
+        auto ax = details::uabs(x);
+        size_t nd = details::ndigits_dec(ax);
+
+        charT *p = buf;
+        size_t flen = nd;
+        if (x < 0) {
+            flen++;
+            CLUE_ASSERT(buf_len > flen);
+            *(p++) = '-';
+        } else {
+            CLUE_ASSERT(buf_len > flen);
+        }
+        details::extract_digits_dec(ax, p, nd);
+        p[nd] = '\0';
+        return flen;
+    }
+};
+
+constexpr default_int_formatter default_int_fmt() noexcept {
+    return default_int_formatter{};
+}
+
 //===============================================
 //
 //  Floating-point formatting
 //
 //===============================================
 
-// fixed-point notation
-struct fixed_t {};
-
-// scientific notation
-struct sci_t {};
-
-// grisu formatting
-struct grisu_t {};
-
-
 namespace details {
+
+struct fixed_t {};
+struct sci_t {};
 
 template<typename Tag>
 struct float_fmt_traits {};
@@ -294,18 +349,19 @@ public:
 };
 
 using default_float_formatter = grisu_formatter;
+using fixed_formatter = float_formatter<details::fixed_t>;
+using sci_formatter = float_formatter<details::sci_t>;
 
-
-constexpr float_formatter<fixed_t> fixed_fmt() noexcept {
-    return float_formatter<fixed_t>();
+constexpr fixed_formatter fixed_fmt() noexcept {
+    return fixed_formatter();
 }
 
-constexpr float_formatter<sci_t> sci_fmt() noexcept {
-    return float_formatter<sci_t>();
+constexpr sci_formatter sci_fmt() noexcept {
+    return sci_formatter();
 }
 
 constexpr grisu_formatter default_float_fmt() noexcept {
-    return grisu_formatter{};
+    return default_float_formatter{};
 }
 
 
@@ -321,9 +377,9 @@ template<typename T>
 struct is_default_formattable : public ::std::is_arithmetic<T> {};
 
 template<typename T>
-constexpr enable_if_t<::std::is_integral<T>::value, int_formatter>
+constexpr enable_if_t<::std::is_integral<T>::value, default_int_formatter>
 default_formatter(const T& x) noexcept {
-    return dec_fmt();
+    return default_int_fmt();
 };
 
 template<typename T>

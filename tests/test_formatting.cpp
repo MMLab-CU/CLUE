@@ -8,6 +8,10 @@ using std::size_t;
 
 // Auxiliary functions for testing
 
+const char *cfmt_lsym(fmt::default_int_formatter) {
+    return "%ld";
+}
+
 const char *cfmt_lsym(const fmt::int_formatter& f) {
     switch (f.base()) {
         case  8: return "%lo";
@@ -84,11 +88,10 @@ template<typename F>
 }
 
 
-
-inline const char* notation(const fmt::float_formatter<fmt::fixed_t>& f) {
+inline const char* notation(const fmt::fixed_formatter& f) {
     return f.any(fmt::upper_case) ? "F" : "f";
 }
-inline const char* notation(const fmt::float_formatter<fmt::sci_t>& f)   {
+inline const char* notation(const fmt::sci_formatter& f)   {
     return f.any(fmt::upper_case) ? "E" : "e";
 }
 
@@ -214,6 +217,36 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
     for (long x: xs) xs_aug.push_back(x);
     for (long x: xs) xs_aug.push_back(-x);
     return xs_aug;
+}
+
+
+TEST(IntFmt, DefaultIntFmt) {
+    auto fbase = fmt::default_int_fmt();
+    ASSERT_EQ(0, fbase.width());
+    ASSERT_FALSE(fbase.any(fmt::pad_zeros));
+    ASSERT_FALSE(fbase.any(fmt::plus_sign));
+
+    auto f01 = fbase | fmt::plus_sign;
+    ASSERT_EQ(0, f01.width());
+    ASSERT_FALSE(f01.any(fmt::pad_zeros));
+    ASSERT_TRUE (f01.any(fmt::plus_sign));
+
+    auto f10 = fbase | fmt::pad_zeros;
+    ASSERT_EQ(0, f10.width());
+    ASSERT_TRUE (f10.any(fmt::pad_zeros));
+    ASSERT_FALSE(f10.any(fmt::plus_sign));
+
+    auto f11 = fbase | fmt::plus_sign | fmt::pad_zeros;
+    ASSERT_EQ(0, f11.width());
+    ASSERT_TRUE(f11.any(fmt::plus_sign));
+    ASSERT_TRUE(f11.any(fmt::pad_zeros));
+
+    // combination coverage
+
+    std::vector<long> xs = prepare_test_ints(10);
+    for (long x: xs) {
+        ASSERT_PRED_FORMAT2(CheckIntFormat, fbase, x);
+    }
 }
 
 template<class Fmt>

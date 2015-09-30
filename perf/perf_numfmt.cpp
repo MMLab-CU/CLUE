@@ -7,9 +7,6 @@
 
 using namespace clue;
 
-using fmt::fixed_t;
-using fmt::sci_t;
-
 class WithSprintf {
 private:
     char buf[128];
@@ -84,15 +81,14 @@ public:
 class WithClueFmt {
 private:
     char buf[128];
-    fmt::int_formatter dec_;
+    fmt::default_int_formatter dec_;
     fmt::int_formatter hex_;
-    fmt::float_formatter<fmt::fixed_t> fixed_;
-    fmt::float_formatter<fmt::sci_t> sci_;
+    fmt::fixed_formatter fixed_;
+    fmt::sci_formatter sci_;
     fmt::default_float_formatter exact_;
 
 public:
-    WithClueFmt() :
-        dec_(10), hex_(16) {}
+    WithClueFmt() : hex_(16) {}
 
     const char *name() const {
         return "with-clue-fmt";
@@ -122,15 +118,14 @@ public:
 class WithClueFmtChecked {
 private:
     char buf[128];
-    fmt::int_formatter dec_;
+    fmt::default_int_formatter dec_;
     fmt::int_formatter hex_;
-    fmt::float_formatter<fmt::fixed_t> fixed_;
-    fmt::float_formatter<fmt::sci_t> sci_;
+    fmt::fixed_formatter fixed_;
+    fmt::sci_formatter sci_;
     fmt::default_float_formatter exact_;
 
 public:
-    WithClueFmtChecked() :
-        dec_(10), hex_(16) {}
+    WithClueFmtChecked() : hex_(16) {}
 
     const char *name() const {
         return "with-clue-fmt:checked";

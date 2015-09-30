@@ -1,6 +1,7 @@
 #include <clue/string_view.hpp>
 #include <gtest/gtest.h>
 #include <sstream>
+#include <iomanip>
 
 namespace stdx = clue;
 
@@ -306,13 +307,35 @@ TEST(StringView, RfindSubstr) {
 
 
 TEST(StringView, StreamOutput) {
+    string_view sv0;
 
     std::stringstream ss0;
-    ss0 << string_view();
+    std::stringstream ss0_c;
+    ss0 << sv0;
+    ss0_c << sv0.to_string();
+    ASSERT_EQ(ss0_c.str(), ss0.str());
     ASSERT_EQ("", ss0.str());
 
+    string_view sv1("abc");
+
     std::stringstream ss1;
-    ss1 << string_view("abc");
+    std::stringstream ss1_c;
+    ss1 << sv1;
+    ss1_c << sv1.to_string();
+    ASSERT_EQ(ss1_c.str(), ss1.str());
     ASSERT_EQ("abc", ss1.str());
 
+    std::stringstream ss2;
+    std::stringstream ss2_c;
+    ss2 << std::setw(5) << sv1;
+    ss2_c << std::setw(5) << sv1.to_string();
+    ASSERT_EQ(ss2_c.str(), ss2.str());
+    ASSERT_EQ("  abc", ss2.str());
+
+    std::stringstream ss3;
+    std::stringstream ss3_c;
+    ss3 << std::setw(5) << std::left << std::setfill('*') << sv1;
+    ss3_c << std::setw(5) << std::left << std::setfill('*') << sv1.to_string();
+    ASSERT_EQ(ss3_c.str(), ss3.str());
+    ASSERT_EQ("abc**", ss3.str());
 }

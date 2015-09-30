@@ -467,8 +467,30 @@ template<class charT, class Traits>
 inline ::std::basic_ostream<charT, Traits>& operator<< (
         ::std::basic_ostream<charT, Traits>& os,
         basic_string_view<charT, Traits> sv) {
-    // TODO: implement more efficient output of string_view, without first constructing a copy
-    os << sv.to_string();
+    try {
+        typename ::std::basic_ostream<charT, Traits>::sentry s(os);
+        if (s) {
+            const ::std::size_t len = sv.size();
+
+            ::std::ostreambuf_iterator<charT, Traits> it_out(os);
+            size_t width = os.width();
+            if (width > len) {
+                if ((os.flags() & ::std::ios_base::adjustfield) == ::std::ios_base::left) {
+                    ::std::copy(sv.begin(), sv.end(), it_out);
+                    it_out = ::std::fill_n(it_out, width - len, os.fill());
+                } else {
+                    it_out = ::std::fill_n(it_out, width - len, os.fill());
+                    ::std::copy(sv.begin(), sv.end(), it_out);
+                }
+            } else {
+                ::std::copy(sv.begin(), sv.end(), it_out);
+            }
+        }
+    }
+    catch (...) {
+        os.setstate(::std::ios_base::badbit | ::std::ios_base::failbit);
+        throw;
+    }
     return os;
 }
 

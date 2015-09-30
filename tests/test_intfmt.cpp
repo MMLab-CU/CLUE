@@ -3,12 +3,6 @@
 
 using namespace clue;
 
-inline std::string pos2str(size_t width, bool ljust) {
-    return std::to_string(width) + "(" +
-        (ljust ? "left" : "right") + ")";
-}
-
-
 // Auxiliary functions for testing
 
 template<class F>
@@ -107,7 +101,6 @@ template<typename T, typename F>
     const F& f = wfmt.formatter;
     T x = wfmt.value;
     std::string refstr = ref_int_format(f, wfmt.width, wfmt.leftjust, x);
-    std::string posstr = pos2str(wfmt.width, wfmt.leftjust);
 
     char rbuf[128];
     f.formatted_write(x, wfmt.width, wfmt.leftjust, rbuf, 128);
@@ -117,7 +110,7 @@ template<typename T, typename F>
         return ::testing::AssertionFailure()
             << "Mismatched formatted string for "
             << " x = " << x << ":\n"
-            << "  pos: " << posstr << "\n"
+            << "  pos: " << wfmt.width << ", " << wfmt.leftjust << "\n"
             << "  base: " << f.base() << "\n"
             << "  showpos: " << f.any(fmt::showpos) << "\n"
             << "  padzeros: " << f.any(fmt::padzeros) << "\n"
@@ -183,7 +176,7 @@ void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
     // combination coverage
     std::vector<size_t> widths = {0, 5, 12};
 
-    std::vector<long> xs = prepare_test_ints(10);
+    std::vector<long> xs = prepare_test_ints(base_);
     for (long x: xs) {
         for (size_t w: widths) {
             auto wfmt_0 = fmt::with(x, f);

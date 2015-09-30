@@ -159,18 +159,33 @@ public:
                 // pad zeros
                 if (sign) *(p++) = sign;
                 p = details::fill_chars(p, plen, '0');
+                p = put_digits_(ax, p, nd);
             } else {
-                // pad empty
-                p = details::fill_chars(p, plen, ' ');
-                if (sign) *(p++) = sign;
+                // pad spaces
+                if (any(leftjust)) {
+                    if (sign) *(p++) = sign;
+                    p = put_digits_(ax, p, nd);
+                    p = details::fill_chars(p, plen, ' ');
+                } else {
+                    p = details::fill_chars(p, plen, ' ');
+                    if (sign) *(p++) = sign;
+                    p = put_digits_(ax, p, nd);
+                }
             }
         } else {
             // no padding
             if (sign) *(p++) = sign;
+            p = put_digits_(ax, p, nd);
         }
+        *p = '\0';
+        return p - buf;
+    }
+
+private:
+    template<typename U, typename charT>
+    charT* put_digits_(U ax, charT* p, size_t nd) const {
         details::extract_digits(ax, base_, any(uppercase), p, nd);
-        p[nd] = '\0';
-        return p + nd - buf;
+        return p + nd;
     }
 };
 
@@ -341,7 +356,7 @@ public:
         const char fsym =
                 details::float_fmt_traits<Tag>::printf_sym(any(uppercase));
         details::float_cfmt_impl(cfmt, fsym, width_, precision_,
-                any(showpos), any(padzeros));
+                any(leftjust), any(showpos), any(padzeros));
         size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
         CLUE_ASSERT(n < buf_len);
         return n;

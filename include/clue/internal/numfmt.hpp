@@ -192,18 +192,22 @@ inline const char* float_cfmt_impl(
     char fsym,      // printf formatting symbol
     size_t width,   // field width
     size_t prec,    // precision
-    bool psign,     // whether to use `+` sign
-    bool pzeros)    // whether to pad zeros
+    bool _left,      // whether to left-justify
+    bool _showpos,   // whether to use `+` sign
+    bool _padzeros)  // whether to pad zeros
 {
     char *p = buf;
     *p++ = '%';
 
+    // write left-justify
+    if (_left) *p++ = '-';
+
     // write sign
-    if (psign) *p++ = '+';
+    if (_showpos) *p++ = '+';
 
     // write width
     if (width > 0) {
-        if (pzeros) *p++ = '0';
+        if (_padzeros) *p++ = '0';
         size_t w_nd = width < 10 ? 1: (width < 100 ? 2: 3);
         details::extract_digits_dec(width, p, w_nd);
         p += w_nd;

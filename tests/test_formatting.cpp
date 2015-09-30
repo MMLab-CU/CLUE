@@ -23,27 +23,46 @@ const char *cfmt_lsym(const fmt::int_formatter& f) {
 
 template<class F>
 std::string ref_int_format(const F& f, long x) {
-    // generate the reference format in a safe but inefficient way
-
+    char cfmt[16];
+    char *p = cfmt;
     size_t w = f.width();
 
-    // format the main digits
-    const char *cf = cfmt_lsym(f);
-    std::string main = fmt::c_sprintf(cf, (x >= 0 ? x : -x));
-    size_t ml = main.size();
+    size_t pw = w;
+    if (x < 0) {
+        *p++ = '-';
+        if (pw > 0) pw--;
+    } else if (f.any(fmt::showpos)) {
+        *p++ = '+';
+        if (pw > 0) pw--;
+    }
 
-    // get the sign string
-    std::string sign = x < 0 ? std::string("-") :
-        (f.flags() & fmt::showpos ? std::string("+") : std::string());
-    size_t sl = sign.size() + ml;
+    *p++ = '%';
+    if (f.any(fmt::padzeros)) {
+        *p++ = '0';
+        if (pw > 0) {
+            if (pw >= 10) {
+                *p++ = (char)('0' + (pw / 10));
+                pw %= 10;
+            }
+            *p++ = (char)('0' + pw);
+        }
+    }
+    *p++ = 'l';
+    switch (f.base()) {
+        case 8: *p++ = 'o'; break;
+        case 16: *p++ = f.any(fmt::uppercase) ? 'X' : 'x'; break;
+        default: *p++ = 'u';
+    }
+    *p = '\0';
 
-    // compose
-    if (f.flags() & fmt::padzeros) {
-        std::string ps = w > sl ? std::string(w-sl, '0') : std::string();
-        return sign + ps + main;
+    std::string r = fmt::c_sprintf(cfmt, std::abs(x));
+
+    if (r.size() < w) {
+        return f.any(fmt::leftjust) ?
+                r + std::string(w - r.size(), ' ') :
+                std::string(w - r.size(), ' ') + r;
     } else {
-        std::string ps = w > sl ? std::string(w-sl, ' ') : std::string();
-        return ps + sign + main;
+        return r;
     }
 }
 
@@ -60,8 +79,9 @@ template<typename F>
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
             << "  base: " << f.base() << "\n"
-            << "  showpos: " << (bool)(f.any(fmt::showpos)) << "\n"
-            << "  padzeros: " << (bool)(f.any(fmt::padzeros)) << "\n"
+            << "  left: " << f.any(fmt::leftjust) << "\n"
+            << "  showpos: " << f.any(fmt::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
             << "  width: " << f.width() << "\n"
             << "Result:\n"
             << "  ACTUAL = " << flen << "\n"
@@ -76,8 +96,9 @@ template<typename F>
             << "[" << xexpr << " = " << x << "] "
             << "with " << fexpr << ": \n"
             << "  base: " << f.base() << "\n"
-            << "  showpos: " << (bool)(f.any(fmt::showpos)) << "\n"
-            << "  padzeros: " << (bool)(f.any(fmt::padzeros)) << "\n"
+            << "  left: " << f.any(fmt::leftjust) << "\n"
+            << "  showpos: " << f.any(fmt::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
             << "  width: " << f.width() << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
@@ -280,13 +301,20 @@ void IntFmtTests(const Fmt& fbase, unsigned b) {
     std::vector<size_t> widths = {0, 5, 12};
     std::vector<long> xs = prepare_test_ints(10);
 
-    for (const auto& fmt: fmts) {
+    for (const auto& fm: fmts) {
         for (size_t w: widths) {
             for (long x: xs) {
-                auto fw = fmt.width(w);
+                auto fw = fm.width(w);
                 ASSERT_EQ(w, fw.width());
-                ASSERT_EQ(fmt.flags(), fw.flags());
+                ASSERT_EQ(fm.flags(), fw.flags());
                 ASSERT_PRED_FORMAT2(CheckIntFormat, fw, x);
+
+                if (w > 0) {
+                    auto fwl = fw | fmt::leftjust;
+                    ASSERT_EQ(w, fwl.width());
+                    ASSERT_EQ(fm.flags() | fmt::leftjust, fwl.flags());
+                    ASSERT_PRED_FORMAT2(CheckIntFormat, fwl, x);
+                }
             }
         }
     }

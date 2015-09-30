@@ -20,9 +20,10 @@ namespace fmt {
 //===============================================
 
 enum {
-    uppercase = 0x01,
-    padzeros  = 0x02,
-    showpos   = 0x04
+    leftjust  = 0x01,
+    uppercase = 0x02,
+    padzeros  = 0x04,
+    showpos   = 0x08
 };
 
 typedef unsigned int flag_t;
@@ -91,9 +92,6 @@ inline size_t ndigits(T x, const unsigned base) noexcept {
     }
     return 0;
 }
-
-
-// length of formatted integer
 
 class int_formatter {
 private:
@@ -176,11 +174,7 @@ public:
     }
 };
 
-constexpr int_formatter oct() noexcept { return int_formatter(8);  }
-constexpr int_formatter dec() noexcept { return int_formatter(10); }
-constexpr int_formatter hex() noexcept { return int_formatter(16); }
 
-// simplify version which takes advantage of the default setting
 class default_int_formatter {
 public:
     // properties
@@ -238,9 +232,11 @@ public:
     }
 };
 
-constexpr default_int_formatter default_int_fmt() noexcept {
-    return default_int_formatter{};
-}
+
+constexpr int_formatter oct() noexcept { return int_formatter(8);  }
+constexpr int_formatter dec() noexcept { return int_formatter(10); }
+constexpr int_formatter hex() noexcept { return int_formatter(16); }
+
 
 //===============================================
 //
@@ -379,10 +375,6 @@ constexpr sci_formatter sci() noexcept {
     return sci_formatter();
 }
 
-constexpr grisu_formatter default_float_fmt() noexcept {
-    return default_float_formatter{};
-}
-
 
 //===============================================
 //
@@ -491,13 +483,13 @@ struct is_default_formattable : public ::std::is_arithmetic<T> {};
 template<typename T>
 constexpr enable_if_t<::std::is_integral<T>::value, default_int_formatter>
 default_formatter(const T& x) noexcept {
-    return default_int_fmt();
+    return default_int_formatter{};
 };
 
 template<typename T>
 constexpr enable_if_t<::std::is_floating_point<T>::value, grisu_formatter>
 default_formatter(const T& x) noexcept {
-    return default_float_fmt();
+    return default_float_formatter{};
 };
 
 default_bool_formatter default_formatter(bool x) noexcept {

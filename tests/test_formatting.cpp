@@ -221,7 +221,7 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
 
 
 TEST(IntFmt, DefaultIntFmt) {
-    auto fbase = fmt::default_int_fmt();
+    fmt::default_int_formatter fbase;
     ASSERT_EQ(0, fbase.width());
     ASSERT_FALSE(fbase.any(fmt::padzeros));
     ASSERT_FALSE(fbase.any(fmt::showpos));

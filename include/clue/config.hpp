@@ -24,6 +24,12 @@
 
 #include <cassert>
 
+// to turn CLUE_ASSERT into no-op, one can pre-define CLUE_NDEBUG
+//
+#ifndef CLUE_NDEBUG
 #define CLUE_ASSERT(cond) assert(cond)
+#else
+#define CLUE_ASSERT(cond)
+#endif
 
 #endif

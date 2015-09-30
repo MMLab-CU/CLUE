@@ -143,17 +143,116 @@ inline void extract_digits_hex(T x, bool upper, charT *buf, size_t n) {
     buf[m] = x < 10 ? (charT)('0' + x) : (charT)(a + (x - 10));
 }
 
-// extract_digits
+
+//===============================================
 //
-// Note: for extract_digits, x must be non-negative.
-//       negative x would result in undefined behavior.
+//  render integers
 //
-template<typename T, typename charT>
-inline void extract_digits(T x, unsigned base, bool upper, charT *buf, size_t n) {
-    switch (base) {
-        case  8: extract_digits_oct(x, buf, n); break;
-        case 10: extract_digits_dec(x, buf, n); break;
-        case 16: extract_digits_hex(x, upper, buf, n); break;
+//===============================================
+
+template<typename T, unsigned int N> struct int_render_helper;
+
+template<typename T>
+struct int_render_helper<T, 10> {
+    using U = make_unsigned_t<T>;
+    U ax;
+    size_t nd;
+
+    int_render_helper(T x) noexcept :
+        ax(uabs(x)),
+        nd(ndigits_dec(ax)) {}
+
+    template<typename charT>
+    charT* put_digits(charT* buf) const noexcept {
+        extract_digits_dec(ax, buf, nd);
+        return buf + nd;
+    }
+};
+
+template<typename T>
+struct int_render_helper<T, 8> {
+    using U = make_unsigned_t<T>;
+    U ax;
+    size_t nd;
+
+    int_render_helper(T x) noexcept :
+        ax(uabs(x)),
+        nd(ndigits_oct(ax)) {}
+
+    template<typename charT>
+    charT* put_digits(charT* buf) const noexcept {
+        extract_digits_oct(ax, buf, nd);
+        return buf + nd;
+    }
+};
+
+
+template<typename T>
+struct int_render_helper<T, 16> {
+    using U = make_unsigned_t<T>;
+    U ax;
+    size_t nd;
+    bool upper;
+
+    int_render_helper(T x, bool upper) noexcept :
+        ax(uabs(x)),
+        nd(ndigits_hex(ax)),
+        upper(upper) {}
+
+    template<typename charT>
+    charT* put_digits(charT* buf) const noexcept {
+        extract_digits_hex(ax, upper, buf, nd);
+        return buf + nd;
+    }
+};
+
+
+template<unsigned N, typename T, typename charT>
+inline size_t render(T x, const int_render_helper<T, N>& h, bool showpos_,
+                     charT *buf, size_t buf_len) {
+    char sign = x < 0 ? '-' : (showpos_ ? '+' : '\0');
+    size_t flen = sign ? h.nd + 1 : h.nd;
+    CLUE_ASSERT(buf_len > flen);
+    if (sign) *(buf++) = (charT)(sign);
+    buf = h.put_digits(buf);
+    *buf = (charT)('\0');
+    return flen;
+}
+
+template<unsigned N, typename T, typename charT>
+inline size_t render(T x, const int_render_helper<T, N>& h,
+                     bool showpos_, bool padzeros_, size_t width, bool left,
+                     charT *buf, size_t buf_len) {
+    char sign = x < 0 ? '-' : (showpos_ ? '+' : '\0');
+    size_t flen = sign ? h.nd + 1 : h.nd;
+    CLUE_ASSERT(buf_len > flen);
+
+    if (width > flen) {
+        size_t plen = width - flen;
+        if (left) {
+            // left-just
+            if (sign) *(buf++) = (charT)(sign);
+            buf = h.put_digits(buf);
+            buf = details::fill_chars(buf, plen, ' ');
+        } else if (padzeros_) {
+            // pad zeros
+            if (sign) *(buf++) = (charT)(sign);
+            buf = details::fill_chars(buf, plen, '0');
+            buf = h.put_digits(buf);
+        } else {
+            // right-just
+            buf = details::fill_chars(buf, plen, ' ');
+            if (sign) *(buf++) = (charT)(sign);
+            buf = h.put_digits(buf);
+        }
+        *buf = (charT)('\0');
+        return width;
+    } else {
+        // no padding
+        if (sign) *(buf++) = (charT)(sign);
+        buf = h.put_digits(buf);
+        *buf = (charT)('\0');
+        return flen;
     }
 }
 

@@ -6,110 +6,17 @@
 using namespace clue;
 using std::size_t;
 
-// Auxiliary functions for testing
 
-const char *cfmt_lsym(fmt::default_int_formatter) {
-    return "%ld";
-}
 
-const char *cfmt_lsym(const fmt::int_formatter& f) {
-    switch (f.base()) {
-        case  8: return "%lo";
-        case 10: return "%ld";
-        case 16: return f.any(fmt::uppercase) ? "%lX" : "%lx";
-    }
-    return "";
-}
+//===============================================
+//
+//   Integer formatting
+//
+//===============================================
 
-template<class F>
-std::string ref_int_format(const F& f, long x) {
-    char cfmt[16];
-    char *p = cfmt;
-    size_t w = f.width();
 
-    size_t pw = w;
-    if (x < 0) {
-        *p++ = '-';
-        if (pw > 0) pw--;
-    } else if (f.any(fmt::showpos)) {
-        *p++ = '+';
-        if (pw > 0) pw--;
-    }
 
-    bool pzeros = f.any(fmt::padzeros);
-    if (f.any(fmt::leftjust)) pzeros = false;
 
-    *p++ = '%';
-    if (pzeros) {
-        *p++ = '0';
-        if (pw > 0) {
-            if (pw >= 10) {
-                *p++ = (char)('0' + (pw / 10));
-                pw %= 10;
-            }
-            *p++ = (char)('0' + pw);
-        }
-    }
-    *p++ = 'l';
-    switch (f.base()) {
-        case 8: *p++ = 'o'; break;
-        case 16: *p++ = f.any(fmt::uppercase) ? 'X' : 'x'; break;
-        default: *p++ = 'u';
-    }
-    *p = '\0';
-
-    std::string r = fmt::c_sprintf(cfmt, std::abs(x));
-
-    if (r.size() < w) {
-        return f.any(fmt::leftjust) ?
-                r + std::string(w - r.size(), ' ') :
-                std::string(w - r.size(), ' ') + r;
-    } else {
-        return r;
-    }
-}
-
-template<typename F>
-::testing::AssertionResult CheckIntFormat(
-    const char *fexpr, const char *xexpr, const F& f, long x) {
-
-    std::string refstr = ref_int_format(f, x);
-
-    size_t flen = f.max_formatted_length(x);
-    if (refstr.size() != flen) {
-        return ::testing::AssertionFailure()
-            << "Mismatched formatted length for "
-            << "[" << xexpr << " = " << x << "] "
-            << "with " << fexpr << ": \n"
-            << "  base: " << f.base() << "\n"
-            << "  left: " << f.any(fmt::leftjust) << "\n"
-            << "  showpos: " << f.any(fmt::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
-            << "  width: " << f.width() << "\n"
-            << "Result:\n"
-            << "  ACTUAL = " << flen << "\n"
-            << "  EXPECT = " << refstr.size()
-            << " (\"" << refstr << "\")";
-    }
-
-    std::string r = fmt::strf(x, f);
-    if (refstr != r) {
-        return ::testing::AssertionFailure()
-            << "Mismatched formatted string for "
-            << "[" << xexpr << " = " << x << "] "
-            << "with " << fexpr << ": \n"
-            << "  base: " << f.base() << "\n"
-            << "  left: " << f.any(fmt::leftjust) << "\n"
-            << "  showpos: " << f.any(fmt::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
-            << "  width: " << f.width() << "\n"
-            << "Result:\n"
-            << "  ACTUAL = \"" << r << "\"\n"
-            << "  EXPECT = \"" << refstr << "\"";
-    }
-
-    return ::testing::AssertionSuccess();
-}
 
 
 inline char notation(const fmt::fixed_formatter& f) {
@@ -212,84 +119,10 @@ TEST(CFormat, Sprintf) {
 
 // Integer formatting
 
-std::vector<long> prepare_test_ints(size_t base, bool show=false) {
-    std::vector<long> xs;
-    xs.push_back(0);
-    xs.push_back(1);
-    xs.push_back(base / 2);
-    xs.push_back(base - 1);
-
-    size_t m = 0;
-    switch (base) {
-        case 8:
-            m = 10; break;
-        case 10:
-            m = 10; break;
-        case 16:
-            m = 7; break;
-    }
-
-    long e = 1;
-    for (size_t k = 0; k < m; ++k) {
-        long ep = e;
-        e *= base;
-        xs.push_back(e);
-        xs.push_back(2 * e);
-        xs.push_back(2 * e + 3 * ep);
-        xs.push_back((base / 2) * e + 1);
-        xs.push_back(base * e - 1);
-    }
-
-    if (show) {
-        switch (base) {
-            case 8:
-                for (long x: xs) std::printf("0o%lo\n", x);
-                break;
-            case 10:
-                for (long x: xs) std::printf("%ld\n", x);
-                break;
-            case 16:
-                for (long x: xs) std::printf("0x%lx\n", x);
-                break;
-        }
-    }
-
-    std::vector<long> xs_aug;
-    xs_aug.reserve(xs.size() * 2);
-    for (long x: xs) xs_aug.push_back(x);
-    for (long x: xs) xs_aug.push_back(-x);
-    return xs_aug;
-}
 
 
-TEST(IntFmt, DefaultIntFmt) {
-    fmt::default_int_formatter fbase;
-    ASSERT_EQ(0, fbase.width());
-    ASSERT_FALSE(fbase.any(fmt::padzeros));
-    ASSERT_FALSE(fbase.any(fmt::showpos));
 
-    auto f01 = fbase | fmt::showpos;
-    ASSERT_EQ(0, f01.width());
-    ASSERT_FALSE(f01.any(fmt::padzeros));
-    ASSERT_TRUE (f01.any(fmt::showpos));
 
-    auto f10 = fbase | fmt::padzeros;
-    ASSERT_EQ(0, f10.width());
-    ASSERT_TRUE (f10.any(fmt::padzeros));
-    ASSERT_FALSE(f10.any(fmt::showpos));
-
-    auto f11 = fbase | fmt::showpos | fmt::padzeros;
-    ASSERT_EQ(0, f11.width());
-    ASSERT_TRUE(f11.any(fmt::showpos));
-    ASSERT_TRUE(f11.any(fmt::padzeros));
-
-    // combination coverage
-
-    std::vector<long> xs = prepare_test_ints(10);
-    for (long x: xs) {
-        ASSERT_PRED_FORMAT2(CheckIntFormat, fbase, x);
-    }
-}
 
 template<class Fmt>
 void IntFmtTests(const Fmt& fbase, unsigned b) {

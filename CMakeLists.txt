@@ -63,9 +63,8 @@ set(UNIT_TESTS
     test_optional
     test_string_view
     test_stringex
-    test_formatting
-    test_grisu
-    test_string_builder  
+    test_intfmt    
+    # test_string_builder  
     test_value_range
     test_array_view
     test_reindexed_view
@@ -102,8 +101,8 @@ endforeach()
 ###################################
 
 set(PERFS
-    perf_strgrow
-    perf_numfmt
+    # perf_strgrow
+    # perf_numfmt
 )
 
 foreach (name ${PERFS})

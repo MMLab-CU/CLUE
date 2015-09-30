@@ -1,4 +1,5 @@
 #include <clue/string_builder.hpp>
+#include <sstream>
 #include <gtest/gtest.h>
 
 using namespace clue;
@@ -142,6 +143,15 @@ TEST(StringBuilder, WriteSeq) {
        << "'" << fmt::with('a', fmt::default_char_formatter{}, 3) << "'";
 
     ASSERT_EQ("1.0000, 2.500e+00, '  a'", sb.str());
+}
+
+TEST(StringBuilder, StreamOutput) {
+    string_builder sb;
+    sb.write("abcdef");
+
+    std::stringstream ss;
+    sb.output(ss);
+    ASSERT_EQ("abcdef", ss.str());
 }
 
 

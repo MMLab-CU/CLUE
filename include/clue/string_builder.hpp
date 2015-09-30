@@ -4,6 +4,7 @@
 #include <clue/numformat.hpp>
 #include <array>
 #include <new>  // for bad_alloc
+#include <ostream>
 
 namespace clue {
 
@@ -68,6 +69,11 @@ public:
 
     constexpr ::std::basic_string<charT> str() const {
         return ::std::basic_string<charT>(proxy_.data(), len_);
+    }
+
+    void output(::std::ostream& os) const {
+        if (!empty())
+            os.write(data(), size());
     }
 
     // Lower-level write

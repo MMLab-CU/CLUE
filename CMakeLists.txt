@@ -102,8 +102,8 @@ endforeach()
 ###################################
 
 set(PERFS
-    # perf_strgrow
-    # perf_numfmt
+    perf_strgrow
+    perf_numfmt
 )
 
 foreach (name ${PERFS})

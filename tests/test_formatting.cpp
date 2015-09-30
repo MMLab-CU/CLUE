@@ -36,8 +36,11 @@ std::string ref_int_format(const F& f, long x) {
         if (pw > 0) pw--;
     }
 
+    bool pzeros = f.any(fmt::padzeros);
+    if (f.any(fmt::leftjust)) pzeros = false;
+
     *p++ = '%';
-    if (f.any(fmt::padzeros)) {
+    if (pzeros) {
         *p++ = '0';
         if (pw > 0) {
             if (pw >= 10) {
@@ -125,7 +128,8 @@ std::string ref_float_format(const F& f, double x) {
     char *p = cfmt;
     *p++ = '%';
     if (f.any(fmt::showpos)) *p++ = '+';
-    if (f.any(fmt::padzeros)) *p++ = '0';
+    if (f.any(fmt::leftjust)) *p++ = '-';
+    else if (f.any(fmt::padzeros)) *p++ = '0';
 
     if (pw > 0) {
         if (pw >= 10) {
@@ -176,8 +180,7 @@ template<typename F>
     }
 
     std::string r = fmt::strf(x, f);
-
-    // std::printf("%s  |   %s\n", refstr.c_str(), r.c_str());
+    // std::printf("'%s'  |   '%s'\n", refstr.c_str(), r.c_str());
 
     if (!(flen >= rl && flen <= fl_max)) {
         return ::testing::AssertionFailure()
@@ -398,13 +401,20 @@ void batch_test_float_format(const std::vector<fmt::float_formatter<Tag>>& fmts,
                      const std::vector<size_t>& ws,
                      const std::vector<double>& xs) {
 
-    for (const auto& fmt: fmts) {
+    for (const auto& fm: fmts) {
         for (size_t w: ws) {
             for (double x: xs) {
-                auto fw = fmt.width(w);
+                auto fw = fm.width(w);
                 ASSERT_EQ(w, fw.width());
-                ASSERT_EQ(fmt.flags(), fw.flags());
+                ASSERT_EQ(fm.flags(), fw.flags());
                 ASSERT_PRED_FORMAT2(CheckFloatFormat, fw, x);
+
+                if (w > 0) {
+                    auto fwl = fw | fmt::leftjust;
+                    ASSERT_EQ(w, fwl.width());
+                    ASSERT_EQ(fm.flags() | fmt::leftjust, fwl.flags());
+                    ASSERT_PRED_FORMAT2(CheckFloatFormat, fwl, x);
+                }
             }
         }
     }

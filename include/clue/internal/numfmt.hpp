@@ -199,15 +199,13 @@ inline const char* float_cfmt_impl(
     char *p = buf;
     *p++ = '%';
 
-    // write left-justify
-    if (_left) *p++ = '-';
-
     // write sign
     if (_showpos) *p++ = '+';
 
     // write width
     if (width > 0) {
-        if (_padzeros) *p++ = '0';
+        if (_left) *p++ = '-';
+        else if (_padzeros) *p++ = '0';
         size_t w_nd = width < 10 ? 1: (width < 100 ? 2: 3);
         details::extract_digits_dec(width, p, w_nd);
         p += w_nd;

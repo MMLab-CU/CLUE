@@ -155,22 +155,21 @@ public:
         charT *p = buf;
         if (width_ > flen) {
             size_t plen = width_ - flen;
-            if (any(padzeros)) {
+            // left-just
+            if (any(leftjust)) {
+                if (sign) *(p++) = sign;
+                p = put_digits_(ax, p, nd);
+                p = details::fill_chars(p, plen, ' ');
+            } else if (any(padzeros)) {
                 // pad zeros
                 if (sign) *(p++) = sign;
                 p = details::fill_chars(p, plen, '0');
                 p = put_digits_(ax, p, nd);
             } else {
-                // pad spaces
-                if (any(leftjust)) {
-                    if (sign) *(p++) = sign;
-                    p = put_digits_(ax, p, nd);
-                    p = details::fill_chars(p, plen, ' ');
-                } else {
-                    p = details::fill_chars(p, plen, ' ');
-                    if (sign) *(p++) = sign;
-                    p = put_digits_(ax, p, nd);
-                }
+                // right-just
+                p = details::fill_chars(p, plen, ' ');
+                if (sign) *(p++) = sign;
+                p = put_digits_(ax, p, nd);
             }
         } else {
             // no padding

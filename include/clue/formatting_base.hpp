@@ -27,21 +27,6 @@ enum {
 
 typedef unsigned int flag_t;
 
-struct pos {
-    size_t width;
-    bool leftjust;
-
-    constexpr pos() noexcept :
-        width(0), leftjust(false) {}
-
-    constexpr pos(size_t w) noexcept :
-        width(w), leftjust(false) {}
-
-    constexpr pos(size_t w, bool left) noexcept :
-        width(w), leftjust(left) {}
-};
-
-
 //===============================================
 //
 //  C-format
@@ -170,19 +155,19 @@ public:
     }
 
     template<typename T, typename charT>
-    size_t formatted_write(T x, pos fpos, charT *buf, size_t buf_len) const {
+    size_t formatted_write(T x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
         bool showpos_ = any(showpos);
         bool padzeros_ = any(padzeros);
         switch (base_) {
             case  8:
                 return details::render(x, details::int_render_helper<T,8>(x),
-                    showpos_, padzeros_, fpos.width, fpos.leftjust, buf, buf_len);
+                    showpos_, padzeros_, width, ljust, buf, buf_len);
             case 10:
                 return details::render(x, details::int_render_helper<T,10>(x),
-                    showpos_, padzeros_, fpos.width, fpos.leftjust, buf, buf_len);
+                    showpos_, padzeros_, width, ljust, buf, buf_len);
             case 16:
                 return details::render(x, details::int_render_helper<T,16>(x, any(uppercase)),
-                    showpos_, padzeros_, fpos.width, fpos.leftjust, buf, buf_len);
+                    showpos_, padzeros_, width, ljust, buf, buf_len);
         }
         return 0;
     }
@@ -216,9 +201,9 @@ public:
     }
 
     template<typename T, typename charT>
-    size_t formatted_write(T x, pos fpos, charT *buf, size_t buf_len) const {
+    size_t formatted_write(T x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
         return details::render(x, details::int_render_helper<T,10>(x),
-            false, false, fpos.width, fpos.leftjust, buf, buf_len);
+            false, false, width, ljust, buf, buf_len);
     }
 };
 
@@ -322,16 +307,16 @@ public:
 
     template<typename charT>
     size_t formatted_write(double x, charT *buf, size_t buf_len) const {
-        return formatted_write(x, pos(), buf, buf_len);
+        return formatted_write(x, 0, false, buf, buf_len);
     }
 
     template<typename charT>
-    size_t formatted_write(double x, pos fpos, charT *buf, size_t buf_len) const {
+    size_t formatted_write(double x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
         char cfmt[16];
         const char fsym =
                 details::float_fmt_traits<Tag>::printf_sym(any(uppercase));
-        details::float_cfmt_impl(cfmt, fsym, fpos.width, precision_,
-                fpos.leftjust, any(showpos), any(padzeros));
+        details::float_cfmt_impl(cfmt, fsym, width, precision_,
+                ljust, any(showpos), any(padzeros));
         size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
         CLUE_ASSERT(n < buf_len);
         return n;
@@ -469,12 +454,13 @@ template<typename T, typename Fmt>
 struct with_fmt_ex_t {
     const T& value;
     const Fmt& formatter;
-    pos position;
+    size_t width;
+    bool leftjust;
 };
 
 template<typename T, typename Fmt>
-inline with_fmt_ex_t<T, Fmt> with(const T& v, const Fmt& fmt, size_t width, bool left=false) {
-    return with_fmt_ex_t<T, Fmt>{v, fmt, pos(width, left)};
+inline with_fmt_ex_t<T, Fmt> with(const T& v, const Fmt& fmt, size_t width, bool ljust=false) {
+    return with_fmt_ex_t<T, Fmt>{v, fmt, width, ljust};
 }
 
 

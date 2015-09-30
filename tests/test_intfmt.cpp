@@ -3,9 +3,9 @@
 
 using namespace clue;
 
-inline std::string pos2str(fmt::pos pos) {
-    return std::to_string(pos.width) + "(" +
-        (pos.leftjust ? "left" : "right") + ")";
+inline std::string pos2str(size_t width, bool ljust) {
+    return std::to_string(width) + "(" +
+        (ljust ? "left" : "right") + ")";
 }
 
 
@@ -106,12 +106,11 @@ template<typename T, typename F>
 
     const F& f = wfmt.formatter;
     T x = wfmt.value;
-    fmt::pos pos = wfmt.position;
-    std::string refstr = ref_int_format(f, pos.width, pos.leftjust, x);
-    std::string posstr = pos2str(pos);
+    std::string refstr = ref_int_format(f, wfmt.width, wfmt.leftjust, x);
+    std::string posstr = pos2str(wfmt.width, wfmt.leftjust);
 
     char rbuf[128];
-    f.formatted_write(x, pos, rbuf, 128);
+    f.formatted_write(x, wfmt.width, wfmt.leftjust, rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {

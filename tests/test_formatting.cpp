@@ -124,71 +124,7 @@ TEST(CFormat, Sprintf) {
 
 
 
-template<class Fmt>
-void IntFmtTests(const Fmt& fbase, unsigned b) {
-    // formatters
 
-    auto f00 = fbase;
-    ASSERT_EQ(0, f00.width());
-    ASSERT_FALSE(f00.any(fmt::padzeros));
-    ASSERT_FALSE(f00.any(fmt::showpos));
-
-    auto f01 = fbase | fmt::showpos;
-    ASSERT_EQ(0, f01.width());
-    ASSERT_FALSE(f01.any(fmt::padzeros));
-    ASSERT_TRUE (f01.any(fmt::showpos));
-
-    auto f10 = fbase | fmt::padzeros;
-    ASSERT_EQ(0, f10.width());
-    ASSERT_TRUE (f10.any(fmt::padzeros));
-    ASSERT_FALSE(f10.any(fmt::showpos));
-
-    auto f11 = fbase | fmt::showpos | fmt::padzeros;
-    ASSERT_EQ(0, f11.width());
-    ASSERT_TRUE(f11.any(fmt::showpos));
-    ASSERT_TRUE(f11.any(fmt::padzeros));
-
-    // combination coverage
-
-    std::vector<Fmt> fmts {
-        f00, f01, f10, f11};
-    std::vector<size_t> widths = {0, 5, 12};
-    std::vector<long> xs = prepare_test_ints(10);
-
-    for (const auto& fm: fmts) {
-        for (size_t w: widths) {
-            for (long x: xs) {
-                auto fw = fm.width(w);
-                ASSERT_EQ(w, fw.width());
-                ASSERT_EQ(fm.flags(), fw.flags());
-                ASSERT_PRED_FORMAT2(CheckIntFormat, fw, x);
-
-                if (w > 0) {
-                    auto fwl = fw | fmt::leftjust;
-                    ASSERT_EQ(w, fwl.width());
-                    ASSERT_EQ(fm.flags() | fmt::leftjust, fwl.flags());
-                    ASSERT_PRED_FORMAT2(CheckIntFormat, fwl, x);
-                }
-            }
-        }
-    }
-}
-
-TEST(IntFmt, Dec) {
-    IntFmtTests(fmt::dec(), 10);
-}
-
-TEST(IntFmt, Oct) {
-    IntFmtTests(fmt::oct(), 8);
-}
-
-TEST(IntFmt, Hex) {
-    IntFmtTests(fmt::hex(), 16);
-}
-
-TEST(IntFmt, UHex) {
-    IntFmtTests(fmt::hex() | fmt::uppercase, 16);
-}
 
 
 // Floating-point formatting

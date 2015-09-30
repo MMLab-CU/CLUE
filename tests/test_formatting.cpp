@@ -109,26 +109,44 @@ template<typename F>
 }
 
 
-inline const char* notation(const fmt::fixed_formatter& f) {
-    return f.any(fmt::uppercase) ? "F" : "f";
+inline char notation(const fmt::fixed_formatter& f) {
+    return f.any(fmt::uppercase) ? 'F' : 'f';
 }
-inline const char* notation(const fmt::sci_formatter& f)   {
-    return f.any(fmt::uppercase) ? "E" : "e";
+inline char notation(const fmt::sci_formatter& f)   {
+    return f.any(fmt::uppercase) ? 'E' : 'e';
 }
 
 template<class F>
 std::string ref_float_format(const F& f, double x) {
-    std::string sfmt(notation(f));
     size_t w = f.width();
-    sfmt = std::string(".") + std::to_string(f.precision()) + sfmt;
-    if (w > 0) {
-        sfmt = std::to_string(w) + sfmt;
-        if (f.any(fmt::padzeros)) sfmt = std::string("0") + sfmt;
+    size_t pw = w;
+
+    char cfmt[16];
+    char *p = cfmt;
+    *p++ = '%';
+    if (f.any(fmt::showpos)) *p++ = '+';
+    if (f.any(fmt::padzeros)) *p++ = '0';
+
+    if (pw > 0) {
+        if (pw >= 10) {
+            *p++ = char('0' + (pw / 10));
+            pw %= 10;
+        }
+        *p++ = char('0' + pw);
     }
-    if (f.any(fmt::showpos)) sfmt = std::string("+") + sfmt;
-    sfmt = std::string("%") + sfmt;
-    // std::printf("sfmt = %s\n", sfmt.c_str());
-    return fmt::c_sprintf(sfmt.c_str(), x);
+
+    size_t prec = f.precision();
+    *p++ = '.';
+    if (prec >= 10) {
+        *p++ = char('0' + (prec / 10));
+        prec %= 10;
+    }
+    *p++ = char('0' + prec);
+
+    *p++ = notation(f);
+    *p = '\0';
+
+    return fmt::c_sprintf(cfmt, x);
 }
 
 template<typename F>

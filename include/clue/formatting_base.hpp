@@ -158,10 +158,10 @@ public:
             if (any(padzeros)) {
                 // pad zeros
                 if (sign) *(p++) = sign;
-                for (size_t i = 0; i < plen; ++i) *(p++) = (charT)('0');
+                p = details::fill_chars(p, plen, '0');
             } else {
                 // pad empty
-                for (size_t i = 0; i < plen; ++i) *(p++) = (charT)(' ');
+                p = details::fill_chars(p, plen, ' ');
                 if (sign) *(p++) = sign;
             }
         } else {

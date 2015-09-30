@@ -414,15 +414,19 @@ inline charT* prettify(charT* buffer, int length, int k) {
 
 template<typename charT>
 inline size_t dtoa(double value, charT* buffer) {
-    charT *pbegin = buffer;
+    bool has_sign = false;
     if (::std::isfinite(value)) {
         if (value == 0.0) {  // 0.0 or -0.0
-            if (::std::signbit(value)) *buffer++ = (charT)('-');
-            static charT zerosrc[4] = {'0', '.', '0', '\0'};
-            ::std::memcpy(buffer, zerosrc, 4 * sizeof(charT));
-            return static_cast<size_t>(buffer + 3 - pbegin);
+            if (::std::signbit(value)) {
+                has_sign = true;
+                *buffer++ = (charT)('-');
+            }
+            fmt::details::copy_str(buffer, "0.0", 3);
+            return has_sign ? 4 : 3;
         } else {
+            charT *pbegin = buffer;
             if (value < 0) {
+                has_sign = true;
                 *buffer++ = (charT)('-');
                 value = -value;
             }
@@ -432,14 +436,15 @@ inline size_t dtoa(double value, charT* buffer) {
             return static_cast<size_t>(pend - pbegin);
         }
     } else if (::std::isinf(value) ) {
-        if (::std::signbit(value)) *buffer++ = (charT)('-');
-        static charT infsrc[4] = {'I', 'n', 'f', '\0'};
-        ::std::memcpy(buffer, infsrc, 4 * sizeof(charT));
-        return static_cast<size_t>(buffer + 3 - pbegin);
+        if (::std::signbit(value)) {
+            has_sign = true;
+            *buffer++ = (charT)('-');
+        }
+        fmt::details::copy_str(buffer, "Inf", 3);
+        return has_sign ? 4 : 3;
     } else {
         CLUE_ASSERT(::std::isnan(value));
-        static charT nansrc[4] = {'N', 'a', 'N', '\0'};
-        ::std::memcpy(buffer, nansrc, 4 * sizeof(charT));
+        fmt::details::copy_str(buffer, "NaN", 3);
         return 3;
     }
 }

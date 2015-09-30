@@ -16,7 +16,16 @@ namespace details {
 using ::std::size_t;
 
 template<typename charT>
-size_t copy_str(charT *buf, const char *str, size_t n) {
+inline charT* fill_chars(charT* buf, size_t n, char c) {
+    charT _c = static_cast<charT>(c);
+    for (size_t i = 0; i < n; ++i) {
+        buf[i] = _c;
+    }
+    return buf + n;
+}
+
+template<typename charT>
+inline size_t copy_str(charT *buf, const char* str, size_t n) {
     for (size_t i = 0; i < n; ++i) {
         buf[i] = static_cast<charT>(str[i]);
     }

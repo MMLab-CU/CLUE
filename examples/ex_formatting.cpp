@@ -54,5 +54,20 @@ int main() {
     }
     std::cout << sepline << std::endl;
 
+    // The codes above shows the following table to the console:
+    //
+    // -----------------------------------
+    //   |  id   |  name   |  score    |
+    // -----------------------------------
+    //   |  001  |  Alice  |    85.00  |
+    //   |  002  |  Bob    |    69.20  |
+    //   |  003  |  Nina   |    92.50  |
+    //   |  004  |  Mary   |    78.30  |
+    //   |  005  |  Mike   |   100.00  |
+    //   |  006  |  Tom    |    88.60  |
+    //   |  007  |  John   |    83.20  |
+    // -----------------------------------
+    //
+
     return 0;
 }

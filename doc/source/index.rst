@@ -16,6 +16,7 @@ Contents:
    string_view.rst
    stringex.rst
    formatting.rst
+   string_builder.rst
    value_range.rst
    array_view.rst
    reindexed_view.rst

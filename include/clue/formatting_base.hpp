@@ -396,9 +396,9 @@ with(const T& v, const Fmt& fmt, size_t width, bool ljust=false) {
 }
 
 template<typename T>
-inline with_fmt_ex_t<T, default_formatter_t<T>>
+inline with_fmt_ex_t<T, default_formatter_t<decay_t<T>>>
 with(const T& v, size_t width, bool ljust=false) {
-    return with(v, default_formatter<T>::get(), width, ljust);
+    return with(v, default_formatter<decay_t<T>>::get(), width, ljust);
 }
 
 

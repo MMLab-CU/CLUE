@@ -90,6 +90,7 @@ endforeach()
 set(EXAMPLES
     ex_stopwatch
     ex_timing
+    ex_formatting
 )
 
 foreach (name ${EXAMPLES})

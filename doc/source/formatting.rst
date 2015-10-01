@@ -143,6 +143,7 @@ Below are formal descriptions of the ``with`` function.
 
     :note: This is useful when you only want to customize the positional setting, instead of the format itself.
 
+In the library, we provide an example ``examples/ex_formatting.cpp``, which shows how one can utilize the formatting facilities to produce a nicely formatted table with heterogeneous columns.
 
 Formatters
 ------------

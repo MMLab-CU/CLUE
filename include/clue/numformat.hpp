@@ -268,9 +268,7 @@ public:
 
     template<typename charT>
     size_t formatted_write(double x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
-        size_t n = formatted_write(x, buf, buf_len);
-        CLUE_ASSERT(n < buf_len && width < buf_len);
-        return details::rejustify(buf, n, width, ljust);
+        return formatted_write_unknown_length(*this, x, width, ljust, buf, buf_len);
     }
 };
 

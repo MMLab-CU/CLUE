@@ -190,9 +190,9 @@ inline size_t render(T x, const int_render_helper<T, N>& h, bool showpos_,
     char sign = x < 0 ? '-' : (showpos_ ? '+' : '\0');
     size_t flen = sign ? h.nd + 1 : h.nd;
     CLUE_ASSERT(buf_len > flen);
-    if (sign) *(buf++) = (charT)(sign);
+    if (sign) *(buf++) = static_cast<charT>(sign);
     buf = h.put_digits(buf);
-    *buf = (charT)('\0');
+    *buf = static_cast<charT>('\0');
     return flen;
 }
 
@@ -208,27 +208,27 @@ inline size_t render(T x, const int_render_helper<T, N>& h,
         size_t plen = width - flen;
         if (left) {
             // left-just
-            if (sign) *(buf++) = (charT)(sign);
+            if (sign) *(buf++) = static_cast<charT>(sign);
             buf = h.put_digits(buf);
-            buf = details::fill_chars(buf, plen, ' ');
+            buf = ::std::fill_n(buf, plen, static_cast<charT>(' '));
         } else if (padzeros_) {
             // pad zeros
-            if (sign) *(buf++) = (charT)(sign);
-            buf = details::fill_chars(buf, plen, '0');
+            if (sign) *(buf++) = static_cast<charT>(sign);
+            buf = ::std::fill_n(buf, plen, static_cast<charT>('0'));
             buf = h.put_digits(buf);
         } else {
             // right-just
-            buf = details::fill_chars(buf, plen, ' ');
-            if (sign) *(buf++) = (charT)(sign);
+            buf = ::std::fill_n(buf, plen, static_cast<charT>(' '));
+            if (sign) *(buf++) = static_cast<charT>(sign);
             buf = h.put_digits(buf);
         }
-        *buf = (charT)('\0');
+        *buf = static_cast<charT>('\0');
         return width;
     } else {
         // no padding
         if (sign) *(buf++) = (charT)(sign);
         buf = h.put_digits(buf);
-        *buf = (charT)('\0');
+        *buf = static_cast<charT>('\0');
         return flen;
     }
 }

@@ -374,38 +374,40 @@ inline charT* prettify(charT* buffer, int length, int k) {
     if (length <= kk && kk <= 21) {
         // 1234e7 -> 12340000000
         for (int i = length; i < kk; i++)
-            buffer[i] = (charT)('0');
-        buffer[kk]     = (charT)('.');
-        buffer[kk + 1] = (charT)('0');
+            buffer[i] = static_cast<charT>('0');
+        buffer[kk]     = static_cast<charT>('.');
+        buffer[kk + 1] = static_cast<charT>('0');
         buffer += (kk + 2);
     }
     else if (0 < kk && kk <= 21) {
         // 1234e-2 -> 12.34
         ::std::memmove(&buffer[kk + 1], &buffer[kk],
             static_cast<size_t>(length - kk) * sizeof(charT));
-        buffer[kk] = (charT)('.');
+        buffer[kk] = static_cast<charT>('.');
         buffer += (length + 1);
     }
     else if (-6 < kk && kk <= 0) {
         // 1234e-6 -> 0.001234
         const int offset = 2 - kk;
-        ::std::memmove(&buffer[offset], &buffer[0], static_cast<size_t>(length) * sizeof(charT));
-        buffer[0] = (charT)('0');
-        buffer[1] = (charT)('.');
+        ::std::memmove(&buffer[offset], &buffer[0],
+            static_cast<size_t>(length) * sizeof(charT));
+        buffer[0] = static_cast<charT>('0');
+        buffer[1] = static_cast<charT>('.');
         for (int i = 2; i < offset; i++)
-            buffer[i] = (charT)('0');
+            buffer[i] = static_cast<charT>('0');
         buffer += (length + offset);
     }
     else if (length == 1) {
         // 1e30
-        buffer[1] = (charT)('e');
+        buffer[1] = static_cast<charT>('e');
         buffer = write_exp(kk - 1, &buffer[2]);
     }
     else {
         // 1234e30 -> 1.234e33
-        ::std::memmove(&buffer[2], &buffer[1], static_cast<size_t>(length - 1) * sizeof(charT));
-        buffer[1] = (charT)('.');
-        buffer[length + 1] = (charT)('e');
+        ::std::memmove(&buffer[2], &buffer[1],
+            static_cast<size_t>(length - 1) * sizeof(charT));
+        buffer[1] = static_cast<charT>('.');
+        buffer[length + 1] = static_cast<charT>('e');
         buffer = write_exp(kk - 1, &buffer[0 + length + 2]);
     }
     *buffer = static_cast<charT>('\0');
@@ -419,15 +421,15 @@ inline size_t dtoa(double value, charT* buffer) {
         if (value == 0.0) {  // 0.0 or -0.0
             if (::std::signbit(value)) {
                 has_sign = true;
-                *buffer++ = (charT)('-');
+                *buffer++ = static_cast<charT>('-');
             }
-            fmt::details::copy_str(buffer, "0.0", 3);
+            ::std::copy_n("0.0", 4, buffer);
             return has_sign ? 4 : 3;
         } else {
             charT *pbegin = buffer;
             if (value < 0) {
                 has_sign = true;
-                *buffer++ = (charT)('-');
+                *buffer++ = static_cast<charT>('-');
                 value = -value;
             }
             int length, K;
@@ -438,13 +440,13 @@ inline size_t dtoa(double value, charT* buffer) {
     } else if (::std::isinf(value) ) {
         if (::std::signbit(value)) {
             has_sign = true;
-            *buffer++ = (charT)('-');
+            *buffer++ = static_cast<charT>('-');
         }
-        fmt::details::copy_str(buffer, "Inf", 3);
+        ::std::copy_n("Inf", 4, buffer);
         return has_sign ? 4 : 3;
     } else {
         CLUE_ASSERT(::std::isnan(value));
-        fmt::details::copy_str(buffer, "NaN", 3);
+        ::std::copy_n("NaN", 4, buffer);
         return 3;
     }
 }

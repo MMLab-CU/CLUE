@@ -13,70 +13,10 @@
 
 #include <string>
 #include <stdexcept>
-
+#include <algorithm>
 
 namespace clue {
 namespace fmt {
-
-namespace details {
-
-template<typename charT>
-inline charT* fill_chars(charT* buf, size_t n, char c) {
-    charT _c = static_cast<charT>(c);
-    for (size_t i = 0; i < n; ++i) {
-        buf[i] = _c;
-    }
-    return buf + n;
-}
-
-template<typename charT>
-inline size_t copy_str(charT *buf, const char* str, size_t n) {
-    for (size_t i = 0; i < n; ++i) {
-        buf[i] = static_cast<charT>(str[i]);
-    }
-    buf[n] = static_cast<charT>('\0');
-    return n;
-}
-
-template<typename charT>
-inline size_t justified_copy_str(charT *buf, const char* str, size_t n, size_t width, bool ljust) {
-    if (width > n) {
-        size_t np = width - n;
-        if (ljust) {
-            for (size_t i = 0; i < n; ++i) {
-                buf[i] = static_cast<charT>(str[i]);
-            }
-            buf = fill_chars(buf + n, np, ' ');
-            *buf = static_cast<charT>('\0');
-        } else {
-            buf = fill_chars(buf, np, ' ');
-            copy_str(buf, str, n);
-        }
-        return width;
-    } else {
-        return copy_str(buf, str, n);
-    }
-}
-
-template<typename charT>
-inline size_t rejustify(charT *buf, size_t n, size_t width, bool ljust) {
-    if (n < width) {
-        size_t np = width - n;
-        if (ljust) {
-            fill_chars(buf + n, np, ' ');
-        } else {
-            ::std::memmove(buf + np, buf, n * sizeof(charT));
-            fill_chars(buf, np, ' ');
-        }
-        buf[width] = static_cast<charT>('\0');
-        return width;
-    } else {
-        return n;
-    }
-}
-
-}
-
 
 //===============================================
 //
@@ -115,6 +55,70 @@ inline ::std::string c_sprintf(const char *fmt, ...) {
 
 //===============================================
 //
+//  Formatter implementation helper
+//
+//===============================================
+
+template<typename Fmt, typename T, typename charT>
+size_t formatted_write_unknown_length(
+    const Fmt& fmt,     // the formatter
+    const T& x,         // the value to be formatted
+    size_t width,       // field width
+    bool leftjust,      // whether to left-adjust
+    charT *buf,         // buffer base
+    size_t buf_len)     // buffer size
+{
+    CLUE_ASSERT(buf_len > width);
+    size_t n = fmt.formatted_write(x, buf, buf_len);
+    CLUE_ASSERT(buf_len > n);
+    if (width > n) {
+        // re-justify
+        size_t np = width - n;
+        if (leftjust) {
+            ::std::fill_n(buf + n, np, static_cast<charT>(' '));
+            buf[width] = (charT)('\0');
+        } else {
+            ::std::memmove(buf + np, buf, n * sizeof(charT));
+            ::std::fill_n(buf, np, static_cast<charT>(' '));
+        }
+        buf[width] = static_cast<charT>('\0');
+        return width;
+    } else {
+        return n;
+    }
+}
+
+template<typename Fmt, typename T, typename charT>
+size_t formatted_write_known_length(
+    const Fmt& fmt,     // the formatter
+    const T& x,         // the value to be formatted
+    size_t n,           // the length of formatted x
+    size_t width,       // field width
+    bool leftjust,      // whether to left-adjust
+    charT *buf,         // buffer base
+    size_t buf_len)     // buffer size
+{
+    CLUE_ASSERT(buf_len > n && buf_len > width);
+    if (width > n) {
+        size_t np = width - n;
+        if (leftjust) {
+            fmt.formatted_write(x, buf, n + 1);
+            ::std::fill_n(buf + n, np, (charT)(' '));
+            buf[width] = static_cast<charT>('\0');
+        } else {
+            ::std::fill_n(buf, np, static_cast<charT>(' '));
+            fmt.formatted_write(x, buf + np, n + 1);
+        }
+        return width;
+    } else {
+        fmt.formatted_write(x, buf, n+1);
+        return n;
+    }
+}
+
+
+//===============================================
+//
 //  Bool formatting
 //
 //===============================================
@@ -129,22 +133,20 @@ public:
     size_t formatted_write(bool x, charT *buf, size_t buf_len) const {
         if (x) {
             CLUE_ASSERT(buf_len > 4);
-            return details::copy_str(buf, "true", 4);
+            std::copy_n("true", 5, buf);
+            return 4;
         } else {
             CLUE_ASSERT(buf_len > 5);
-            return details::copy_str(buf, "false", 5);
+            std::copy_n("false", 6, buf);
+            return 5;
         }
     }
 
     template<typename charT>
     size_t formatted_write(bool x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
-        if (x) {
-            CLUE_ASSERT(buf_len > 4);
-            return details::justified_copy_str(buf, "true", 4, width, ljust);
-        } else {
-            CLUE_ASSERT(buf_len > 5);
-            return details::justified_copy_str(buf, "false", 5, width, ljust);
-        }
+        return formatted_write_known_length(
+            *this, x, max_formatted_length(x),
+            width, ljust, buf, buf_len);
     }
 };
 
@@ -171,23 +173,9 @@ public:
 
     template<typename charT>
     size_t formatted_write(charT c, size_t width, bool ljust, charT *buf, size_t buf_len) const {
-        if (width > 1) {
-            CLUE_ASSERT(buf_len > width);
-            size_t m = width - 1;
-            if (ljust) {
-                buf[0] = c;
-                details::fill_chars(buf + 1, m, ' ');
-            } else {
-                details::fill_chars(buf, m, ' ');
-                buf[m] = c;
-            }
-            buf[width] = static_cast<charT>('\0');
-            return width;
-        } else {
-            return formatted_write(c, buf, buf_len);
-        }
+        return formatted_write_known_length(
+            *this, c, 1, width, ljust, buf, buf_len);
     }
-
 };
 
 
@@ -288,9 +276,9 @@ private:
             size_t np = width - n;
             if (ljust) {
                 ::std::memcpy(buf, src, n * sizeof(charT));
-                details::fill_chars(buf + n, np, ' ');
+                ::std::fill_n(buf + n, np, ' ');
             } else {
-                details::fill_chars(buf, np, ' ');
+                ::std::fill_n(buf, np, ' ');
                 ::std::memcpy(buf + np, src, n * sizeof(charT));
             }
             buf[width] = static_cast<charT>('\0');

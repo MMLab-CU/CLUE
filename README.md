@@ -40,6 +40,14 @@ Below is a list of components available in the library.
 
 **Note:** Certain components are marked with **backport**. Such components are introduced in the [C++14 Standard](https://en.wikipedia.org/wiki/C%2B%2B14) or the [C++ Extensions for Library Fundamentals (CELF), ISO/IEC TS 19568:xxxx](http://en.cppreference.com/w/cpp/experimental/lib_extensions). While they were not introduced to C++11, they can be implemented within the capacity of C++11 standard. We provide an implementation (using libc++ as a reference implementation) here (within the namespace ``clue``) that works with C++11.
 
+## Dependencies
+
+- The library itself requires a C++11-compliant compiler to work. Other than that, there's no other dependencies.
+- This is a **header-only** library. You don't have to build anything. Just include the relevant header files in your code.
+- This project uses [Google Test](https://github.com/google/googletest) for testing. If you want to build the test suite, you may need to configure Google Test properly such that *cmake* can find it (*e.g.* you can set the environment variable ``GTEST_ROOT``).
+
+Unlike massive library such as [Boost](http://www.boost.org), this is a very small library (all headers together have around *5000 - 6000* lines of codes). Actually, that we don't want to depend on Boost in certain projects is an important reason that motivates this library. We find that this library is already sufficient to satisfy the basic requirement of our other projects.
+
 ## Documentation
 
 Here is the [Detailed Documentation](http://cppstdx.readthedocs.org/en/latest/).

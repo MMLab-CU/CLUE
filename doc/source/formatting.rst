@@ -5,8 +5,8 @@ In C++, there are generally two different ways to perform formatting, using ``sp
 
 *CLUE++* provides a new approach to formatting, where values, formatters, and I/O infrastructure are decoupled. Below, we briefly introduce these formatting facilities. Note that functions and type for formatting are within the namespace ``clue::fmt``.
 
-`str` and `strf`
-------------------
+Formatting functions
+---------------------
 
 The key functions of this module are ``fmt::str`` and ``fmt::strf``, which turn input values into formatted strings, respectively using default formatters and user-provided formatters.
 
@@ -25,6 +25,13 @@ The key functions of this module are ``fmt::str`` and ``fmt::strf``, which turn 
     Format a value ``v`` using a user-provided formatter ``fmt`` into a string with *minimum* ``width``.
 
     The produced string is of length at least ``width``. When the actual content contains less than ``width`` characters, it will be adjusted to the right (by default) or to the left (if ``leftjust`` is explicitly set to ``true``).
+
+.. cpp:function:: std::string fmt::c_sprintf(fmt, ...)
+
+    For those who prefer to use ``sprintf``-like syntax, we also provide ``fmt::c_sprintf`` function, which
+    wraps the built-in ``snprintf`` and produce a standard string.
+
+    :note: Like the built-in ``snprintf``, this is not type-safe. It just makes the use a bit more convenient, as it produces a standard string instead of asking for a pre-allocated buffer.
 
 
 Let's look at some examples:

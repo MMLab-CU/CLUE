@@ -102,16 +102,19 @@ size_t formatted_write_known_length(
     if (width > n) {
         size_t np = width - n;
         if (leftjust) {
-            fmt.formatted_write(x, buf, n + 1);
+            size_t wlen = fmt.formatted_write(x, buf, n + 1);
+            CLUE_ASSERT(wlen == n);
             ::std::fill_n(buf + n, np, (charT)(' '));
             buf[width] = static_cast<charT>('\0');
         } else {
             ::std::fill_n(buf, np, static_cast<charT>(' '));
-            fmt.formatted_write(x, buf + np, n + 1);
+            size_t wlen = fmt.formatted_write(x, buf + np, n + 1);
+            CLUE_ASSERT(wlen == n);
         }
         return width;
     } else {
-        fmt.formatted_write(x, buf, n+1);
+        size_t wlen = fmt.formatted_write(x, buf, n+1);
+        CLUE_ASSERT(wlen == n);
         return n;
     }
 }

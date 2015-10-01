@@ -42,7 +42,7 @@ Below is a list of components available in the library.
 
 ## Dependencies
 
-- The library itself requires a C++11-compliant compiler to work. Other than that, there's no other dependencies.
+- The library itself requires a **C++11-compliant compiler** to work. Other than that, there's **no other dependencies**.
 - This is a **header-only** library. You don't have to build anything. Just include the relevant header files in your code.
 - This project uses [Google Test](https://github.com/google/googletest) for testing. If you want to build the test suite, you may need to configure Google Test properly such that *cmake* can find it (*e.g.* you can set the environment variable ``GTEST_ROOT``).
 

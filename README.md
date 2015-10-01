@@ -12,27 +12,34 @@ This library requires C++11-compliant compiler. Particularly, it is tested on th
 
 ## Overview
 
-*CLUE++* is a collection of utilities to support modern C++ development. The library comprises two kinds of components:
-
-- New classes and functions introduced in C++14 or later technical specifications (*e.g.* ``optional``, ``string_view``, etc). These classes and functions are very useful in practice and can be implemented with C++11. We implement some of them in this library, thus making them available in C++11 context.
-
-- We also introduce new facilities that we find very useful in practical development (*e.g.* ``array_view``, ``value_range``, meta-programming tools, timing tools, string formatting, etc).
-
-We strictly follow the C++11 standard and the conventions in C++ standard library in implementing all components in the library.
+*CLUE++* is a collection of utilities to support modern C++ development. We strictly follow the C++11 standard and the conventions in C++ standard library in implementing all components in the library.
 
 Below is a list of components available in the library.
 
-- Extensions of type traits (*e.g* ``add_cv_t``, ``remove_cv_t``, ``enable_if_t`` etc).
-- ``optional`` class template.
-- ``string_view`` class template.
-- Extensions of string functionalities (*e.g.* trimming and tokenizers).
-- String formatting, and in particular, efficient integer and floating point formatting (*e.g.* Grisu algorithm).
-- Efficient string builder.
-- ``value_range`` class template.
-- ``array_view`` class template.
-- ``reindexed_view`` class template.
-- Meta-programming utilities (meta types and meta functions).
-- Meta-sequence: static list of types.
+#### Basic Utilites
+
+- Class template ``optional``: for representing nullable values. **(backported from CELF)**
 - Timing tools: ``stop_watch`` class and timing functions.
+- Class template ``value_range``: so you can write ``for (auto x: vrange(1, 10)) { ... }``.
+- Class template ``array_view``: wrap a memory block into an STL-like view.
+- Class template ``reindexed_view``: STL-like view of a subset of elements.
+
+#### Strings and formatting
+
+- Class template ``string_view``: light-weight wrapper of sub-strings. **(backport from CELF)**
+- Extensions of string functionalities (*e.g.* trimming and tokenizers).
+- In-memory string formatting and extensible formatter systems.
+- Efficient integer and floating point formatting (*e.g.* Grisu algorithm).
+- Efficient string builder (on managed memory or external buffer).
+
+#### Meta programming tools
+
+- Extensions of type traits (*e.g* ``add_cv_t``, ``remove_cv_t``, ``enable_if_t`` etc) **(backport from C++14)**
+- Meta-types (*e.g.* ``type_<T>``, ``int_<V>``, ``bool_<V>``, etc) and meta-functions (*e.g* ``meta::plus``, ``meta::and``, ``meta::all``, ``meta::select``, etc)
+- Meta-sequence: static list of types, and algorithms.
+
+**Note:** Certain components are marked with **backport**. Such components are introduced in the [C++14 Standard](https://en.wikipedia.org/wiki/C%2B%2B14) or the [C++ Extensions for Library Fundamentals (CELF), ISO/IEC TS 19568:xxxx](http://en.cppreference.com/w/cpp/experimental/lib_extensions). While they were not introduced to C++11, they can be implemented within the capacity of C++11 standard. We provide an implementation (using libc++ as a reference implementation) here (within the namespace ``clue``) that works with C++11.
+
+## Documentation
 
 Here is the [Detailed Documentation](http://cppstdx.readthedocs.org/en/latest/).

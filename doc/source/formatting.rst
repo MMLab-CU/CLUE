@@ -66,6 +66,9 @@ Let's look at some examples:
     // variadic concatenation (type-safe)
     fmt::str(1, '+', 2, " = ", 3.0);    // "1+2 = 3.0"
 
+    // use c_sprintf (not type-safe)
+    fmt::c_sprintf("%d+%d = %g", 1, 2, 3.0)  // "1+2 = 3.0"
+
 .. note::
 
     The funcitons ``str`` and ``strf`` are type-safe. Behind the scene, if calls formatters, which only accept the types

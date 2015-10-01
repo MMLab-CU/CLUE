@@ -37,11 +37,8 @@ inline ::std::string str() {
 }
 
 template<typename T>
-inline enable_if_t<
-    is_default_formattable<decay_t<T>, char>::value,
-    ::std::string>
-str(const T& x) {
-    return strf(x, default_formatter(x));
+inline std::string str(const T& x) {
+    return strf(x, get_default_formatter(x));
 }
 
 template<typename T, typename Fmt>

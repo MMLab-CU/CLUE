@@ -90,13 +90,24 @@ TEST(Formatting, FmtStr) {
     // floating point
     ASSERT_EQ("12.75", fmt::str(12.75));
     ASSERT_EQ("-2.25", fmt::str(-2.25));
+}
 
-    // with
+TEST(Formatting, WithFunction) {
+    using fmt::with;
+
     auto f = fmt::fixed().precision(2);
     auto sf1 = fmt::str(with(123, f));
     ASSERT_EQ("123.00", sf1);
 
-    // with-ex
+    auto wfe = fmt::str(with(123, 5));
+    ASSERT_EQ("  123", wfe);
+
+    auto wfe_r = fmt::str(with(123, 5, false));
+    ASSERT_EQ("  123", wfe_r);
+
+    auto wfe_l = fmt::str(with(123, 5, true));
+    ASSERT_EQ("123  ", wfe_l);
+
     auto sfe = fmt::str(with(123, f, 8));
     ASSERT_EQ("  123.00", sfe);
 
@@ -121,4 +132,3 @@ TEST(Formatting, StrConcat) {
     auto sf3 = fmt::str(with(123, f), ", ", '~', with(456, f, 8));
     ASSERT_EQ("123.00, ~  456.00", sf3);
 }
-

@@ -292,21 +292,35 @@ constexpr int_formatter hex() noexcept { return int_formatter(16); }
 constexpr fixed_formatter fixed() noexcept { return fixed_formatter(); }
 constexpr sci_formatter   sci()   noexcept { return sci_formatter();   }
 
-template<typename T>
-constexpr enable_if_t<::std::is_integral<T>::value, default_int_formatter>
-default_formatter(const T& x) noexcept {
-    return default_int_formatter{};
-};
+namespace details {
+    template<typename T>
+    struct default_formatter_map {
+        using type =
+            conditional_t<::std::is_integral<T>::value,
+                default_int_formatter,
+            conditional_t<::std::is_floating_point<T>::value,
+                default_float_formatter,
+                void
+        > >;
+    };
 
-template<typename T>
-constexpr enable_if_t<::std::is_floating_point<T>::value, grisu_formatter>
-default_formatter(const T& x) noexcept {
-    return default_float_formatter{};
-};
+    template<typename T>
+    using default_formatter_map_t = typename default_formatter_map<T>::type;
 
-default_bool_formatter default_formatter(bool x) noexcept {
-    return default_bool_formatter();
+    template<typename Fmt>
+    struct default_formatter_helper {
+        using type = Fmt;
+        static constexpr type get() noexcept { return type{}; }
+    };
+
+    template<>
+    struct default_formatter_helper<void> {};
 }
+
+template<typename T>
+struct default_formatter :
+    public details::default_formatter_helper<
+        details::default_formatter_map_t<T>> {};
 
 
 } // end namespace fmt

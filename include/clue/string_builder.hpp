@@ -118,11 +118,8 @@ public:
     // formatted output
 
     template<typename T>
-    enable_if_t<
-        fmt::is_default_formattable<decay_t<T>, charT>::value,
-        generic_string_builder&>
-    operator << (const T& x) {
-        writef(x, fmt::default_formatter(x));
+    generic_string_builder& operator << (const T& x) {
+        writef(x, fmt::get_default_formatter(x));
         return *this;
     }
 

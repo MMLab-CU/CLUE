@@ -310,20 +310,70 @@ private:
 //
 //===============================================
 
-// Generic formatting setting
+template<typename T> struct default_formatter;
 
-// with function
+template<typename T>
+inline typename default_formatter<decay_t<T>>::type
+get_default_formatter(const T& x) noexcept {
+    return default_formatter<decay_t<T>>::get();
+}
+
+template<typename T>
+using default_formatter_t = typename default_formatter<T>::type;
+
+// for bool
+
+template<> struct default_formatter<bool> {
+    using type = default_bool_formatter;
+    static constexpr type get() noexcept { return type{}; }
+};
+
+// for characters and char*
+
+#define CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(CHARTYPE) \
+    template<> struct default_formatter<CHARTYPE> { \
+        using type = default_char_formatter; \
+        static constexpr type get() noexcept { return type{}; } \
+    }; \
+    template<> struct default_formatter<CHARTYPE*> { \
+        using type = default_string_formatter; \
+        static constexpr type get() noexcept { return type{}; } \
+    };  \
+    template<> struct default_formatter<const CHARTYPE*> { \
+        using type = default_string_formatter; \
+        static constexpr type get() noexcept { return type{}; } \
+    };
+
+CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(char)
+CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(wchar_t)
+CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(char16_t)
+CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(char32_t)
+
+// for string types
+
+template<typename charT, typename Traits>
+struct default_formatter<basic_string_view<charT, Traits>> {
+    using type = default_string_formatter;
+    static constexpr type get() noexcept {
+        return type{};
+    }
+};
+
+template<typename charT, typename Traits, typename Allocator>
+struct default_formatter<::std::basic_string<charT, Traits, Allocator>> {
+    using type = default_string_formatter;
+    static constexpr type get() noexcept {
+        return type{};
+    }
+};
+
+// with functions
 
 template<typename T, typename Fmt>
 struct with_fmt_t {
     const T& value;
     const Fmt& formatter;
 };
-
-template<typename T, typename Fmt>
-inline with_fmt_t<T, Fmt> with(const T& v, const Fmt& fmt) {
-    return with_fmt_t<T, Fmt>{v, fmt};
-}
 
 template<typename T, typename Fmt>
 struct with_fmt_ex_t {
@@ -334,79 +384,21 @@ struct with_fmt_ex_t {
 };
 
 template<typename T, typename Fmt>
-inline with_fmt_ex_t<T, Fmt> with(const T& v, const Fmt& fmt, size_t width, bool ljust=false) {
+inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_t<T, Fmt>>
+with(const T& v, const Fmt& fmt) {
+    return with_fmt_t<T, Fmt>{v, fmt};
+}
+
+template<typename T, typename Fmt>
+inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_ex_t<T, Fmt>>
+with(const T& v, const Fmt& fmt, size_t width, bool ljust=false) {
     return with_fmt_ex_t<T, Fmt>{v, fmt, width, ljust};
 }
 
-
-// for arithmetic types
-
-template<typename T, typename charT>
-struct is_default_formattable : public ::std::is_arithmetic<T> {};
-
-// for characters
-
-template<typename charT>
-struct is_default_formattable<charT, charT> : public ::std::true_type {};
-
-constexpr default_char_formatter default_formatter(char) noexcept {
-    return default_char_formatter{};
-}
-
-constexpr default_char_formatter default_formatter(wchar_t) noexcept {
-    return default_char_formatter{};
-}
-
-constexpr default_char_formatter default_formatter(char16_t) noexcept {
-    return default_char_formatter{};
-}
-
-constexpr default_char_formatter default_formatter(char32_t) noexcept {
-    return default_char_formatter{};
-}
-
-// for string related types
-
-template<typename charT>
-struct is_default_formattable<charT*, charT> : public ::std::true_type {};
-
-template<typename charT>
-struct is_default_formattable<const charT*, charT> : public ::std::true_type {};
-
-template<typename charT, typename Traits>
-struct is_default_formattable<
-    basic_string_view<charT, Traits>, charT> : public ::std::true_type {};
-
-template<typename charT, typename Traits, typename Allocator>
-struct is_default_formattable<
-    ::std::basic_string<charT, Traits, Allocator>, charT> : public ::std::true_type {};
-
-constexpr default_string_formatter default_formatter(const char*) noexcept {
-    return default_string_formatter{};
-}
-
-constexpr default_string_formatter default_formatter(const wchar_t*) noexcept {
-    return default_string_formatter{};
-}
-
-constexpr default_string_formatter default_formatter(const char16_t*) noexcept {
-    return default_string_formatter{};
-}
-
-constexpr default_string_formatter default_formatter(const char32_t*) noexcept {
-    return default_string_formatter{};
-}
-
-template<typename charT, typename Traits, typename Allocator>
-constexpr default_string_formatter default_formatter(
-        const ::std::basic_string<charT, Traits, Allocator>&) noexcept {
-    return default_string_formatter{};
-}
-
-template<typename charT, typename Traits>
-constexpr default_string_formatter default_formatter(
-        const basic_string_view<charT, Traits>&) noexcept {
-    return default_string_formatter{};
+template<typename T>
+inline with_fmt_ex_t<T, default_formatter_t<T>>
+with(const T& v, size_t width, bool ljust=false) {
+    return with(v, default_formatter<T>::get(), width, ljust);
 }
 
 

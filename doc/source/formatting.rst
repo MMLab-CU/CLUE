@@ -307,6 +307,45 @@ A *formatter class* should implement the interface defined as below:
     //
     size_t n = f.formatted_write(x, width, leftjust, buf, buf_len);
 
+
+Specifically, if you have a user type ``MyType`` for which you would like to implement a formatter. You can write the following codes:
+
+.. code-block:: cpp
+
+    class MyFormatter {
+    public:
+        size_t max_formatted_length(const MyType& x) const {
+            // compute an upper bound of the formatted length.
+            // for cases where the exact length can be quickly computed,
+            // this should try to return the exact length.
+        }
+
+        template<typename charT>
+        size_t formatted_write(const MyType& x, charT *buf, size_t buf_len) {
+            // write the formatted string to the given buffer
+        }
+
+        template<typename charT>
+        size_t formatted_write(const MyType& x, size_t width, bool leftjust,
+                               charT *buf, size_t buf_len) {
+            // write a properly justified formatted string
+            // the library provides two helpers to simplify the implementation:
+
+            // if you can efficiently compute the *exact* length of the
+            // formatted string:
+            //
+            //  size_t n = max_formatted_length(x);
+            //  return fmt::formatted_write_known_length(
+            //      *this, x, n, width, leftjust, buf, buf_len);
+            //
+            // otherwise, you can use another function:
+            //
+            //  return fmt::formatted_write_unknown_length(
+            //      *this, x, width, leftjust, buf, buf_len);
+            //
+        }
+    };
+
 Also, one can register a formatter class to be the default formatter of a user type by specializing the ``fmt::default_formatter`` struct, as
 
 .. code-block:: cpp
@@ -323,16 +362,6 @@ Also, one can register a formatter class to be the default formatter of a user t
         }
     };
 
-    // if you have a template class, then you may do:
-
-    template<typename T>
-    struct default_formatter<MyTemplate<T>> {
-        // MyFormatter can be a specific class that handle
-        // many types
-        using type = MyFormatter;
-        static type get() noexcept {
-            // ...
-        };
-    };
-
     } }  // end namespaces
+
+The source file ``examples/ex_newformatter.cpp`` provides a complete example to show how to write a formatter for a new type.

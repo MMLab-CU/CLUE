@@ -1,5 +1,5 @@
-Meta Programming Utilities
-===========================
+Meta-types and Meta-functions
+===============================
 
 Template meta-programming has become an indispensible part of modern C++. In C++11, new features such as *Variadic template* and *Template alias* makes meta-programming much more efficient and convenient than before. *CLUE++* provides a set of tools to facilitate meta programming, which take full advantage of these new C++ features.
 
@@ -252,7 +252,7 @@ A set of variadic meta-functions are provided to perform reduction over static v
 
     :note: ``all<>::value == true``.
 
-.. cpp:class:: meta::all<Args...>
+.. cpp:class:: meta::any<Args...>
 
     With a member constant ``value``, which equals ``true`` if any of the argument's member value is ``true``, or ``false`` otherwise.
 

@@ -8,18 +8,35 @@ All components provided by this library are implemented in a way that closely fo
 Contents:
 ---------
 
+Basic utilites
+~~~~~~~~~~~~~~~~
+
 .. toctree::
    :maxdepth: 1
 
-   type_traits.rst
    optional.rst
+   timing.rst
+   value_range.rst
+   array_view.rst
+   reindexed_view.rst
+
+String and formatting
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 1
+
    string_view.rst
    stringex.rst
    formatting.rst
    string_builder.rst
-   value_range.rst
-   array_view.rst
-   reindexed_view.rst
+
+Meta-programming tools
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 1
+
+   type_traits.rst
    meta.rst
    meta_seq.rst
-   timing.rst

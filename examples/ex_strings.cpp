@@ -3,21 +3,39 @@
 #include <clue/stringex.hpp>
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <string>
 
 using namespace clue;
 
 const char *TEXT = R"(
-# This is a list attribues
+# This is a list of attribues
 # The symbol `#` is to indicate comments
 
-id = 1
-name = mike
-score = 100
-
-id = 2
-name = alice
-score = 98
+bar = 100, 20, 3
+foo = 13, 568, 24
+xyz = 75, 62, 39, 18
 )";
+
+struct Record {
+    std::string name;
+    std::vector<int> nums;
+
+    Record(const std::string& name) :
+        name(name) {}
+
+    void add(int v) {
+        nums.push_back(v);
+    }
+};
+
+inline std::ostream& operator << (std::ostream& os, const Record& r) {
+    os << r.name << ": ";
+    for (int v: r.nums) {
+        os << v << ' ';
+    }
+    return os;
+}
 
 int main() {
     // This is to emulate an input file stream
@@ -28,7 +46,8 @@ int main() {
     ss.getline(buf, 256);
 
     while (ss) {
-        // trim leading and trailing spaces
+        // construct a string view out of buffer,
+        // and trim leading and trailing spaces
         auto sv = trim(string_view(buf));
 
         // process each line
@@ -41,9 +60,19 @@ int main() {
             // note: sub-string of a string view remains a view
             // no copying is done here
             auto name = trim(sv.substr(0, ieq));
-            auto val = trim(sv.substr(ieq + 1));
+            auto rhs = trim(sv.substr(ieq + 1));
 
-            std::cout << name << ": \"" << val << "\"" << std::endl;
+            Record record(name.to_string());
+
+            // parse the each term of right-hand-side
+            // by tokenizing
+            foreach_token_of(rhs, ", ", [&](const char *p, size_t n){
+                int v = static_cast<int>(std::strtol(p, nullptr, 10));
+                record.add(v);
+                return true;
+            });
+
+            std::cout << record << std::endl;
         }
 
         // get next line

@@ -1,3 +1,5 @@
+.. _stringview:
+
 String View
 ============
 

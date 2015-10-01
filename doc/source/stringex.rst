@@ -7,6 +7,96 @@ This library provides a set of functions to complement the methods of ``std::str
 
     To be consistent with the standard, these extended functionalities are provided as global functions (within the namespace ``clue``) instead of member functions.
 
+Combining string views together with these functionalities would make string analysis much easier. Before going into details, let's first look at a practical examples.
+
+Suppose, we have a text file like this:
+
+.. code-block:: python
+
+    # This is a list of attribues
+    # The symbol `#` is to indicate comments
+
+    bar = 100, 20, 3
+    foo = 13, 568, 24
+    xyz = 75, 62, 39, 18
+
+The following code snippet uses the functionalities provided in *CLUE++* to parse them into a list of records.
+
+.. code-block:: cpp
+
+    // a simple record class
+    struct Record {
+        std::string name;
+        std::vector<int> nums;
+
+        Record(const std::string& name) : name(name) {}
+
+        void add(int v) {
+            nums.push_back(v);
+        }
+    };
+
+    inline std::ostream& operator << (std::ostream& os, const Record& r) {
+        os << r.name << ": ";
+        for (int v: r.nums) os << v << ' ';
+        return os;
+    }
+
+    // the following code reads the file and parses the content
+    using namespace clue;
+
+    // open a file
+    std::istringstream fin(filename)
+
+    // get first line
+    char buf[256];
+    fin.getline(buf, 256);
+
+    while (fin) {
+        // construct a string view out of buffer,
+        // and trim leading and trailing spaces
+        auto sv = trim(string_view(buf));
+
+        // process each line
+        // ignoring empty lines or comments
+        if (!sv.empty() && !starts_with(sv, '#')) {
+            // locate '='
+            size_t ieq = sv.find('=');
+
+            // note: sub-string of a string view remains a view
+            // no copying is done here
+            auto name = trim(sv.substr(0, ieq));
+            auto rhs = trim(sv.substr(ieq + 1));
+
+            // construct a record
+            Record record(name.to_string());
+
+            // parse the each term of right-hand-side
+            // by tokenizing
+            foreach_token_of(rhs, ", ", [&](const char *p, size_t n){
+                int v = static_cast<int>(std::strtol(p, nullptr, 10));
+                record.add(v);
+                return true;
+            });
+
+            // print the record
+            std::cout << record << std::endl;
+        }
+
+        // get next line
+        fin.getline(buf, 256);
+    }
+
+In this code snippet, we utilize three aspects of functionalities in *CLUE++*:
+
+- ``string_view``, which constructs a like-weight view (without making a copy) on a memory block to provide string-related API. For example, you can do ``sv.find(c)`` and ``sv.substr(...)``. Particularly, ``sv.substr(...)`` results in another string view of the sub-part, without making any copies.
+
+- ``trim``, which yields another string view, with leading and trailing spaces excluded.
+
+- ``foreach_token_of``, which performs tokenization in a functional way. In particular, it allows a callback function/functor to process each token, instead of making string copies of all the tokens.
+
+For string views, please refer to :ref:`stringview` for detailed exposition. Below, we introduce other string-related functionalities provided by *CLUE++*.
+
 
 Make String View
 -----------------

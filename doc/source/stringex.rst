@@ -101,7 +101,7 @@ In this library, we provide tokenizing functions in a new form that takes advant
 
 Formally, the function signature is given as below.
 
-.. cpp:function:: foreach_token_of(str, delimiters, f)
+.. cpp:function:: void foreach_token_of(str, delimiters, f)
 
     Extract tokens from the string str, with given delimiter, and apply f to each token.
 

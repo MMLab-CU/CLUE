@@ -90,6 +90,7 @@ endforeach()
 set(EXAMPLES
     ex_stopwatch
     ex_timing
+    ex_strings
     ex_formatting
     ex_newformatter
 )

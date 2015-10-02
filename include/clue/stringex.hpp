@@ -40,6 +40,15 @@ inline bool is_space(wchar_t ch) {
     return ::std::iswspace(ch);
 }
 
+template<size_t N>
+inline bool _icmp(const char *s, const char *r) {
+    for (size_t i = 0; i < N; ++i) {
+        if (static_cast<char>(std::tolower(s[i])) != r[i])
+            return false;
+    }
+    return true;
+}
+
 }
 
 //===============================================
@@ -384,11 +393,69 @@ struct floating_point_parse_helper<long double> {
     }
 };
 
+struct bool_parse_helper {
+    using type = bool;
+    static type run(const char *p, char **pend) {
+        // locate the begin
+        const char *p0 = p;
+        while (*p0 && is_space(*p0)) p0++;
+
+        // empty
+        if (!(*p0)) {
+            *pend = const_cast<char*>(p);
+            return false;
+        }
+
+        // locate the word end
+        const char *p1 = p0 + 1;
+        while (*p1 && !is_space(*p1)) p1++;
+
+        // single non-space character
+        if (p1 == p0 + 1) {
+            char c = *p0;
+            switch (c) {
+                case '0':
+                case 'F':
+                case 'f':
+                    *pend = const_cast<char*>(p1);
+                    return false;
+                case '1':
+                case 'T':
+                case 't':
+                    *pend = const_cast<char*>(p1);
+                    return true;
+            }
+            *pend = const_cast<char*>(p);
+            return false;
+        }
+
+        // multi-characters
+        size_t len = static_cast<size_t>(p1 - p0);
+        if (len == 4) {
+            if (_icmp<4>(p0, "true")) {
+                *pend = const_cast<char*>(p1);
+                return true;
+            }
+        } else if (len == 5) {
+            if (_icmp<5>(p0, "false")) {
+                *pend = const_cast<char*>(p1);
+                return false;
+            }
+        }
+
+        *pend = const_cast<char*>(p);
+        return false;
+    }
+};
+
 template<typename T>
 using default_parse_helper_of =
-        conditional_t<std::is_integral<T>::value,
+        conditional_t<::std::is_same<T, bool>::value,
+            bool_parse_helper,
+        conditional_t<::std::is_integral<T>::value,
             integer_parse_helper<(sizeof(T) > sizeof(long))>,
-            floating_point_parse_helper<T>>;
+            floating_point_parse_helper<T>
+        >>;
 
 } // end namespace details
 

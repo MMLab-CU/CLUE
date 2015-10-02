@@ -189,6 +189,8 @@ Parse numbers
 
     For floating point numbers, both fixed decimal notation and scientific notation are supported.
 
+    For boolean values, the function can recognize the following patterns: ``"0"`` and ``"1"``, ``"t"`` and ``"f"``, as well as ``"true"`` and ``"false"``. Here, the comparison with these patterns are case-insensitive.
+
 Tokenize
 ---------
 

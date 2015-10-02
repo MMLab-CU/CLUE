@@ -194,7 +194,7 @@ template<typename T>
 void test_try_parse(const char *sz, bool expect_ret, T expect_val) {
     using clue::try_parse;
 
-    T x = 0;
+    T x = static_cast<T>(0);
     ASSERT_EQ(expect_ret, try_parse(sz, x));
     if (expect_ret) {
         ASSERT_EQ(expect_val, x);
@@ -202,7 +202,7 @@ void test_try_parse(const char *sz, bool expect_ret, T expect_val) {
         ASSERT_EQ(0, x);
     }
 
-    x = 0;
+    x = static_cast<T>(0);
     ASSERT_EQ(expect_ret, try_parse(clue::string_view(sz), x));
     if (expect_ret) {
         ASSERT_EQ(expect_val, x);
@@ -210,13 +210,43 @@ void test_try_parse(const char *sz, bool expect_ret, T expect_val) {
         ASSERT_EQ(0, x);
     }
 
-    x = 0;
+    x = static_cast<T>(0);
     ASSERT_EQ(expect_ret, try_parse(std::string(sz), x));
     if (expect_ret) {
         ASSERT_EQ(expect_val, x);
     } else {
         ASSERT_EQ(0, x);
     }
+}
+
+TEST(StringEx, TryParseBool) {
+    bool t = true;
+    bool f = false;
+
+    test_try_parse<bool>("0", true, f);
+    test_try_parse<bool>("1", true, t);
+
+    test_try_parse<bool>("t", true, t);
+    test_try_parse<bool>("f", true, f);
+    test_try_parse<bool>("T", true, t);
+    test_try_parse<bool>("F", true, f);
+
+    test_try_parse<bool>("true",  true, t);
+    test_try_parse<bool>("false", true, f);
+    test_try_parse<bool>("True",  true, t);
+    test_try_parse<bool>("False", true, f);
+    test_try_parse<bool>("TRUE",  true, t);
+    test_try_parse<bool>("FALSE", true, f);
+
+    test_try_parse<bool>("  0  ", true, f);
+    test_try_parse<bool>("  1  ", true, t);
+    test_try_parse<bool>("  true\n",  true, t);
+    test_try_parse<bool>("  false\n", true, f);
+
+    test_try_parse<bool>("tr", false, f);
+    test_try_parse<bool>("fa", false, f);
+    test_try_parse<bool>("truee",  false, f);
+    test_try_parse<bool>("falsee", false, f);
 }
 
 

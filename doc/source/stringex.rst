@@ -171,12 +171,15 @@ Trim strings
 
     :return: the trimmed sub-string. It is a view when ``str`` is a string view, or a copy of the sub-string when ``str`` is an instance of a standard string.
 
-Parse numbers
----------------
+Parse values
+-------------
 
 .. cpp:function:: bool try_parse(str, T& v)
 
-    Try to parse a given string ``str`` into a numeric value ``v``. It returns whether the parsing succeeded.
+    Try to parse a given string ``str`` into a value ``v``. It returns whether the parsing succeeded.
+
+    :param str:  The input string to be parsed, which can be either a C-string, a string view, or a standard string.
+    :param v:    The output variable, which will be updated upon successful parsing.
 
     To be more specific, if the function succeeded in parsing the number (*i.e.* the given string is a valid number representation for type ``T``), the parsed value will be written to ``v`` and it returns ``true``, otherwise, it returns ``false`` (the value of ``v`` won't be altered upon failure).
 
@@ -190,6 +193,42 @@ Parse numbers
     For floating point numbers, both fixed decimal notation and scientific notation are supported.
 
     For boolean values, the function can recognize the following patterns: ``"0"`` and ``"1"``, ``"t"`` and ``"f"``, as well as ``"true"`` and ``"false"``. Here, the comparison with these patterns are case-insensitive.
+
+**Examples:**
+
+.. code-block:: cpp
+
+    using namespace clue;
+
+    int x;
+    try_parse("123", x);   // x <- 123, returns true
+    try_parse("a123", x);  // returns false (x is not updated)
+
+    double y;
+    try_parse("12.75", y);  // y <- 12.75, returns true
+
+    bool z;
+    try_parse("0", z);      // z <- false, returns true
+    try_parse("false", z);  // z <- false, returns true
+    try_parse("T", z);      // z <- true, returns true
+
+    // in real codes, you may write this in case you don't really know
+    // exactly what value type to expect
+
+    auto s = get_some_string_from_text();
+    bool x_bool;
+    int x_int;
+    double x_real;
+
+    if (try_parse(s, x_bool)) {
+        std::cout << "got a boolean value: " << x_bool << std::endl;
+    } else if (try_parse(s, x_int)) {
+        std::cout << "got an integer: " << x_int << std::endl;
+    } else if (try_parse(s, x_real)) {
+        std::cout << "got a real number: " << x_real << std::endl;
+    } else {
+        throw std::runtime_error("Can't recognize the value!");
+    }
 
 Tokenize
 ---------

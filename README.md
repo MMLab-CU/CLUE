@@ -27,7 +27,7 @@ Below is a list of components available in the library.
 #### Strings and formatting
 
 - Class template ``string_view``: light-weight wrapper of sub-strings. **(backport from CELF)**
-- Extensions of string functionalities (*e.g.* trimming and tokenizers).
+- Extensions of string functionalities (*e.g.* trimming, value parsing, and tokenizers).
 - In-memory string formatting and extensible formatter systems.
 - Efficient integer and floating point formatting (*e.g.* Grisu algorithm).
 - Efficient string builder (on managed memory or external buffer).

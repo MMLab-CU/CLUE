@@ -8,6 +8,7 @@
 #define CLUE_STRINGEX__
 
 #include <clue/config.hpp>
+#include <clue/type_traits.hpp>
 #include <clue/string_view.hpp>
 #include <cctype>
 
@@ -41,12 +42,23 @@ inline bool is_space(wchar_t ch) {
 
 }
 
-// make string view
+//===============================================
+//
+//   Make string view
+//
+//===============================================
 
 template<typename charT, typename Traits, typename Allocator>
 constexpr basic_string_view<charT, Traits> view(const ::std::basic_string<charT, Traits, Allocator>& s) {
     return basic_string_view<charT, Traits>(s);
 }
+
+
+//===============================================
+//
+//   Prefix & suffix
+//
+//===============================================
 
 // prefix
 
@@ -62,6 +74,8 @@ prefix(const ::std::basic_string<charT, Traits, Allocator>& str, ::std::size_t n
     return str.substr(0, n);
 }
 
+// suffix
+
 template<typename charT, typename Traits>
 constexpr basic_string_view<charT, Traits>
 suffix(basic_string_view<charT, Traits> str, ::std::size_t n) noexcept {
@@ -73,7 +87,6 @@ inline ::std::basic_string<charT, Traits, Allocator>
 suffix(const ::std::basic_string<charT, Traits, Allocator>& str, ::std::size_t n) {
     return n > str.size() ? str : str.substr(str.size() - n, n);
 }
-
 
 // starts_with (char)
 
@@ -240,7 +253,11 @@ inline bool ends_with(const ::std::basic_string<charT, Traits, Allocator>& str,
 }
 
 
-// trim functions
+//===============================================
+//
+//   Trimming
+//
+//===============================================
 
 template<typename charT, typename Traits>
 inline basic_string_view<charT, Traits>
@@ -295,7 +312,128 @@ trim(const ::std::basic_string<charT, Traits, Allocator>& str) {
 }
 
 
-// tokenize functions
+//===============================================
+//
+//   Value Parsing
+//
+//===============================================
+
+namespace details {
+
+// a pointer p is considered as a valid end, if
+// p != sv.begin(), and
+// [p, sv.end()) are all spaces
+//
+template<typename Traits>
+inline bool is_valid_parse_end(basic_string_view<char, Traits> sv, const char *p) noexcept {
+    if (p == sv.begin()) return false;
+    const char *sv_end = sv.end();
+    while (p != sv_end && is_space(*p)) ++p;
+    return p == sv_end;
+}
+
+inline bool is_valid_parse_end(const char *sz, const char *p) noexcept {
+    if (p == sz) return false;
+    while (*p && is_space(*p)) ++p;
+    return !(*p);
+}
+
+template<bool Longer>
+struct integer_parse_helper;
+
+template<>
+struct integer_parse_helper<false> {
+    using type = long;
+    static type run(const char *p, char** ppend) {
+        return ::std::strtol(p, ppend, 0);
+    }
+};
+
+template<>
+struct integer_parse_helper<true> {
+    using type = long;
+    static type run(const char *p, char** ppend) {
+        return ::std::strtoll(p, ppend, 0);
+    }
+};
+
+template<typename T>
+struct floating_point_parse_helper;
+
+template<>
+struct floating_point_parse_helper<float> {
+    using type = float;
+    static type run(const char *p, char **pend) {
+        return ::std::strtof(p, pend);
+    }
+};
+
+template<>
+struct floating_point_parse_helper<double> {
+    using type = double;
+    static type run(const char *p, char **pend) {
+        return ::std::strtod(p, pend);
+    }
+};
+
+template<>
+struct floating_point_parse_helper<long double> {
+    using type = long double;
+    static type run(const char *p, char **pend) {
+        return ::std::strtold(p, pend);
+    }
+};
+
+template<typename T>
+using default_parse_helper_of =
+        conditional_t<std::is_integral<T>::value,
+            integer_parse_helper<(sizeof(T) > sizeof(long))>,
+            floating_point_parse_helper<T>>;
+
+} // end namespace details
+
+// try_parse function for arithmetic types
+
+template<typename T, typename Traits>
+inline enable_if_t<::std::is_arithmetic<T>::value, bool>
+try_parse(basic_string_view<char, Traits> sv, T& x) {
+    using helper = details::default_parse_helper_of<T>;
+    char *pend;
+    typename helper::type _x = helper::run(sv.begin(), &pend);
+    if (details::is_valid_parse_end(sv, pend)) {
+        x = static_cast<T>(_x);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<typename T>
+inline enable_if_t<::std::is_arithmetic<T>::value, bool>
+try_parse(const char *sz, T& x) {
+    using helper = details::default_parse_helper_of<T>;
+    char *pend;
+    typename helper::type _x = helper::run(sz, &pend);
+    if (details::is_valid_parse_end(sz, pend)) {
+        x = static_cast<T>(_x);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<typename T, typename Traits, typename Allocator>
+inline enable_if_t<::std::is_arithmetic<T>::value, bool>
+try_parse(const std::basic_string<char, Traits, Allocator>& str, T& x) {
+    return try_parse(view(str), x);
+}
+
+
+//===============================================
+//
+//   Tokenization
+//
+//===============================================
 
 namespace details {
 

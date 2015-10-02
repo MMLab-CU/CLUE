@@ -1,5 +1,6 @@
 #include <clue/stringex.hpp>
 #include <gtest/gtest.h>
+#include <limits>
 
 using std::string;
 using clue::string_view;
@@ -186,6 +187,64 @@ void test_trim() {
 TEST(StringEx, Trim) {
     test_trim<string_view>();
     test_trim<string>();
+}
+
+
+template<typename T>
+void test_try_parse(const char *sz, bool expect_ret, T expect_val) {
+    using clue::try_parse;
+
+    T x = 0;
+    ASSERT_EQ(expect_ret, try_parse(sz, x));
+    if (expect_ret) {
+        ASSERT_EQ(expect_val, x);
+    } else {
+        ASSERT_EQ(0, x);
+    }
+
+    x = 0;
+    ASSERT_EQ(expect_ret, try_parse(clue::string_view(sz), x));
+    if (expect_ret) {
+        ASSERT_EQ(expect_val, x);
+    } else {
+        ASSERT_EQ(0, x);
+    }
+
+    x = 0;
+    ASSERT_EQ(expect_ret, try_parse(std::string(sz), x));
+    if (expect_ret) {
+        ASSERT_EQ(expect_val, x);
+    } else {
+        ASSERT_EQ(0, x);
+    }
+}
+
+
+TEST(StringEx, TryParseInt) {
+    test_try_parse<int>("123",     true, 123);
+    test_try_parse<int>("  123",   true, 123);
+    test_try_parse<int>("-123  ",   true, -123);
+    test_try_parse<int>("  -123\n", true, -123);
+
+    test_try_parse<int>("",     false, 0);
+    test_try_parse<int>("a123", false, 0);
+    test_try_parse<int>("123a", false, 0);
+
+    test_try_parse<long>("1234", true, 1234L);
+    test_try_parse<long>("2147483647", true, 2147483647L);
+    test_try_parse<long long>("9223372036854775807", true, 9223372036854775807LL);
+}
+
+TEST(StringEx, TryParseReal) {
+    test_try_parse<float>("1.25",      true,  1.25f);
+    test_try_parse<float>(" -1.25",    true, -1.25f);
+    test_try_parse<double>("  1.25 ",  true,  1.25);
+    test_try_parse<double>(" -1.25\n", true, -1.25);
+    test_try_parse<double>("100\n", true, 100.0);
+
+    test_try_parse<double>("",     false, 0);
+    test_try_parse<double>("a123", false, 0);
+    test_try_parse<double>("123a", false, 0);
 }
 
 

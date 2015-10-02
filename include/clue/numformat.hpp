@@ -17,7 +17,8 @@ namespace fmt {
 // ndigits
 
 template<typename T>
-inline size_t ndigits(T x, const unsigned base) noexcept {
+inline enable_if_t<::std::is_integral<T>::value, size_t>
+ndigits(T x, const unsigned base=10) noexcept {
     auto u = details::uabs(x);
     switch (base) {
         case  8: return details::ndigits_oct(u);

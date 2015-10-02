@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <stdexcept>
 
 using namespace clue;
 
@@ -67,8 +68,12 @@ int main() {
             // parse the each term of right-hand-side
             // by tokenizing
             foreach_token_of(rhs, ", ", [&](const char *p, size_t n){
-                int v = static_cast<int>(std::strtol(p, nullptr, 10));
-                record.add(v);
+                int v = 0;
+                if (try_parse(string_view(p, n), v)) {
+                    record.add(v);
+                } else {
+                    throw std::runtime_error("Invalid integer number.");
+                }
                 return true;
             });
 

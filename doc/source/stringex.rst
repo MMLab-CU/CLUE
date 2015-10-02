@@ -74,8 +74,12 @@ The following code snippet uses the functionalities provided in *CLUE++* to pars
             // parse the each term of right-hand-side
             // by tokenizing
             foreach_token_of(rhs, ", ", [&](const char *p, size_t n){
-                int v = static_cast<int>(std::strtol(p, nullptr, 10));
-                record.add(v);
+                int v = 0;
+                if (try_parse(string_view(p, n), v)) {
+                    record.add(v);
+                } else {
+                    throw std::runtime_error("Invalid integer number.");
+                }
                 return true;
             });
 
@@ -87,18 +91,22 @@ The following code snippet uses the functionalities provided in *CLUE++* to pars
         fin.getline(buf, 256);
     }
 
-In this code snippet, we utilize three aspects of functionalities in *CLUE++*:
+In this code snippet, we utilize five aspects of functionalities in *CLUE++*:
 
 - ``string_view``, which constructs a like-weight view (without making a copy) on a memory block to provide string-related API. For example, you can do ``sv.find(c)`` and ``sv.substr(...)``. Particularly, ``sv.substr(...)`` results in another string view of the sub-part, without making any copies.
 
 - ``trim``, which yields another string view, with leading and trailing spaces excluded.
 
+- ``starts_with``, which checks whether a string starts with a certain character of sub-string. *CLUE++* also provides ``ends_with`` to check the suffix, and ``prefix``/``suffix`` to extract the prefixes or suffixes.
+
 - ``foreach_token_of``, which performs tokenization in a functional way. In particular, it allows a callback function/functor to process each token, instead of making string copies of all the tokens.
+
+- ``try_parse``, which trys to parse a string into a numeric value, and returns whether the parsing succeeded.
 
 For string views, please refer to :ref:`stringview` for detailed exposition. Below, we introduce other string-related functionalities provided by *CLUE++*.
 
 
-Make String View
+Make string view
 -----------------
 
 .. cpp:function:: constexpr view(s)
@@ -108,7 +116,7 @@ Make String View
     If ``s`` is of class ``std::basic_string<charT, Traits, Allocator>``, then the returned object will be of class ``basic_string_view<charT, Traits>``. In particular, if ``s`` is of class ``std::string``, the returned type would be ``string_view``.
 
 
-Prefix and Suffix
+Prefix and suffix
 -------------------
 
 .. cpp:function:: constexpr prefix(s, size_t n)
@@ -142,7 +150,7 @@ Prefix and Suffix
     Here, ``str`` and ``sub`` can be either a null-terminated C-string, a string view, or a standard string.
 
 
-Trim Strings
+Trim strings
 -------------
 
 .. cpp:function:: trim(str)
@@ -163,6 +171,23 @@ Trim Strings
 
     :return: the trimmed sub-string. It is a view when ``str`` is a string view, or a copy of the sub-string when ``str`` is an instance of a standard string.
 
+Parse numbers
+---------------
+
+.. cpp:function:: bool try_parse(str, T& v)
+
+    Try to parse a given string ``str`` into a numeric value ``v``. It returns whether the parsing succeeded.
+
+    To be more specific, if the function succeeded in parsing the number (*i.e.* the given string is a valid number representation for type ``T``), the parsed value will be written to ``v`` and it returns ``true``, otherwise, it returns ``false`` (the value of ``v`` won't be altered upon failure).
+
+    :note: Internally, this function may call ``strtol``, ``strtoll``, ``strtof``, or ``strtod``, depending on the type ``T``.
+
+.. note::
+    This function allows preceding and trailing spaces in ``str`` (for convenience in practice), meaning that ``"123"``, ``"123  "``, and ``"  123\n"``, etc are all considered valid when parsing an integer. However, empty strings, strings with spaces in the middle (*e.g.* ``123 456``), or strings with undesirable characters (*e.g.* ``123a``) are considered invalid.
+
+    For integers, the function allows base-specific prefixes. For example, ``"0x1ab"`` are considered an integer in the  hexadecimal form, while ``"0123"`` are considered an integer in the octal form.
+
+    For floating point numbers, both fixed decimal notation and scientific notation are supported.
 
 Tokenize
 ---------

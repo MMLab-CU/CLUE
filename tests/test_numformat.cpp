@@ -1,4 +1,4 @@
-#include <clue/numformat.hpp>
+#include <clue/formatting.hpp>
 #include <limits>
 #include <gtest/gtest.h>
 
@@ -46,7 +46,7 @@ std::string ref_int_format(const F& f, size_t width, bool ljust, long x) {
     }
     *p = '\0';
 
-    std::string r = fmt::c_sprintf(cfmt, std::abs(x));
+    std::string r = c_sprintf(cfmt, std::abs(x));
 
     if (r.size() < width) {
         return ljust ?
@@ -60,13 +60,13 @@ std::string ref_int_format(const F& f, size_t width, bool ljust, long x) {
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckIntFormat(
-    const char *expr, const fmt::with_fmt_t<T, F>& wfmt) {
+    const char *expr, const with_fmt_t<T, F>& wfmt) {
 
     const F& f = wfmt.formatter;
     T x = wfmt.value;
     std::string refstr = ref_int_format(f, 0, false, x);
 
-    size_t flen = f.max_formatted_length(x);
+    size_t flen = f(x, static_cast<char*>(nullptr), 0);
     if (refstr.size() != flen) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted length for "
@@ -81,7 +81,7 @@ template<typename T, typename F>
     }
 
     char rbuf[128];
-    f.formatted_write(x, rbuf, 128);
+    f(x, rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {
@@ -101,21 +101,22 @@ template<typename T, typename F>
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckIntFormat(
-    const char *expr, const fmt::with_fmt_ex_t<T, F>& wfmt) {
+    const char *expr, const with_fmt_t<T, field_formatter<F>>& wfmt) {
 
-    const F& f = wfmt.formatter;
+    const field_formatter<F>& ffmt = wfmt.formatter;
+    const F& f = ffmt.formatter();
     T x = wfmt.value;
-    std::string refstr = ref_int_format(f, wfmt.width, wfmt.leftjust, x);
+    std::string refstr = ref_int_format(f, ffmt.width(), ffmt.leftjust(), x);
 
     char rbuf[128];
-    f.formatted_write(x, wfmt.width, wfmt.leftjust, rbuf, 128);
+    f.field_write(x, ffmt.spec(), rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted string for "
             << " x = " << x << ":\n"
-            << "  pos: " << wfmt.width << ", " << wfmt.leftjust << "\n"
+            << "  pos: " << ffmt.width() << ", " << ffmt.leftjust() << "\n"
             << "  base: " << f.base() << "\n"
             << "  showpos: " << f.any(fmt::showpos) << "\n"
             << "  padzeros: " << f.any(fmt::padzeros) << "\n"
@@ -184,11 +185,11 @@ void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
     std::vector<long> xs = prepare_test_ints(base_);
     for (long x: xs) {
         for (size_t w: widths) {
-            auto wfmt_0 = fmt::with(x, f);
+            auto wfmt_0 = withf(x, f);
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_0);
-            auto wfmt_r = fmt::with(x, f, w, false);
+            auto wfmt_r = withf(x, f | align_right(w));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_r);
-            auto wfmt_l = fmt::with(x, f, w, true);
+            auto wfmt_l = withf(x, f | align_left(w));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_l);
         }
     }
@@ -204,23 +205,23 @@ void test_int_fmt_x(const F& fbase, unsigned base_) {
 
 
 TEST(IntFmt, DefaultIntFmt) {
-    test_int_fmt(fmt::default_int_formatter{}, 10, false, false);
+    test_int_fmt(default_int_formatter{}, 10, false, false);
 }
 
 TEST(IntFmt, DecFmt) {
-    test_int_fmt_x(fmt::dec(), 10);
+    test_int_fmt_x(dec(), 10);
 }
 
 TEST(IntFmt, OctFmt) {
-    test_int_fmt_x(fmt::oct(), 8);
+    test_int_fmt_x(oct(), 8);
 }
 
 TEST(IntFmt, HexFmt) {
-    test_int_fmt_x(fmt::hex(), 16);
+    test_int_fmt_x(hex(), 16);
 }
 
 TEST(IntFmt, UHexFmt) {
-    test_int_fmt_x(fmt::hex() | fmt::uppercase, 16);
+    test_int_fmt_x(hex() | fmt::uppercase, 16);
 }
 
 
@@ -230,10 +231,10 @@ TEST(IntFmt, UHexFmt) {
 //
 //=====================================
 
-inline char notation(const fmt::fixed_formatter& f) {
+inline char notation(const fixed_formatter& f) {
     return f.any(fmt::uppercase) ? 'F' : 'f';
 }
-inline char notation(const fmt::sci_formatter& f)   {
+inline char notation(const sci_formatter& f)   {
     return f.any(fmt::uppercase) ? 'E' : 'e';
 }
 
@@ -245,7 +246,7 @@ std::string ref_float_format(const F& f, size_t width, bool ljust, double x) {
     char *p = cfmt;
     *p++ = '%';
     if (f.any(fmt::showpos)) *p++ = '+';
-    if (f.any(ljust)) *p++ = '-';
+    if (ljust) *p++ = '-';
     else if (f.any(fmt::padzeros)) *p++ = '0';
 
     if (pw > 0) {
@@ -267,12 +268,12 @@ std::string ref_float_format(const F& f, size_t width, bool ljust, double x) {
     *p++ = notation(f);
     *p = '\0';
 
-    return fmt::c_sprintf(cfmt, x);
+    return c_sprintf(cfmt, x);
 }
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckFloatFormat(
-    const char *expr, const fmt::with_fmt_t<T, F>& wfmt) {
+    const char *expr, const with_fmt_t<T, F>& wfmt) {
 
     const F& f = wfmt.formatter;
     T x = wfmt.value;
@@ -280,7 +281,7 @@ template<typename T, typename F>
     size_t rl = refstr.size();
     size_t fl_max = rl <= 8 ? rl + 1 : rl + 2;
 
-    size_t flen = f.max_formatted_length(x);
+    size_t flen = f(x, static_cast<char*>(nullptr), 0);
     if (!(flen >= rl && flen <= fl_max)) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted length for "
@@ -296,7 +297,7 @@ template<typename T, typename F>
     }
 
     char rbuf[128];
-    f.formatted_write(x, rbuf, 128);
+    f(x, rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {
@@ -316,21 +317,22 @@ template<typename T, typename F>
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckFloatFormat(
-    const char *expr, const fmt::with_fmt_ex_t<T, F>& wfmt) {
+    const char *expr, const with_fmt_t<T, field_formatter<F>>& wfmt) {
 
-    const F& f = wfmt.formatter;
+    const field_formatter<F>& ffmt = wfmt.formatter;
+    const F& f = ffmt.formatter();
     T x = wfmt.value;
     std::string refstr = ref_float_format(f, 0, false, x);
 
     char rbuf[128];
-    f.formatted_write(x, rbuf, 128);
+    f(x, rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted string for "
             << "x = " << x << ": \n"
-            << "  pos: " << wfmt.width << ", " << wfmt.leftjust << "\n"
+            << "  pos: " << ffmt.width() << ", " << ffmt.leftjust() << "\n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
             << "  showpos: " << f.any(fmt::showpos) << "\n"
@@ -384,11 +386,11 @@ void test_float_fmt(const F& f, size_t prec, bool upper_, bool padzeros_, bool s
     std::vector<double> xs = prepare_test_floats();
     for (long x: xs) {
         for (size_t w: widths) {
-            auto wfmt_0 = fmt::with(x, f);
+            auto wfmt_0 = withf(x, f);
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_0);
-            auto wfmt_r = fmt::with(x, f, w, false);
+            auto wfmt_r = withf(x, f | align_right(w));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_r);
-            auto wfmt_l = fmt::with(x, f, w, true);
+            auto wfmt_l = withf(x, f | align_left(w));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_l);
         }
     }
@@ -423,11 +425,11 @@ void test_float_fmt_x(const F& fbase) {
 
 
 TEST(FloatFmt, FixedFmt) {
-    test_float_fmt_x(fmt::fixed());
+    test_float_fmt_x(fixed());
 }
 
 TEST(FloatFmt, SciFmt) {
-    test_float_fmt_x(fmt::sci());
+    test_float_fmt_x(sci());
 }
 
 
@@ -440,7 +442,7 @@ void test_exact_float_fmt(const F& f) {
     std::vector<size_t> widths = {0, 5, 12};
 
     for (double x: xs) {
-        f.formatted_write(x, buf, buf_len);
+        f(x, buf, buf_len);
         std::string s0(buf);
         size_t l0 = s0.size();
 
@@ -452,7 +454,7 @@ void test_exact_float_fmt(const F& f) {
         }
 
         for (size_t w: widths) {
-            f.formatted_write(x, w, false, buf, buf_len);
+            f.field_write(x, align_right(w), buf, buf_len);
             std::string s_r(buf);
             if (w <= l0) {
                 ASSERT_EQ(s0, s_r);
@@ -460,7 +462,7 @@ void test_exact_float_fmt(const F& f) {
                 ASSERT_EQ(std::string(w - l0, ' ') + s0, s_r);
             }
 
-            f.formatted_write(x, w, true, buf, buf_len);
+            f.field_write(x, align_left(w), buf, buf_len);
             std::string s_l(buf);
             if (w <= l0) {
                 ASSERT_EQ(s0, s_l);
@@ -510,12 +512,12 @@ TEST(FloatFmt, GrisuExamples) {
     };
 
     static char result[32];
-    fmt::grisu_formatter f;
+    grisu_formatter f;
 
     for (const auto& e: entries) {
         double x = e.first;
         const char *refstr = e.second;
-        size_t nch = f.formatted_write(x, result, 32);
+        size_t nch = f(x, result, 32);
 
         // std::printf("x = %g, r = \"%s\", grisu = \"%s\"\n", x, refstr, result);
         ASSERT_LT(nch, 25);
@@ -526,9 +528,9 @@ TEST(FloatFmt, GrisuExamples) {
 }
 
 TEST(FloatFmt, GrisuFmt) {
-    static_assert(std::is_same<fmt::grisu_formatter, fmt::default_float_formatter>::value,
+    static_assert(std::is_same<grisu_formatter, default_float_formatter>::value,
         "Default float formatter should be the Grisu formatter");
-    test_exact_float_fmt(fmt::grisu_formatter{});
+    test_exact_float_fmt(grisu_formatter{});
 }
 
 

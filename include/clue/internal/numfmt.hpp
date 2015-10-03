@@ -5,7 +5,6 @@
 #include <cmath>
 
 namespace clue {
-namespace fmt {
 namespace details {
 
 using ::std::size_t;
@@ -301,7 +300,6 @@ inline const char* float_cfmt_impl(
 
 
 } // end namespace details
-} // end namespace fmt
 } // end namespace clue
 
 

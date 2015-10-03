@@ -5,30 +5,28 @@
 #include <clue/string_builder.hpp>
 
 namespace clue {
-namespace fmt {
 
-// to-string formatting
+template<typename T, typename Fmt>
+inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_t<T, Fmt>>
+withf(const T& v, const Fmt& fmt) {
+    return with_fmt_t<T, Fmt>{v, fmt};
+}
+
+template<typename T>
+inline auto withf(const T& x, const fieldfmt& fs) ->
+    with_fmt_t<T, field_formatter<decltype(get_default_formatter(x))> > {
+    return withf(x, get_default_formatter(x) | fs);
+}
 
 template<typename T, typename Fmt>
 inline ::std::string strf(const T& x, const Fmt& fmt) {
-    size_t fmt_len = fmt.max_formatted_length(x);
+    size_t fmt_len = fmt(x, static_cast<char*>(nullptr), 0);
     ::std::string s(fmt_len, '\0');
-    size_t wlen = fmt.formatted_write(x, const_cast<char*>(s.data()), fmt_len + 1);
+    size_t wlen = fmt(x, const_cast<char*>(s.data()), fmt_len + 1);
     CLUE_ASSERT(wlen <= fmt_len);
     if (wlen < fmt_len) {
         s.resize(wlen);
     }
-    return ::std::move(s);
-}
-
-template<typename T, typename Fmt>
-inline ::std::string strf(const T& x, const Fmt& fmt, size_t width, bool ljust=false) {
-    size_t max_n = fmt.max_formatted_length(x);
-    if (width > max_n) max_n = width;
-    ::std::string s(max_n, '\0');
-    size_t wlen = fmt.formatted_write(x, width, ljust, const_cast<char*>(s.data()), max_n + 1);
-    CLUE_ASSERT(wlen <= max_n);
-    if (wlen < max_n) s.resize(wlen);
     return ::std::move(s);
 }
 
@@ -42,14 +40,10 @@ inline std::string str(const T& x) {
 }
 
 template<typename T, typename Fmt>
-inline ::std::string str(fmt::with_fmt_t<T, Fmt> wfmt) {
+inline ::std::string str(with_fmt_t<T, Fmt> wfmt) {
     return strf(wfmt.value, wfmt.formatter);
 }
 
-template<typename T, typename Fmt>
-inline ::std::string str(fmt::with_fmt_ex_t<T, Fmt> wfmt) {
-    return strf(wfmt.value, wfmt.formatter, wfmt.width, wfmt.leftjust);
-}
 
 namespace details {
 
@@ -73,7 +67,6 @@ inline std::string str(const T1& x, Rest&&... rest) {
     return sb.str();
 }
 
-} // end namespace fmt
 } // end namespace clue
 
 #endif

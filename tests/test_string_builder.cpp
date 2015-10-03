@@ -137,10 +137,17 @@ TEST(StringBuilder, WriteSeq) {
 
     ASSERT_EQ("1+2=3\n4 + 5 = 9\n", sb.str());
 
+    // without `with` helper, one has to write so much ...
+    using with_fixed = with_fmt_t<int, fixed_formatter>;
+    using with_sci = with_fmt_t<double, sci_formatter>;
+    using char_fmt = default_char_formatter<char>;
+    using fchar_t = field_formatter<char_fmt>;
+    using with_fchar = with_fmt_t<char, fchar_t>;
+
     sb.clear();
-    sb << fmt::with(1, fmt::fixed().precision(4) ) << ", "
-       << fmt::with(2.5, fmt::sci().precision(3) ) << ", "
-       << "'" << fmt::with('a', fmt::default_char_formatter{}, 3) << "'";
+    sb << with_fixed{ 1, fixed().precision(4) } << ", "
+       << with_sci{ 2.5, sci().precision(3) } << ", "
+       << "'" << with_fchar{ 'a', fchar_t{char_fmt{}, align_right(3)} } << "'";
 
     ASSERT_EQ("1.0000, 2.500e+00, '  a'", sb.str());
 }

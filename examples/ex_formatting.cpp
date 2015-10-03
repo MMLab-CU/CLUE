@@ -15,8 +15,6 @@ struct User {
 };
 
 int main() {
-    using fmt::with;
-
     std::vector<User> users {
         {1, "Alice", 85.0},
         {2, "Bob",   69.2},
@@ -38,18 +36,18 @@ int main() {
     // print header
     std::cout << sepline << std::endl;
     std::cout << str("  |  ",
-        with("id",    widths[0], true), "  |  ",
-        with("name",  widths[1], true), "  |  ",
-        with("score", widths[2], true), "  |  "
+        withf("id",    align_left(widths[0])), "  |  ",
+        withf("name",  align_left(widths[1])), "  |  ",
+        withf("score", align_left(widths[2])), "  |  "
     ) << std::endl;
     std::cout << sepline << std::endl;
 
     // print records
     for (const auto& u: users) {
         std::cout << str("  |  ",
-            with(u.id, fmt::dec() | fmt::padzeros, widths[0]), "  |  ",
-            with(u.name, widths[1], true), "  |  ",
-            with(u.score, fmt::fixed().precision(2), widths[2]), "  |  "
+            withf(u.id, dec() | fmt::padzeros | align_right(widths[0])), "  |  ",
+            withf(u.name, align_left(widths[1])), "  |  ",
+            withf(u.score, fixed().precision(2) | align_right(widths[2])), "  |  "
         ) << std::endl;
     }
     std::cout << sepline << std::endl;

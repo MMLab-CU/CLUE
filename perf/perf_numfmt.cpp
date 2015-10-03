@@ -37,55 +37,14 @@ public:
     }
 };
 
-class WithSprintfChecked {
-private:
-    char buf[128];
-
-public:
-    const char *name() const {
-        return "with-sprintf:checked";
-    }
-
-    void put_dec(int x) {
-        size_t n = (size_t)(std::snprintf(nullptr, 0, "%d", x));
-        if (n < 128)
-            std::snprintf(buf, 128, "%d", x);
-    }
-
-    void put_hex(int x) {
-        size_t n = (size_t)(std::snprintf(nullptr, 0, "%x", x));
-        if (n < 128)
-            std::snprintf(buf, 128, "%x", x);
-    }
-
-    void put_fixed(double x) {
-        size_t n = (size_t)(std::snprintf(nullptr, 0, "%f", x));
-        if (n < 128)
-            std::snprintf(buf, 128, "%f", x);
-    }
-
-    void put_sci(double x) {
-        size_t n = (size_t)(std::snprintf(nullptr, 0, "%e", x));
-        if (n < 128)
-            std::snprintf(buf, 128, "%e", x);
-    }
-
-    void put_exact(double x) {
-        size_t n = (size_t)(std::snprintf(nullptr, 0, "%.17g", x));
-        if (n < 128)
-            std::snprintf(buf, 128, "%.17g", x);
-    }
-};
-
-
 class WithClueFmt {
 private:
     char buf[128];
-    fmt::default_int_formatter dec_;
-    fmt::int_formatter hex_;
-    fmt::fixed_formatter fixed_;
-    fmt::sci_formatter sci_;
-    fmt::default_float_formatter exact_;
+    default_int_formatter dec_;
+    int_formatter hex_;
+    fixed_formatter fixed_;
+    sci_formatter sci_;
+    default_float_formatter exact_;
 
 public:
     WithClueFmt() : hex_(16) {}
@@ -95,70 +54,23 @@ public:
     }
 
     void put_dec(int x) {
-        dec_.formatted_write(x, buf, 128);
+        dec_(x, buf, 128);
     }
 
     void put_hex(int x) {
-        hex_.formatted_write(x, buf, 128);
+        hex_(x, buf, 128);
     }
 
     void put_fixed(double x) {
-        fixed_.formatted_write(x, buf, 128);
+        fixed_(x, buf, 128);
     }
 
     void put_sci(double x) {
-        sci_.formatted_write(x, buf, 128);
+        sci_(x, buf, 128);
     }
 
     void put_exact(double x) {
-        exact_.formatted_write(x, buf, 128);
-    }
-};
-
-class WithClueFmtChecked {
-private:
-    char buf[128];
-    fmt::default_int_formatter dec_;
-    fmt::int_formatter hex_;
-    fmt::fixed_formatter fixed_;
-    fmt::sci_formatter sci_;
-    fmt::default_float_formatter exact_;
-
-public:
-    WithClueFmtChecked() : hex_(16) {}
-
-    const char *name() const {
-        return "with-clue-fmt:checked";
-    }
-
-    void put_dec(int x) {
-        size_t n = dec_.max_formatted_length(x);
-        if (n < 128)
-            dec_.formatted_write(x, buf, 128);
-    }
-
-    void put_hex(int x) {
-        size_t n = hex_.max_formatted_length(x);
-        if (n < 128)
-            hex_.formatted_write(x, buf, 128);
-    }
-
-    void put_fixed(double x) {
-        size_t n = fixed_.max_formatted_length(x);
-        if (n < 128)
-            fixed_.formatted_write(x, buf, 128);
-    }
-
-    void put_sci(double x) {
-        size_t n = sci_.max_formatted_length(x);
-        if (n < 128)
-            sci_.formatted_write(x, buf, 128);
-    }
-
-    void put_exact(double x) {
-        size_t n = exact_.max_formatted_length(x);
-        if (n < 128)
-            exact_.formatted_write(x, buf, 128);
+        exact_(x, buf, 128);
     }
 };
 
@@ -230,9 +142,6 @@ int main() {
 
     measure_performance(WithSprintf(), ints, reals);
     measure_performance(WithClueFmt(), ints, reals);
-
-    measure_performance(WithSprintfChecked(), ints, reals);
-    measure_performance(WithClueFmtChecked(), ints, reals);
 
     return 0;
 }

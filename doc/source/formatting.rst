@@ -3,32 +3,26 @@ Formatting
 
 In C++, there are generally two different ways to perform formatting, using ``sprintf``, which is *not* type-safe and *not* extensibe to user-defined types, or using output streams (*e.g.* ``std::stringstream``), which, in many cases, are inefficient. Also, the formatting specifiers are stored as stream states, which makes it cumbersome to do formatting.
 
-*CLUE++* provides a new approach to formatting, where values, formatters, and I/O infrastructure are decoupled. Below, we briefly introduce these formatting facilities. Note that functions and type for formatting are within the namespace ``clue::fmt``.
+*CLUE++* provides a new approach to formatting, where values, formatters, and I/O infrastructure are decoupled. Below, we briefly introduce these formatting facilities.
 
 Formatting functions
 ---------------------
 
-The key functions of this module are ``fmt::str`` and ``fmt::strf``, which turn input values into formatted strings, respectively using default formatters and user-provided formatters.
+The key functions of this module are ``str`` and ``strf``, which turn input values into formatted strings, respectively using default formatters and user-provided formatters.
 
-.. cpp:function:: std::string fmt::str(v, ...)
+.. cpp:function:: std::string str(v, ...)
 
     Format the input value into a string (using *default formatters*). If there are multiple values, the formatted strings of individual values are concatenated.
 
-    :note: ``fmt::str`` accepts empty arguments. In particular, ``str::fmt()`` yields an empty string of zero length.
+    :note: ``str`` accepts empty arguments. In particular, ``str()`` yields an empty string of zero length.
 
-.. cpp:function:: std::string fmt::strf(v, fmt)
+.. cpp:function:: std::string strf(v, fmter)
 
-    Format a value ``v`` using a user-provided formatter ``fmt``.
+    Format a value ``v`` using a user-provided formatter ``fmter``.
 
-.. cpp:function:: std::string fmt::strf(v, fmt, width, leftjust=false)
+.. cpp:function:: std::string c_sprintf(fmt, ...)
 
-    Format a value ``v`` using a user-provided formatter ``fmt`` into a string with *minimum* ``width``.
-
-    The produced string is of length at least ``width``. When the actual content contains less than ``width`` characters, it will be adjusted to the right (by default) or to the left (if ``leftjust`` is explicitly set to ``true``).
-
-.. cpp:function:: std::string fmt::c_sprintf(fmt, ...)
-
-    For those who prefer to use ``sprintf``-like syntax, we also provide ``fmt::c_sprintf`` function, which
+    For those who prefer to use ``sprintf``-like syntax, we also provide ``c_sprintf`` function, which
     wraps the built-in ``snprintf`` and produce a standard string.
 
     :note: Like the built-in ``snprintf``, this is not type-safe. It just makes the use a bit more convenient, as it produces a standard string instead of asking for a pre-allocated buffer.
@@ -42,32 +36,32 @@ Let's look at some examples:
     using string = std::string;
 
     // default formatting
-    fmt::str(true);    // "true"
-    fmt::str(123);     // "123"
-    fmt::str(13.25);   // "13.25"
-    fmt::str('c');     // "c"
-    fmt::str("xyz");   // "xyz"
+    str(true);    // "true"
+    str(123);     // "123"
+    str(13.25);   // "13.25"
+    str('c');     // "c"
+    str("xyz");   // "xyz"
 
     // customized formatting
-    fmt::strf(973, fmt::dec());   // "973"
-    fmt::strf(973, fmt::oct());   // "1715"
-    fmt::strf(973, fmt::hex());   // "3cd"
-    fmt::strf(973, fmt::hex() | fmt::uppercase);  // "3CD"
+    strf(973, dec());   // "973"
+    strf(973, oct());   // "1715"
+    strf(973, hex());   // "3cd"
+    strf(973, hex() | uppercase);  // "3CD"
 
-    fmt::str(42.75)   // "42.75"
-    fmt::strf(42.75, fmt::fixed());  // "42.750000"
-    fmt::strf(42.75, fmt::sci());    // "4.275000e+01"
-    fmt::strf(42.75, fmt::fixed().precision(3));  // "42.750"
+    str(42.75)   // "42.75"
+    strf(42.75, fixed());  // "42.750000"
+    strf(42.75, sci());    // "4.275000e+01"
+    strf(42.75, fixed() | precision(3));  // "42.750"
 
     // width and left/right alignment
-    fmt::strf(123, fmt::dec(), 5);         // "  123"
-    fmt::strf(123, fmt::dec(), 5, true);   // "123  "
+    strf(123, dec() | align_left(5));   // "123  "
+    strf(123, dec() | align_right(5));  // "  123"
 
     // variadic concatenation (type-safe)
-    fmt::str(1, '+', 2, " = ", 3.0);    // "1+2 = 3.0"
+    str(1, '+', 2, " = ", 3.0);    // "1+2 = 3.0"
 
     // use c_sprintf (not type-safe)
-    fmt::c_sprintf("%d+%d = %g", 1, 2, 3.0)  // "1+2 = 3.0"
+    c_sprintf("%d+%d = %g", 1, 2, 3.0)  // "1+2 = 3.0"
 
 .. note::
 
@@ -82,18 +76,18 @@ If you want to concatenate multiple values, each with a customized formatting. A
 
 .. code-block:: cpp
 
-    fmt::str(fmt::strf(1, fmt::fixed()), ' ', fmt::strf(2, fmt::fixed()));
+    str(strf(1, fixed()), ' ', strf(2, fixed()));
 
-This is not very efficient, as each ``strf`` would produce a string object, which is unnecessary. To tackle this problem, the library provides ``with`` function (in namespace ``clue::fmt``).
+This is not very efficient, as each ``strf`` would produce a string object, which is unnecessary. To tackle this problem, the library provides ``withf`` function.
 
 See the following example:
 
 .. code-block:: cpp
 
-    using fmt::with;
+    using namespace clue;
 
-    auto f = fmt::fixed().precision(2);
-    fmt::str(with(1, f), " + ", with(2, f), " = ", with(3, f));
+    auto f = fixed() | precision(2);
+    str(with(1, f), " + ", with(2, f), " = ", with(3, f));
     // -> "1.00 + 2.00 = 3.00"
 
     // you may sometimes want to control the width and left/right adjustment
@@ -101,7 +95,7 @@ See the following example:
 
     int xs[4] = {1, 10, 100, 1000}
     for (size_t i = 0; i < 4; ++i) {
-        std::cout << fmt::str("x[", i, "]= ", with(xs[i], 4), " ;\n");
+        std::cout << str("x[", i, "]= ", with(xs[i], align_right(4)), " ;\n");
     }
 
     // this prints:
@@ -114,7 +108,7 @@ See the following example:
     // and incorporate a customized formatter
 
     for (size_t i = 0; i < 4; ++i) {
-        std::cout << fmt::str("x[", i, "]= ", with(xs[i], f, 7, true), " ;\n");
+        std::cout << str("x[", i, "]= ", with(xs[i], f | align_left(7)), " ;\n");
     }
 
     // this prints:
@@ -125,21 +119,15 @@ See the following example:
 
 Below are formal descriptions of the ``with`` function.
 
-.. cpp:function:: with_fmt_t fmt::with(const T& x, const Fmt& fmt)
+.. cpp:function:: with_fmt_t with(const T& x, const Fmt& fmter)
 
-    Wraps a value ``x`` and a formatter ``fmt`` into a light-weight object of class ``with_fmt_t<T, Fmt>``, which only maintains const references to ``x`` and ``fmt`` (without making any copies or intermediate strings).
+    Wraps a value ``x`` and a formatter ``fmt`` into a light-weight object of class ``with_fmt_t<T, Fmt>``, which only maintains const references to ``x`` and a copy of ``fmter``.
 
     :note: The objects of ``with_fmt_t`` can be recognized and properly acted on by all formatting function ``str`` and the string builders in the library.
 
-.. cpp:function:: with_fmt_ex_t fmt::with(const T& x, const Fmt& fmt, size_t width, bool leftjust=false)
+.. cpp:function:: with_fmt_ex_t with(const T& x, size_t width, bool leftjust=false)
 
-    Wraps a value ``x``, a formatter ``fmt``, and positional arguments ``width`` and ``leftjust`` into a light-weight object of class ``with_fmt_ex_t<T, Fmt>``, which maintains const references to ``x`` and ``fmt``, as well as the positional arguments.
-
-    :note: Similar to ``with_fmt_t``, ``with_fmt_ex_t`` does not make copies of input values/formatters or intermediate strings, and can be recognized by formatting facilities. The differenc from ``with_fmt_t`` is that it additionally maintains a width and a boolean indicator of whether to left-adjust the output.
-
-.. cpp:function:: with_fmt_ex_t fmt::with(const T& x, size_t width, bool leftjust=false)
-
-    Equivalent to ``fmt::with(x, get_default_formatter(x), width, leftjust)``.
+    Equivalent to ``with(x, get_default_formatter(x), width, leftjust)``.
 
     :note: This is useful when you only want to customize the positional setting, instead of the format itself.
 
@@ -152,11 +140,11 @@ At the heart of this formatting module are the *formatters*.
 
 The library provides a series of default formatters (in the namespace ``clue::fmt``) for formatting basic types. Note that each formatter class may support multiple value types.
 
-.. cpp:class:: fmt::default_int_formatter
+.. cpp:class:: default_int_formatter
 
     Default formatter for integers. This supports arbitrary signed and unsigned integer types.
 
-.. cpp:class:: fmt::default_float_formatter
+.. cpp:class:: default_float_formatter
 
     Default formatter for floating-point numbers (*e.g.* those of type ``double`` and ``float``).
 
@@ -166,59 +154,68 @@ The library provides a series of default formatters (in the namespace ``clue::fm
 
     In particular, the integer formatter uses `fast digit-counting <http://stackoverflow.com/questions/6655754/finding-the-number-of-digits-of-an-integer>`_ and reverse-order digit extraction. With a modern Intel i7 CPU, it can render over *80 million* *6-digit* integers per second.
 
-    The floating point formatter is an **exact formatter**. The original number can be *exactly* recovered from the formatted string, meaning ``std::stod(fmt::str(x))`` is *exactly* equal to ``x``. And in most cases, what it yields is the *shortest* exact representation.
+    The floating point formatter is an **exact formatter**. The original number can be *exactly* recovered from the formatted string, meaning ``std::stod(str(x))`` is *exactly* equal to ``x``. And in most cases, what it yields is the *shortest* exact representation.
     Specifically, it uses the new `Grisu-2 algorithm <http://www.serpentine.com/blog/2011/06/29/here-be-dragons-advances-in-problems-you-didnt-even-know-you-had/>`_, introduced by Florian Loitsch in his seminal paper *"Printing floating-point numbers quickly and accurately with integers"*. This algorithm is adopted by Google in their Javascript engine and many other state-of-the-art platforms. Also, we follow Milo Yip's optimized implementation in `RapidJSON <https://github.com/miloyip/rapidjson>`_.
 
 
-.. cpp:class:: fmt::default_bool_formatter
+.. cpp:class:: default_bool_formatter
 
     Default formatter for bool. It yields ``"true"`` and ``"false"``, respectively for ``true`` and ``false``.
 
-.. cpp:class:: fmt::default_char_formatter
+.. cpp:class:: default_char_formatter<charT>
 
     Default formatter for characters. This supports all char-types in C++11, including ``char``, ``wchar_t``, ``char16_t``, and ``char32_t``.
 
-.. cpp:class:: fmt::default_string_formatter
+.. cpp:class:: default_string_formatter<charT>
 
     Default formatter for strings. This supports standard strings, C-strings, and string views.
 
 
 We also provide number formatters with more features.
 
-.. cpp:class:: fmt::int_formatter
+.. cpp:class:: int_formatter
 
-    Rich integer formatter.
+    Extended integer formatter.
 
-.. cpp:class:: fmt::float_formatter<Tag>
+.. cpp:class:: flxed_formatter
 
-    Rich floating point formatter, where ``Tag`` can be ``fmt::fixed_t`` or ``fmt::sci_t``, respectively indicating the use of the fixed-precision decimal notation or the scientific notation.
+    Extended floating point formatter, using fixed-precision decimal notation.
 
-These rich formatters use *flags* to control the on or off of certain
-features. These flags include:
+.. cpp:class:: sci_formatter
 
-- ``fmt::uppercase``: whether to use uppercase (*e.g.* ``3AB`` or ``1E+01``).
-- ``fmt::padzeros``: whether to pad zeros when right-justified (*e.g.* ``000123``).
-- ``fmt::showpos``: whether to show the ``+``-sign for non-negative numbers (*e.g.* ``+123``).
+    Extended floating point formatter, using scientific notation.
 
-One can combine these flags using the *bitwise-or* operation (*e.g.* ``fmt::padzeros | fmt::showpos``). In default constructed formatter, all these flags are turned off (with a zero flag).
+
+These extended formatters use *fmt* flags to control the on or off of certain
+features. Here, *fmt* is an enum class serving as a bit mask, which contains the following items:
+
+=================== ============================================================================
+ name                description
+=================== ============================================================================
+``fmt::uppercase``    whether to use uppercase (*e.g.* ``3AB`` or ``1E+01``)
+``fmt::padzeros``     whether to pad zeros when right-justified (*e.g.* ``000123``)
+``fmt::showpos``      whether to show the ``+``-sign for non-negative numbers (*e.g.* ``+123``)
+=================== ============================================================================
+
+One can combine these flags using the *bitwise-or* operator (*e.g.* ``fmt::padzeros | fmt::showpos``). In default constructed formatter, all these flags are turned off (with a zero flag).
 
 Below, we use a code-snippet to explain the use of these formatters.
 
 .. code-block:: cpp
 
-    using namespace fmt;
+    using namespace clue;
 
     // Construction
     // ---------------
 
-    fmt::dec();  // construct an integer formatter with base 10.
-    fmt::oct();  // construct an integer formatter with base 8.
-    fmt::hex();  // construct an integer formatter with base 16.
+    dec();  // construct an integer formatter with base 10.
+    oct();  // construct an integer formatter with base 8.
+    hex();  // construct an integer formatter with base 16.
 
-    fmt::fixed(); // construct a floating-point formatter
+    fixed(); // construct a floating-point formatter
                   // with fixed-precision decimal notation
                   // (default precision = 6)
-    fmt::sci();   // construct a floating-point formatter
+    sci();   // construct a floating-point formatter
                   // with scientific notation
                   // (default precision = 6)
 
@@ -233,12 +230,12 @@ Below, we use a code-snippet to explain the use of these formatters.
     f.precision(n); // return a new formatter with precision n
                     // with other settings preserved.
 
-    f.flags();      // get the flags (of type fmt::flag_t)
+    f.flags();      // get the flags (of type flag_t)
     f.flags(v);     // return a new formatter with flags v
                     // with other settings preserved
 
     f.any(msk);     // get whether a certain flag is turned on
-                    // e.g. f.any(fmt::uppercase)
+                    // e.g. f.any(uppercase)
 
     f | my_flags;   // return a new formatter with certain flags turned on
                     // with other settings preserved.
@@ -246,122 +243,98 @@ Below, we use a code-snippet to explain the use of these formatters.
     // Examples
     // ---------
 
-    using fmt::str;
-    using fmt::strf;
-
     str(973);   // "973", using default_int_formatter
-    strf(973, fmt::dec());      // "973"
-    strf(973, fmt::oct());      // "1715"
-    strf(973, fmt::hex());      // "3cd"
-    strf(973, fmt::hex() | fmt::uppercase); // "3CD"
+    strf(973, dec());      // "973"
+    strf(973, oct());      // "1715"
+    strf(973, hex());      // "3cd"
+    strf(973, hex() | fmt::uppercase); // "3CD"
 
-    strf(973, fmt::dec().base(8));              // "1715"
-    strf(973, fmt::dec().base(16));             // "3cd"
-    strf(973, fmt::dec() | fmt::showpos);       // "+973"
-    strf(973, fmt::dec() | fmt::padzeros, 6);   // "000973"
-    strf(973, fmt::dec() | fmt::padzeros | fmt::showpos, 6); // "+00973"
+    strf(973, dec().base(8));   // "1715"
+    strf(973, dec().base(16));  // "3cd"
 
     str(12.75);  // "12.75", using default_float_formatter
-    strf(12.75, fmt::fixed());                      // "12.750000"
-    strf(12.75, fmt::fixed().precision(4));         // "12.7500"
-    strf(12.75, fmt::sci());                        // "1.275000e+01"
-    strf(12.75, fmt::sci().precision(4));           // "1.2750e+01"
-    strf(12.75, fmt::sci() | fmt::uppercase);       // "1.275000E+01"
-    strf(12.75, fmt::fixed().precision(4) | fmt::showpos) // "+12.7500"
+    strf(12.75, fixed());       // "12.750000"
+    strf(12.75, sci());         // "1.275000e+01"
+
+    // one can use | to chain settings & flags to form a customized formatter
+
+    strf(973, dec() | fmt::showpos);       // "+973"
+    strf(973, dec() | fmt::padzeros, 6);   // "000973"
+    strf(973, dec() | fmt::padzeros | fmt::showpos, 6); // "+00973"
+
+    strf(12.75, fixed() | precision(4));                // "12.7500"
+    strf(12.75, sci()   | fmt::precision(4));           // "1.2750e+01"
+    strf(12.75, sci()   | fmt::uppercase);              // "1.275000E+01"
+    strf(12.75, fixed() | precision(4) | fmt::showpos)  // "+12.7500"
 
     // if a formatting is applied many times, you can make
     // the code more concise by storing the formatter to a variable
 
-    auto f = fmt::fixed().precision(4);
-    strf(12, f, 8);    // " 12.0000"
-    strf(3.45, f, 8);  // "  3.4500"
-    strf(-3, f, 8);    // " -3.0000"
+    auto f = fixed() | precision(4) | align_right(8);
+    strf(12,   f);   // " 12.0000"
+    strf(3.45, f);   // "  3.4500"
+    strf(-3,   f);   // " -3.0000"
 
 
 Write your own formatters
 --------------------------
 
-A *formatter class* should implement the interface defined as below:
+Generally, a formatter ``fmter`` should be a functor that supports the following syntax
+
+.. cpp:function:: size_t fmter(const T& x, charT *buf, size_t buf_len)
+
+    :param x:           The input value to be formatted.
+    :param buf:         The base of a given buffer.
+    :param buf_len:     The length of the buffer.
+
+    This function should be able to complete two kinds of tasks:
+
+    - If ``buf`` is *null*, it should compute a upper bound of the formatted length
+      (it should use a fast way to get an upper bound. If the exact length can be obtained very efficiently, then it should yield the exact length).
+
+    - Otherwise, it should write the formatted string to the given buffer and a null terminator, and return the number of characters written.
+
+    Generally, the formatter should be a class, with a member function ``operator()`` to implement this functionality.
+
+To support field alignment, *e.g.* ``strf(x, f | align_right(width))``. The formatter should also implement a ``field_write``, defined as
+
+.. cpp:function:: size_t field_write(const T& x, charT *buf, const fieldfmt& fs, charT *buf, size_t buf_len)
+
+    :param x:           The input value to be formatted.
+    :param fs:          The field specification.
+    :param buf:         The base of a given buffer.
+    :param buf_len:     The length of the buffer.
+
+    :note: ``fieldfmt`` is the type of the object returned by ``align_left`` or ``align_right``. It has two public fields: ``width`` to indicate the width of the field, and ``leftjust``, a boolean to indicate whether to left-adjust (``true``) or right-adjust (``false``) the content.
+
+Generally, it can be tedious to implement the ``field_write`` method. So, we provide a mixin-base ``formatter_base<Fmt, bool>`` to facilitate the implementation of a formatter. Suppose you have a user type ``MyType`` for which you would like to implement a formatter of class ``MyFormatter``. You can implement a formatter as follows:
 
 .. code-block:: cpp
 
-    // Let f be a const-reference to a formatter
-
-    // Get an upper bound of the length of the formatted string of `x`
-    // (without using positional arguments such as `width`).
-    //
-    size_t max_n = f.max_formatted_length(x);
-
-    // Write a formatted string of `x` to an allocated buffer.
-    //
-    // The function should write the null-terminator at the end,
-    // and return the length of the formatted string.
-    //
-    size_t n = f.formatted_write(x, buf, buf_len);
-
-    // Write a formatted string of `x` to an allocated buffer
-    // (using the positional arguments).
-    //
-    // The function should write the null-terminator at the end,
-    // and return the length of the formatted string.
-    //
-    size_t n = f.formatted_write(x, width, leftjust, buf, buf_len);
-
-
-Specifically, if you have a user type ``MyType`` for which you would like to implement a formatter. You can write the following codes:
-
-.. code-block:: cpp
-
-    class MyFormatter {
+    class MyFormatter : public clue::formatter_base<MyFormatter, false> {
     public:
-        size_t max_formatted_length(const MyType& x) const {
-            // compute an upper bound of the formatted length.
-            // for cases where the exact length can be quickly computed,
-            // this should try to return the exact length.
-        }
-
         template<typename charT>
-        size_t formatted_write(const MyType& x, charT *buf, size_t buf_len) {
-            // write the formatted string to the given buffer
-        }
-
-        template<typename charT>
-        size_t formatted_write(const MyType& x, size_t width, bool leftjust,
-                               charT *buf, size_t buf_len) {
-            // write a properly justified formatted string
-            // the library provides two helpers to simplify the implementation:
-
-            // if you can efficiently compute the *exact* length of the
-            // formatted string:
-            //
-            //  size_t n = max_formatted_length(x);
-            //  return fmt::formatted_write_known_length(
-            //      *this, x, n, width, leftjust, buf, buf_len);
-            //
-            // otherwise, you can use another function:
-            //
-            //  return fmt::formatted_write_unknown_length(
-            //      *this, x, width, leftjust, buf, buf_len);
-            //
+        size_t operator()(const MyType& x, charT *buf, size_t buf_len) const {
+            if (buf) {
+                // write the formatted string to the given buffer
+            } else {
+                // return a quick upper bound of the formatted length.
+            }
         }
     };
 
-Also, one can register a formatter class to be the default formatter of a user type by specializing the ``fmt::default_formatter`` struct, as
+    // designate MyFormatter as the default formatter for ``MyType``.
 
-.. code-block:: cpp
+    inline MyFormatter get_default_formatter(const MyType& ) noexcept {
+        return MyFormatter{};
+    }
 
-    // you have to open the namespace to specialize
-    // a template class
-    namespace clue { namespace fmt {
+    // or you can simply use the macro CLUE_DEFAULT_FORMATTER, as
+    CLUE_DEFAULT_FORMATTER(MyType, MyFormatter)
+    // this yields the same definition as above.
 
-    struct default_formatter<MyType> {
-        using type = MyFormatter;
-        static type get() noexcept {
-            // construct the default formatter
-            return MyFormatter();
-        }
-    };
+.. note::
 
-    } }  // end namespaces
+    The second template parameter of ``formatter_base`` is a boolean constant which should be set to ``true`` when ``operator()(x, (char*)(0), 0)`` **always** yield the **exact** formatted length. The internal implementation takes advantage of this fact to achieve higher efficiency.
 
 The source file ``examples/ex_newformatter.cpp`` provides a complete example to show how to write a formatter for a new type.

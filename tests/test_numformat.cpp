@@ -185,11 +185,11 @@ void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
     std::vector<long> xs = prepare_test_ints(base_);
     for (long x: xs) {
         for (size_t w: widths) {
-            auto wfmt_0 = with(x, f);
+            auto wfmt_0 = withf(x, f);
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_0);
-            auto wfmt_r = with(x, f | ff(w, false));
+            auto wfmt_r = withf(x, f | ff(w, false));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_r);
-            auto wfmt_l = with(x, f | ff(w, true));
+            auto wfmt_l = withf(x, f | ff(w, true));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_l);
         }
     }
@@ -386,11 +386,11 @@ void test_float_fmt(const F& f, size_t prec, bool upper_, bool padzeros_, bool s
     std::vector<double> xs = prepare_test_floats();
     for (long x: xs) {
         for (size_t w: widths) {
-            auto wfmt_0 = with(x, f);
+            auto wfmt_0 = withf(x, f);
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_0);
-            auto wfmt_r = with(x, f | ff(w, false));
+            auto wfmt_r = withf(x, f | ff(w, false));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_r);
-            auto wfmt_l = with(x, f | ff(w, true));
+            auto wfmt_l = withf(x, f | ff(w, true));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_l);
         }
     }

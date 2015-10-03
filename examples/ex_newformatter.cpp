@@ -67,7 +67,7 @@ int main() {
 
     std::cout << "Right-adjusted to fixed-width (20):" << std::endl;
     for (const auto& x: data) {
-        std::cout << str(with(x, ff(20))) << std::endl;
+        std::cout << str(withf(x, ff(20))) << std::endl;
     }
 
     return 0;

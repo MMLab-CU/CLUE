@@ -36,18 +36,18 @@ int main() {
     // print header
     std::cout << sepline << std::endl;
     std::cout << str("  |  ",
-        with("id",    ff(widths[0], true)), "  |  ",
-        with("name",  ff(widths[1], true)), "  |  ",
-        with("score", ff(widths[2], true)), "  |  "
+        withf("id",    ff(widths[0], true)), "  |  ",
+        withf("name",  ff(widths[1], true)), "  |  ",
+        withf("score", ff(widths[2], true)), "  |  "
     ) << std::endl;
     std::cout << sepline << std::endl;
 
     // print records
     for (const auto& u: users) {
         std::cout << str("  |  ",
-            with(u.id, dec() | fmt::padzeros | ff(widths[0])), "  |  ",
-            with(u.name, ff(widths[1], true)), "  |  ",
-            with(u.score, fixed().precision(2) | ff(widths[2])), "  |  "
+            withf(u.id, dec() | fmt::padzeros | ff(widths[0])), "  |  ",
+            withf(u.name, ff(widths[1], true)), "  |  ",
+            withf(u.score, fixed().precision(2) | ff(widths[2])), "  |  "
         ) << std::endl;
     }
     std::cout << sepline << std::endl;

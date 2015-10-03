@@ -9,7 +9,7 @@
 using clue::array_view;
 
 // formatting
-using clue::with;
+using clue::withf;
 using clue::str;
 
 // meta

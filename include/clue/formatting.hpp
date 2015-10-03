@@ -8,14 +8,14 @@ namespace clue {
 
 template<typename T, typename Fmt>
 inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_t<T, Fmt>>
-with(const T& v, const Fmt& fmt) {
+withf(const T& v, const Fmt& fmt) {
     return with_fmt_t<T, Fmt>{v, fmt};
 }
 
 template<typename T>
-inline auto with(const T& x, const fieldfmt& fs) ->
+inline auto withf(const T& x, const fieldfmt& fs) ->
     with_fmt_t<T, field_formatter<decltype(get_default_formatter(x))> > {
-    return with(x, get_default_formatter(x) | fs);
+    return withf(x, get_default_formatter(x) | fs);
 }
 
 template<typename T, typename Fmt>

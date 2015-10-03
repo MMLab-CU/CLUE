@@ -93,25 +93,25 @@ TEST(Formatting, FmtStr) {
 
 TEST(Formatting, WithFunction) {
     auto f = fixed().precision(2);
-    auto sf1 = str(with(123, f));
+    auto sf1 = str(withf(123, f));
     ASSERT_EQ("123.00", sf1);
 
-    auto wfe = str(with(123, ff(5)));
+    auto wfe = str(withf(123, ff(5)));
     ASSERT_EQ("  123", wfe);
 
-    auto wfe_r = str(with(123, ff(5, false)));
+    auto wfe_r = str(withf(123, ff(5, false)));
     ASSERT_EQ("  123", wfe_r);
 
-    auto wfe_l = str(with(123, ff(5, true)));
+    auto wfe_l = str(withf(123, ff(5, true)));
     ASSERT_EQ("123  ", wfe_l);
 
-    auto sfe = str(with(123, f | ff(8)));
+    auto sfe = str(withf(123, f | ff(8)));
     ASSERT_EQ("  123.00", sfe);
 
-    auto sfe_r = str(with(123, f | ff(8, false)));
+    auto sfe_r = str(withf(123, f | ff(8, false)));
     ASSERT_EQ("  123.00", sfe_r);
 
-    auto sfe_l = str(with(123, f | ff(8, true)));
+    auto sfe_l = str(withf(123, f | ff(8, true)));
     ASSERT_EQ("123.00  ", sfe_l);
 }
 
@@ -123,9 +123,9 @@ TEST(Formatting, StrConcat) {
     ASSERT_EQ("1+2 = 3", str(1, '+', 2, " = ", 3));
 
     auto f = fixed().precision(2);
-    auto sf2 = str(with(123, f), with(456, f));
+    auto sf2 = str(withf(123, f), withf(456, f));
     ASSERT_EQ("123.00456.00", sf2);
 
-    auto sf3 = str(with(123, f), ", ", '~', with(456, f | ff(8)));
+    auto sf3 = str(withf(123, f), ", ", '~', withf(456, f | ff(8)));
     ASSERT_EQ("123.00, ~  456.00", sf3);
 }

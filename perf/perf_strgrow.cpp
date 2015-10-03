@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <clue/string_builder.hpp>
+#include <clue/formatting.hpp>
 #include <clue/timing.hpp>
 
 using namespace std;
@@ -170,9 +170,9 @@ void verify_correctness(S&& s, const vector<string>& tokens, const string& expec
     }
     string result = s.str();
     if (result != expect_str) {
-        cout << "  verification failed:" << endl;
-        cout << "    EXPECT: \"" << expect_str << "\"" << endl;
-        cout << "    ACTUAL: \"" << s.str() << "\"" << endl;
+        cerr << "  verification failed:" << endl;
+        cerr << "    EXPECT: \"" << expect_str << "\"" << endl;
+        cerr << "    ACTUAL: \"" << s.str() << "\"" << endl;
         exit(1);
     }
 }
@@ -199,7 +199,11 @@ void measure_performance(S &&s, const vector<string>& tokens) {
     };
 
     auto r = calibrated_time(f);
-    std::printf("  %-25s: %.6f secs/run\n", s.repr(), r.elapsed_secs / r.count_runs);
+
+    double spr = r.elapsed_secs / r.count_runs;
+    std::cout << str("  ",
+        withf(s.repr(), align_left(20)), ": ", 
+        withf(spr, fixed() | precision(6) | align_right(9)), " secs/run\n");
 }
 
 

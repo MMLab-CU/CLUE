@@ -1,6 +1,6 @@
 // Compares the performance of number formatting
 
-#include <clue/numformat.hpp>
+#include <clue/formatting.hpp>
 #include <clue/timing.hpp>
 #include <iostream>
 #include <random>
@@ -76,10 +76,13 @@ public:
 
 
 inline void report(const char *title, size_t n, const calibrated_timing_result& r) {
-    std::printf("  %-6s:   %.6f secs/run ==> %6.2f M/sec\n",
-        title,
-        r.elapsed_secs / r.count_runs,
-        r.count_runs * (n * 1.0e-6) / r.elapsed_secs);
+    double spr = r.elapsed_secs / r.count_runs;
+    double mps = r.count_runs * (n * 1.0e-6) / r.elapsed_secs;
+
+    std::cout << str("  ",
+        withf(title, align_left(6)), ":  ",
+        withf(spr,   fixed() | precision(6) | align_right(9)), " ==> ",
+        withf(mps,   fixed() | precision(2) | align_right(6)),  " M/sec\n");
 }
 
 template<class Impl>
@@ -145,4 +148,3 @@ int main() {
 
     return 0;
 }
-

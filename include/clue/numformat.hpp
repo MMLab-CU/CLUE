@@ -32,7 +32,7 @@ ndigits(T x, const unsigned base=10) noexcept {
 class int_formatter {
 private:
     unsigned base_;
-    flag_t flags_;
+    fmt_flag_t flags_;
 
 public:
     // construction & properties
@@ -43,25 +43,25 @@ public:
     explicit constexpr int_formatter(unsigned base) noexcept :
         base_(base), flags_(0) {}
 
-    constexpr int_formatter(unsigned base, flag_t flags) :
+    constexpr int_formatter(unsigned base, fmt_flag_t flags) :
         base_(base), flags_(flags) {}
 
     constexpr unsigned base() const noexcept { return base_; }
-    constexpr flag_t flags() const noexcept { return flags_; }
+    constexpr fmt_flag_t flags() const noexcept { return flags_; }
 
     constexpr int_formatter base(unsigned v) const noexcept {
         return int_formatter(v, flags_);
     }
 
-    constexpr int_formatter flags(flag_t v) const noexcept {
+    constexpr int_formatter flags(fmt_flag_t v) const noexcept {
         return int_formatter(base_, v);
     }
 
-    constexpr int_formatter operator | (flag_t v) const noexcept {
+    constexpr int_formatter operator | (fmt_flag_t v) const noexcept {
         return int_formatter(base_, flags_ | v);
     }
 
-    constexpr bool any(flag_t msk) const noexcept {
+    constexpr bool any(fmt_flag_t msk) const noexcept {
         return static_cast<bool>(flags_ & msk);
     }
 
@@ -115,9 +115,9 @@ public:
     // properties
 
     constexpr unsigned base() const noexcept { return 10; }
-    constexpr flag_t flags() const noexcept { return 0; }
+    constexpr fmt_flag_t flags() const noexcept { return 0; }
 
-    constexpr bool any(flag_t msk) const noexcept {
+    constexpr bool any(fmt_flag_t msk) const noexcept {
         return false;
     }
 
@@ -187,7 +187,7 @@ class float_formatter {
 private:
     typedef details::float_fmt_traits<Tag> fmt_traits_t;
     size_t precision_;
-    flag_t flags_;
+    fmt_flag_t flags_;
 
 public:
     typedef Tag tag_type;
@@ -197,26 +197,26 @@ public:
     constexpr float_formatter() noexcept :
         precision_(6), flags_(0) {}
 
-    constexpr float_formatter(size_t precision, flag_t flags) :
+    constexpr float_formatter(size_t precision, fmt_flag_t flags) :
         precision_(precision), flags_(flags) {}
 
     constexpr size_t precision() const noexcept { return precision_; }
-    constexpr flag_t flags() const noexcept { return flags_; }
+    constexpr fmt_flag_t flags() const noexcept { return flags_; }
 
 
     constexpr float_formatter precision(size_t v) const noexcept {
         return float_formatter(v, flags_);
     }
 
-    constexpr float_formatter flags(flag_t v) const noexcept {
+    constexpr float_formatter flags(fmt_flag_t v) const noexcept {
         return float_formatter(precision_, v);
     }
 
-    constexpr float_formatter operator | (flag_t v) const noexcept {
+    constexpr float_formatter operator | (fmt_flag_t v) const noexcept {
         return float_formatter(precision_, flags_ | v);
     }
 
-    constexpr bool any(flag_t msk) const noexcept {
+    constexpr bool any(fmt_flag_t msk) const noexcept {
         return static_cast<bool>(flags_ & msk);
     }
 

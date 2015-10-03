@@ -30,7 +30,7 @@ enum {
     showpos   = 0x04
 };
 
-typedef unsigned int flag_t;
+typedef unsigned int fmt_flag_t;
 
 // with functions
 

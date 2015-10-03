@@ -319,7 +319,7 @@ operator | (const Fmt& f, const fieldfmt& fs) {
 //===============================================
 
 #define CLUE_DEFAULT_FORMATTER(TDecl, F) \
-    F get_default_formatter(TDecl) noexcept { \
+    inline F get_default_formatter(TDecl) noexcept { \
         return F{};\
     }
 

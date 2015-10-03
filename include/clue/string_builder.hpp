@@ -119,7 +119,7 @@ public:
 
     template<typename T>
     generic_string_builder& operator << (const T& x) {
-        writef(x, fmt::get_default_formatter(x));
+        writef(x, get_default_formatter(x));
         return *this;
     }
 
@@ -146,7 +146,7 @@ public:
     }
 
     template<typename T, typename Fmt>
-    generic_string_builder& operator << (fmt::with_fmt_t<T, Fmt> wfmt) {
+    generic_string_builder& operator << (const with_fmt_t<T, Fmt>& wfmt) {
         writef(wfmt.value, wfmt.formatter);
         return *this;
     }

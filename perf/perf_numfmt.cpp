@@ -40,11 +40,11 @@ public:
 class WithClueFmt {
 private:
     char buf[128];
-    fmt::default_int_formatter dec_;
-    fmt::int_formatter hex_;
-    fmt::fixed_formatter fixed_;
-    fmt::sci_formatter sci_;
-    fmt::default_float_formatter exact_;
+    default_int_formatter dec_;
+    int_formatter hex_;
+    fixed_formatter fixed_;
+    sci_formatter sci_;
+    default_float_formatter exact_;
 
 public:
     WithClueFmt() : hex_(16) {}

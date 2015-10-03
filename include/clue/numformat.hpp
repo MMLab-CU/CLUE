@@ -7,7 +7,6 @@
 #include <cstdint>
 
 namespace clue {
-namespace fmt {
 
 //===============================================
 //
@@ -38,10 +37,10 @@ public:
     // construction & properties
 
     constexpr int_formatter() noexcept :
-        base_(10), flags_(0) {}
+        base_(10), flags_(static_cast<fmt_flag_t>(0)) {}
 
     explicit constexpr int_formatter(unsigned base) noexcept :
-        base_(base), flags_(0) {}
+        base_(base), flags_(static_cast<fmt_flag_t>(0)) {}
 
     constexpr int_formatter(unsigned base, fmt_flag_t flags) :
         base_(base), flags_(flags) {}
@@ -62,7 +61,7 @@ public:
     }
 
     constexpr bool any(fmt_flag_t msk) const noexcept {
-        return static_cast<bool>(flags_ & msk);
+        return masked_any(flags_, msk);
     }
 
     // formatting
@@ -70,7 +69,7 @@ public:
     template<typename T, typename charT>
     size_t operator() (T x, charT *buf, size_t buf_len) const {
         if (buf) {
-            bool showpos_ = any(showpos);
+            bool showpos_ = any(fmt_flag_t::showpos);
             switch (base_) {
                 case  8:
                     return details::render(x, details::int_render_helper<T,8>(x),
@@ -79,21 +78,21 @@ public:
                     return details::render(x, details::int_render_helper<T,10>(x),
                         showpos_, buf, buf_len);
                 case 16:
-                    return details::render(x, details::int_render_helper<T,16>(x, any(uppercase)),
+                    return details::render(x, details::int_render_helper<T,16>(x, any(fmt_flag_t::uppercase)),
                         showpos_, buf, buf_len);
             }
             return 0;
         } else {
             size_t n = ndigits(x, base_);
-            if (x < 0 || any(showpos)) n++;
+            if (x < 0 || any(fmt_flag_t::showpos)) n++;
             return n;
         }
     }
 
     template<typename T, typename charT>
     size_t field_write(T x, const fieldfmt& fs, charT *buf, size_t buf_len) const {
-        bool showpos_ = any(showpos);
-        bool padzeros_ = any(padzeros);
+        bool showpos_ = any(fmt_flag_t::showpos);
+        bool padzeros_ = any(fmt_flag_t::padzeros);
         switch (base_) {
             case  8:
                 return details::render(x, details::int_render_helper<T,8>(x),
@@ -102,7 +101,7 @@ public:
                 return details::render(x, details::int_render_helper<T,10>(x),
                     showpos_, padzeros_, fs.width, fs.leftjust, buf, buf_len);
             case 16:
-                return details::render(x, details::int_render_helper<T,16>(x, any(uppercase)),
+                return details::render(x, details::int_render_helper<T,16>(x, any(fmt_flag_t::uppercase)),
                     showpos_, padzeros_, fs.width, fs.leftjust, buf, buf_len);
         }
         return 0;
@@ -115,7 +114,7 @@ public:
     // properties
 
     constexpr unsigned base() const noexcept { return 10; }
-    constexpr fmt_flag_t flags() const noexcept { return 0; }
+    constexpr fmt_flag_t flags() const noexcept { return static_cast<fmt_flag_t>(0); }
 
     constexpr bool any(fmt_flag_t msk) const noexcept {
         return false;
@@ -127,10 +126,10 @@ public:
     size_t operator() (T x, charT *buf, size_t buf_len) const {
         if (buf) {
             return details::render(x,
-                details::int_render_helper<T,10>(x), any(showpos), buf, buf_len);
+                details::int_render_helper<T,10>(x), any(fmt_flag_t::showpos), buf, buf_len);
         } else {
             size_t n = details::ndigits_dec(details::uabs(x));
-            if (x < 0 || any(showpos)) n++;
+            if (x < 0 || any(fmt_flag_t::showpos)) n++;
             return n;
         }
     }
@@ -195,7 +194,7 @@ public:
     // construction & properties
 
     constexpr float_formatter() noexcept :
-        precision_(6), flags_(0) {}
+        precision_(6), flags_(static_cast<fmt_flag_t>(0)) {}
 
     constexpr float_formatter(size_t precision, fmt_flag_t flags) :
         precision_(precision), flags_(flags) {}
@@ -217,7 +216,7 @@ public:
     }
 
     constexpr bool any(fmt_flag_t msk) const noexcept {
-        return static_cast<bool>(flags_ & msk);
+        return masked_any(flags_, msk);
     }
 
     // formatting
@@ -229,12 +228,12 @@ public:
         } else {
             size_t n = 0;
             if (::std::isfinite(x)) {
-                n = fmt_traits_t::maxfmtlength(x, precision_, any(showpos));
+                n = fmt_traits_t::maxfmtlength(x, precision_, any(fmt_flag_t::showpos));
             } else if (::std::isinf(x)) {
-                n = ::std::signbit(x) || any(showpos) ? 4 : 3;
+                n = ::std::signbit(x) || any(fmt_flag_t::showpos) ? 4 : 3;
             } else {
                 CLUE_ASSERT(::std::isnan(x));
-                n = any(showpos) ? 4 : 3;
+                n = any(fmt_flag_t::showpos) ? 4 : 3;
             }
             return n;
         }
@@ -243,9 +242,9 @@ public:
     template<typename charT>
     size_t field_write(double x, const fieldfmt& fs, charT *buf, size_t buf_len) const {
         char cfmt[16];
-        const char fsym = details::float_fmt_traits<Tag>::printf_sym(any(uppercase));
+        const char fsym = details::float_fmt_traits<Tag>::printf_sym(any(fmt_flag_t::uppercase));
         details::float_cfmt_impl(cfmt, fsym, fs.width, precision_,
-                fs.leftjust, any(showpos), any(padzeros));
+                fs.leftjust, any(fmt_flag_t::showpos), any(fmt_flag_t::padzeros));
         size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
         CLUE_ASSERT(n < buf_len);
         return n;
@@ -278,13 +277,13 @@ using sci_formatter = float_formatter<details::sci_t>;
 //
 //===============================================
 
+
 constexpr int_formatter oct() noexcept { return int_formatter(8);  }
 constexpr int_formatter dec() noexcept { return int_formatter(10); }
 constexpr int_formatter hex() noexcept { return int_formatter(16); }
 
 constexpr fixed_formatter fixed() noexcept { return fixed_formatter(); }
 constexpr sci_formatter   sci()   noexcept { return sci_formatter();   }
-
 
 template<typename T>
 constexpr enable_if_t<::std::is_integral<T>::value, default_int_formatter>
@@ -295,8 +294,6 @@ get_default_formatter(const T& x) {
 CLUE_DEFAULT_FORMATTER(float,  default_float_formatter);
 CLUE_DEFAULT_FORMATTER(double, default_float_formatter);
 
-
-} // end namespace fmt
 } // end namespace clue
 
 

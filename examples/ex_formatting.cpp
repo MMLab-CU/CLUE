@@ -15,9 +15,6 @@ struct User {
 };
 
 int main() {
-    using fmt::with;
-    using fmt::ff;
-
     std::vector<User> users {
         {1, "Alice", 85.0},
         {2, "Bob",   69.2},
@@ -48,9 +45,9 @@ int main() {
     // print records
     for (const auto& u: users) {
         std::cout << str("  |  ",
-            with(u.id, fmt::dec() | fmt::padzeros | ff(widths[0])), "  |  ",
+            with(u.id, dec() | fmt_flag_t::padzeros | ff(widths[0])), "  |  ",
             with(u.name, ff(widths[1], true)), "  |  ",
-            with(u.score, fmt::fixed().precision(2) | ff(widths[2])), "  |  "
+            with(u.score, fixed().precision(2) | ff(widths[2])), "  |  "
         ) << std::endl;
     }
     std::cout << sepline << std::endl;

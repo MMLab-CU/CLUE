@@ -9,8 +9,8 @@
 using clue::array_view;
 
 // formatting
-using clue::fmt::with;
-using clue::fmt::str;
+using clue::with;
+using clue::str;
 
 // meta
 using clue::meta::type_;
@@ -19,8 +19,8 @@ using clue::meta::type_;
 using clue::meta::seq_;
 
 // numformat
-using clue::fmt::int_formatter;
-using clue::fmt::float_formatter;
+using clue::int_formatter;
+using clue::float_formatter;
 
 // optional
 using clue::optional;

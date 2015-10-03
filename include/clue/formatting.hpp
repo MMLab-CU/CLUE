@@ -5,7 +5,6 @@
 #include <clue/string_builder.hpp>
 
 namespace clue {
-namespace fmt {
 
 template<typename T, typename Fmt>
 inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_t<T, Fmt>>
@@ -41,7 +40,7 @@ inline std::string str(const T& x) {
 }
 
 template<typename T, typename Fmt>
-inline ::std::string str(fmt::with_fmt_t<T, Fmt> wfmt) {
+inline ::std::string str(with_fmt_t<T, Fmt> wfmt) {
     return strf(wfmt.value, wfmt.formatter);
 }
 
@@ -68,7 +67,6 @@ inline std::string str(const T1& x, Rest&&... rest) {
     return sb.str();
 }
 
-} // end namespace fmt
 } // end namespace clue
 
 #endif

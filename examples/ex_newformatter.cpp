@@ -18,7 +18,7 @@ struct Triplet {
 //
 // The implementation can build on top of string_builder
 //
-class TripletFormatter : public clue::fmt::formatter_base<TripletFormatter> {
+class TripletFormatter : public clue::formatter_base<TripletFormatter> {
 public:
     template<typename charT>
     size_t operator() (const Triplet& t, charT *buf, size_t buf_len) const {
@@ -35,7 +35,7 @@ public:
             return s.size();
         } else {
             // compute the length of the formatted string
-            using namespace clue::fmt;
+            using clue::ndigits;
             size_t m1 = ndigits(t.v1, 10);
             size_t m2 = ndigits(t.v2, 10);
             size_t m3 = ndigits(t.v3, 10);
@@ -62,12 +62,12 @@ int main() {
     }
 
     for (const auto& x: data) {
-        std::cout << fmt::str(x) << std::endl;
+        std::cout << str(x) << std::endl;
     }
 
     std::cout << "Right-adjusted to fixed-width (20):" << std::endl;
     for (const auto& x: data) {
-        std::cout << fmt::str(fmt::with(x, fmt::ff(20))) << std::endl;
+        std::cout << str(with(x, ff(20))) << std::endl;
     }
 
     return 0;

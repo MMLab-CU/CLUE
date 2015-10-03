@@ -19,12 +19,12 @@ std::string ref_int_format(const F& f, size_t width, bool ljust, long x) {
     if (x < 0) {
         *p++ = '-';
         if (pw > 0) pw--;
-    } else if (f.any(fmt::showpos)) {
+    } else if (f.any(fmt_flag_t::showpos)) {
         *p++ = '+';
         if (pw > 0) pw--;
     }
 
-    bool pzeros = f.any(fmt::padzeros);
+    bool pzeros = f.any(fmt_flag_t::padzeros);
     if (ljust) pzeros = false;
 
     *p++ = '%';
@@ -41,12 +41,12 @@ std::string ref_int_format(const F& f, size_t width, bool ljust, long x) {
     *p++ = 'l';
     switch (f.base()) {
         case 8: *p++ = 'o'; break;
-        case 16: *p++ = f.any(fmt::uppercase) ? 'X' : 'x'; break;
+        case 16: *p++ = f.any(fmt_flag_t::uppercase) ? 'X' : 'x'; break;
         default: *p++ = 'u';
     }
     *p = '\0';
 
-    std::string r = fmt::c_sprintf(cfmt, std::abs(x));
+    std::string r = c_sprintf(cfmt, std::abs(x));
 
     if (r.size() < width) {
         return ljust ?
@@ -60,7 +60,7 @@ std::string ref_int_format(const F& f, size_t width, bool ljust, long x) {
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckIntFormat(
-    const char *expr, const fmt::with_fmt_t<T, F>& wfmt) {
+    const char *expr, const with_fmt_t<T, F>& wfmt) {
 
     const F& f = wfmt.formatter;
     T x = wfmt.value;
@@ -72,8 +72,8 @@ template<typename T, typename F>
             << "Mismatched formatted length for "
             << " x = " << x << ":\n"
             << "  base: " << f.base() << "\n"
-            << "  showpos: " << f.any(fmt::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = " << flen << "\n"
             << "  EXPECT = " << refstr.size()
@@ -89,8 +89,8 @@ template<typename T, typename F>
             << "Mismatched formatted string for "
             << " x = " << x << ":\n"
             << "  base: " << f.base() << "\n"
-            << "  showpos: " << f.any(fmt::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
             << "  EXPECT = \"" << refstr << "\"";
@@ -101,9 +101,9 @@ template<typename T, typename F>
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckIntFormat(
-    const char *expr, const fmt::with_fmt_t<T, fmt::field_formatter<F>>& wfmt) {
+    const char *expr, const with_fmt_t<T, field_formatter<F>>& wfmt) {
 
-    const fmt::field_formatter<F>& ffmt = wfmt.formatter;
+    const field_formatter<F>& ffmt = wfmt.formatter;
     const F& f = ffmt.formatter();
     T x = wfmt.value;
     std::string refstr = ref_int_format(f, ffmt.width(), ffmt.leftjust(), x);
@@ -118,8 +118,8 @@ template<typename T, typename F>
             << " x = " << x << ":\n"
             << "  pos: " << ffmt.width() << ", " << ffmt.leftjust() << "\n"
             << "  base: " << f.base() << "\n"
-            << "  showpos: " << f.any(fmt::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
             << "  EXPECT = \"" << refstr << "\"";
@@ -175,11 +175,9 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
 
 template<class F>
 void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
-    using fmt::ff;
-
     ASSERT_EQ(base_, f.base());
-    ASSERT_EQ(padzeros_, f.any(fmt::padzeros));
-    ASSERT_EQ(showpos_,  f.any(fmt::showpos));
+    ASSERT_EQ(padzeros_, f.any(fmt_flag_t::padzeros));
+    ASSERT_EQ(showpos_,  f.any(fmt_flag_t::showpos));
 
     // combination coverage
     std::vector<size_t> widths = {0, 4, 8, 12, 20, 26};
@@ -187,11 +185,11 @@ void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
     std::vector<long> xs = prepare_test_ints(base_);
     for (long x: xs) {
         for (size_t w: widths) {
-            auto wfmt_0 = fmt::with(x, f);
+            auto wfmt_0 = with(x, f);
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_0);
-            auto wfmt_r = fmt::with(x, f | ff(w, false));
+            auto wfmt_r = with(x, f | ff(w, false));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_r);
-            auto wfmt_l = fmt::with(x, f | ff(w, true));
+            auto wfmt_l = with(x, f | ff(w, true));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_l);
         }
     }
@@ -200,30 +198,30 @@ void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
 template<class F>
 void test_int_fmt_x(const F& fbase, unsigned base_) {
     test_int_fmt(fbase, base_, false, false);
-    test_int_fmt(fbase | fmt::showpos,  base_, false, true);
-    test_int_fmt(fbase | fmt::padzeros, base_, true, false);
-    test_int_fmt(fbase | fmt::padzeros | fmt::showpos, base_, true, true);
+    test_int_fmt(fbase | fmt_flag_t::showpos,  base_, false, true);
+    test_int_fmt(fbase | fmt_flag_t::padzeros, base_, true, false);
+    test_int_fmt(fbase | fmt_flag_t::padzeros | fmt_flag_t::showpos, base_, true, true);
 }
 
 
 TEST(IntFmt, DefaultIntFmt) {
-    test_int_fmt(fmt::default_int_formatter{}, 10, false, false);
+    test_int_fmt(default_int_formatter{}, 10, false, false);
 }
 
 TEST(IntFmt, DecFmt) {
-    test_int_fmt_x(fmt::dec(), 10);
+    test_int_fmt_x(dec(), 10);
 }
 
 TEST(IntFmt, OctFmt) {
-    test_int_fmt_x(fmt::oct(), 8);
+    test_int_fmt_x(oct(), 8);
 }
 
 TEST(IntFmt, HexFmt) {
-    test_int_fmt_x(fmt::hex(), 16);
+    test_int_fmt_x(hex(), 16);
 }
 
 TEST(IntFmt, UHexFmt) {
-    test_int_fmt_x(fmt::hex() | fmt::uppercase, 16);
+    test_int_fmt_x(hex() | fmt_flag_t::uppercase, 16);
 }
 
 
@@ -233,11 +231,11 @@ TEST(IntFmt, UHexFmt) {
 //
 //=====================================
 
-inline char notation(const fmt::fixed_formatter& f) {
-    return f.any(fmt::uppercase) ? 'F' : 'f';
+inline char notation(const fixed_formatter& f) {
+    return f.any(fmt_flag_t::uppercase) ? 'F' : 'f';
 }
-inline char notation(const fmt::sci_formatter& f)   {
-    return f.any(fmt::uppercase) ? 'E' : 'e';
+inline char notation(const sci_formatter& f)   {
+    return f.any(fmt_flag_t::uppercase) ? 'E' : 'e';
 }
 
 template<class F>
@@ -247,9 +245,9 @@ std::string ref_float_format(const F& f, size_t width, bool ljust, double x) {
     char cfmt[16];
     char *p = cfmt;
     *p++ = '%';
-    if (f.any(fmt::showpos)) *p++ = '+';
+    if (f.any(fmt_flag_t::showpos)) *p++ = '+';
     if (ljust) *p++ = '-';
-    else if (f.any(fmt::padzeros)) *p++ = '0';
+    else if (f.any(fmt_flag_t::padzeros)) *p++ = '0';
 
     if (pw > 0) {
         if (pw >= 10) {
@@ -270,12 +268,12 @@ std::string ref_float_format(const F& f, size_t width, bool ljust, double x) {
     *p++ = notation(f);
     *p = '\0';
 
-    return fmt::c_sprintf(cfmt, x);
+    return c_sprintf(cfmt, x);
 }
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckFloatFormat(
-    const char *expr, const fmt::with_fmt_t<T, F>& wfmt) {
+    const char *expr, const with_fmt_t<T, F>& wfmt) {
 
     const F& f = wfmt.formatter;
     T x = wfmt.value;
@@ -290,8 +288,8 @@ template<typename T, typename F>
             << "x = " << x << ": \n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
-            << "  showpos: " << f.any(fmt::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = " << flen << "\n"
             << "  EXPECT = " << refstr.length()
@@ -308,8 +306,8 @@ template<typename T, typename F>
             << "x = " << x << ": \n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
-            << "  showpos: " << f.any(fmt::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
             << "  EXPECT = \"" << refstr << "\"";
@@ -319,9 +317,9 @@ template<typename T, typename F>
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckFloatFormat(
-    const char *expr, const fmt::with_fmt_t<T, fmt::field_formatter<F>>& wfmt) {
+    const char *expr, const with_fmt_t<T, field_formatter<F>>& wfmt) {
 
-    const fmt::field_formatter<F>& ffmt = wfmt.formatter;
+    const field_formatter<F>& ffmt = wfmt.formatter;
     const F& f = ffmt.formatter();
     T x = wfmt.value;
     std::string refstr = ref_float_format(f, 0, false, x);
@@ -337,8 +335,8 @@ template<typename T, typename F>
             << "  pos: " << ffmt.width() << ", " << ffmt.leftjust() << "\n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
-            << "  showpos: " << f.any(fmt::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
             << "  EXPECT = \"" << refstr << "\"";
@@ -377,12 +375,10 @@ std::vector<double> prepare_test_floats() {
 
 template<class F>
 void test_float_fmt(const F& f, size_t prec, bool upper_, bool padzeros_, bool showpos_) {
-    using fmt::ff;
-
     ASSERT_EQ(prec, f.precision());
-    ASSERT_EQ(upper_, f.any(fmt::uppercase));
-    ASSERT_EQ(padzeros_, f.any(fmt::padzeros));
-    ASSERT_EQ(showpos_,  f.any(fmt::showpos));
+    ASSERT_EQ(upper_, f.any(fmt_flag_t::uppercase));
+    ASSERT_EQ(padzeros_, f.any(fmt_flag_t::padzeros));
+    ASSERT_EQ(showpos_,  f.any(fmt_flag_t::showpos));
 
     // combination coverage
     std::vector<size_t> widths = {0, 5, 12};
@@ -390,11 +386,11 @@ void test_float_fmt(const F& f, size_t prec, bool upper_, bool padzeros_, bool s
     std::vector<double> xs = prepare_test_floats();
     for (long x: xs) {
         for (size_t w: widths) {
-            auto wfmt_0 = fmt::with(x, f);
+            auto wfmt_0 = with(x, f);
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_0);
-            auto wfmt_r = fmt::with(x, f | ff(w, false));
+            auto wfmt_r = with(x, f | ff(w, false));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_r);
-            auto wfmt_l = fmt::with(x, f | ff(w, true));
+            auto wfmt_l = with(x, f | ff(w, true));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_l);
         }
     }
@@ -407,14 +403,14 @@ void test_float_fmt_x(const F& fbase) {
 
     for(size_t prec: precisions) {
         auto f000 = fbase.precision(prec);
-        auto f001 = f000 | fmt::showpos;
-        auto f010 = f000 | fmt::padzeros;
-        auto f011 = f000 | fmt::showpos | fmt::padzeros;
+        auto f001 = f000 | fmt_flag_t::showpos;
+        auto f010 = f000 | fmt_flag_t::padzeros;
+        auto f011 = f000 | fmt_flag_t::showpos | fmt_flag_t::padzeros;
 
-        auto f100 = fbase.precision(prec) | fmt::uppercase;
-        auto f101 = f100 | fmt::showpos;
-        auto f110 = f100 | fmt::padzeros;
-        auto f111 = f100 | fmt::showpos | fmt::padzeros;
+        auto f100 = fbase.precision(prec) | fmt_flag_t::uppercase;
+        auto f101 = f100 | fmt_flag_t::showpos;
+        auto f110 = f100 | fmt_flag_t::padzeros;
+        auto f111 = f100 | fmt_flag_t::showpos | fmt_flag_t::padzeros;
 
         test_float_fmt(f000, prec, false, false, false);
         test_float_fmt(f001, prec, false, false,  true);
@@ -429,17 +425,16 @@ void test_float_fmt_x(const F& fbase) {
 
 
 TEST(FloatFmt, FixedFmt) {
-    test_float_fmt_x(fmt::fixed());
+    test_float_fmt_x(fixed());
 }
 
 TEST(FloatFmt, SciFmt) {
-    test_float_fmt_x(fmt::sci());
+    test_float_fmt_x(sci());
 }
 
 
 template<class F>
 void test_exact_float_fmt(const F& f) {
-    using fmt::ff;
     const size_t buf_len = 32;
     char buf[buf_len];
 
@@ -517,7 +512,7 @@ TEST(FloatFmt, GrisuExamples) {
     };
 
     static char result[32];
-    fmt::grisu_formatter f;
+    grisu_formatter f;
 
     for (const auto& e: entries) {
         double x = e.first;
@@ -533,9 +528,9 @@ TEST(FloatFmt, GrisuExamples) {
 }
 
 TEST(FloatFmt, GrisuFmt) {
-    static_assert(std::is_same<fmt::grisu_formatter, fmt::default_float_formatter>::value,
+    static_assert(std::is_same<grisu_formatter, default_float_formatter>::value,
         "Default float formatter should be the Grisu formatter");
-    test_exact_float_fmt(fmt::grisu_formatter{});
+    test_exact_float_fmt(grisu_formatter{});
 }
 
 

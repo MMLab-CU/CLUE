@@ -16,7 +16,6 @@
 #include <algorithm>
 
 namespace clue {
-namespace fmt {
 
 //===============================================
 //
@@ -24,13 +23,22 @@ namespace fmt {
 //
 //===============================================
 
-enum {
+enum class fmt_flag_t: unsigned int {
     uppercase = 0x01,
     padzeros  = 0x02,
     showpos   = 0x04
 };
 
-typedef unsigned int fmt_flag_t;
+constexpr fmt_flag_t operator | (fmt_flag_t a, fmt_flag_t b) noexcept {
+    return static_cast<fmt_flag_t>(
+        static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
+}
+
+constexpr bool masked_any(fmt_flag_t a, fmt_flag_t m) noexcept {
+    return static_cast<bool>(
+        static_cast<unsigned int>(a) & static_cast<unsigned int>(m));
+}
+
 
 // with functions
 
@@ -344,7 +352,6 @@ default_string_formatter<T> get_default_formatter(const ::std::basic_string<T, T
 }
 
 
-} // end namespace fmt
 } // end namespace clue
 
 #endif

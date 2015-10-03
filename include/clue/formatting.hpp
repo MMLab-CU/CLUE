@@ -7,18 +7,17 @@
 namespace clue {
 namespace fmt {
 
-template<typename T>
-inline auto with(const T& v, size_t width, bool ljust=false) ->
-    decltype(with(v, get_default_formatter(v), width, ljust)) {
-    return with(v, get_default_formatter(v), width, ljust);
+template<typename T, typename Fmt>
+inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_t<T, Fmt>>
+with(const T& v, const Fmt& fmt) {
+    return with_fmt_t<T, Fmt>{v, fmt};
 }
 
-
-//===============================================
-//
-//  String formatting
-//
-//===============================================
+template<typename T>
+inline auto with(const T& x, ffspec_t fs) ->
+    with_fmt_t<T, field_formatter<decltype(get_default_formatter(x))> > {
+    return with(x, get_default_formatter(x) | fs);
+}
 
 template<typename T, typename Fmt>
 inline ::std::string strf(const T& x, const Fmt& fmt) {
@@ -29,17 +28,6 @@ inline ::std::string strf(const T& x, const Fmt& fmt) {
     if (wlen < fmt_len) {
         s.resize(wlen);
     }
-    return ::std::move(s);
-}
-
-template<typename T, typename Fmt>
-inline ::std::string strf(const T& x, const Fmt& fmt, size_t width, bool ljust=false) {
-    size_t max_n = fmt.max_formatted_length(x);
-    if (width > max_n) max_n = width;
-    ::std::string s(max_n, '\0');
-    size_t wlen = fmt.formatted_write(x, width, ljust, const_cast<char*>(s.data()), max_n + 1);
-    CLUE_ASSERT(wlen <= max_n);
-    if (wlen < max_n) s.resize(wlen);
     return ::std::move(s);
 }
 
@@ -57,10 +45,6 @@ inline ::std::string str(fmt::with_fmt_t<T, Fmt> wfmt) {
     return strf(wfmt.value, wfmt.formatter);
 }
 
-template<typename T, typename Fmt>
-inline ::std::string str(fmt::with_fmt_ex_t<T, Fmt> wfmt) {
-    return strf(wfmt.value, wfmt.formatter, wfmt.width, wfmt.leftjust);
-}
 
 namespace details {
 

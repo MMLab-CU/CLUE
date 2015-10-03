@@ -151,12 +151,6 @@ public:
         return *this;
     }
 
-    template<typename T, typename Fmt>
-    generic_string_builder& operator << (fmt::with_fmt_ex_t<T, Fmt> wfmt) {
-        writef(wfmt.value, wfmt.formatter, wfmt.width, wfmt.leftjust);
-        return *this;
-    }
-
     // Modifiers
 
     void clear() noexcept {

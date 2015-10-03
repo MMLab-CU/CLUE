@@ -4,6 +4,7 @@
 #include <clue/formatting_base.hpp>
 #include <clue/internal/numfmt.hpp>
 #include <clue/internal/grisu.hpp>
+#include <cstdint>
 
 namespace clue {
 namespace fmt {
@@ -291,21 +292,15 @@ constexpr int_formatter hex() noexcept { return int_formatter(16); }
 constexpr fixed_formatter fixed() noexcept { return fixed_formatter(); }
 constexpr sci_formatter   sci()   noexcept { return sci_formatter();   }
 
-namespace details {
-    template<typename T>
-    using default_arith_formatter_t =
-        conditional_t<::std::is_integral<T>::value,
-            default_int_formatter,
-            default_float_formatter>;
-}
 
 template<typename T>
-constexpr enable_if_t<
-    ::std::is_arithmetic<T>::value,
-    details::default_arith_formatter_t<T>>
-get_default_formatter(const T&) {
-    return details::default_arith_formatter_t<T>{};
+constexpr enable_if_t<::std::is_integral<T>::value, default_int_formatter>
+get_default_formatter(const T& x) {
+    return default_int_formatter{};
 }
+
+CLUE_DEFAULT_FORMATTER(float,  default_float_formatter);
+CLUE_DEFAULT_FORMATTER(double, default_float_formatter);
 
 
 } // end namespace fmt

@@ -1,4 +1,4 @@
-#include <clue/numformat.hpp>
+#include <clue/formatting.hpp>
 #include <limits>
 #include <gtest/gtest.h>
 
@@ -101,21 +101,22 @@ template<typename T, typename F>
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckIntFormat(
-    const char *expr, const fmt::with_fmt_ex_t<T, F>& wfmt) {
+    const char *expr, const fmt::with_fmt_t<T, fmt::field_formatter<F>>& wfmt) {
 
-    const F& f = wfmt.formatter;
+    const fmt::field_formatter<F>& ffmt = wfmt.formatter;
+    const F& f = ffmt.formatter();
     T x = wfmt.value;
-    std::string refstr = ref_int_format(f, wfmt.width, wfmt.leftjust, x);
+    std::string refstr = ref_int_format(f, ffmt.width(), ffmt.leftjust(), x);
 
     char rbuf[128];
-    f.formatted_write(x, wfmt.width, wfmt.leftjust, rbuf, 128);
+    f.formatted_write(x, ffmt.width(), ffmt.leftjust(), rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted string for "
             << " x = " << x << ":\n"
-            << "  pos: " << wfmt.width << ", " << wfmt.leftjust << "\n"
+            << "  pos: " << ffmt.width() << ", " << ffmt.leftjust() << "\n"
             << "  base: " << f.base() << "\n"
             << "  showpos: " << f.any(fmt::showpos) << "\n"
             << "  padzeros: " << f.any(fmt::padzeros) << "\n"
@@ -174,6 +175,8 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
 
 template<class F>
 void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
+    using fmt::ff;
+
     ASSERT_EQ(base_, f.base());
     ASSERT_EQ(padzeros_, f.any(fmt::padzeros));
     ASSERT_EQ(showpos_,  f.any(fmt::showpos));
@@ -186,9 +189,9 @@ void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
         for (size_t w: widths) {
             auto wfmt_0 = fmt::with(x, f);
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_0);
-            auto wfmt_r = fmt::with(x, f, w, false);
+            auto wfmt_r = fmt::with(x, f | ff(w, false));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_r);
-            auto wfmt_l = fmt::with(x, f, w, true);
+            auto wfmt_l = fmt::with(x, f | ff(w, true));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_l);
         }
     }
@@ -245,7 +248,7 @@ std::string ref_float_format(const F& f, size_t width, bool ljust, double x) {
     char *p = cfmt;
     *p++ = '%';
     if (f.any(fmt::showpos)) *p++ = '+';
-    if (f.any(ljust)) *p++ = '-';
+    if (ljust) *p++ = '-';
     else if (f.any(fmt::padzeros)) *p++ = '0';
 
     if (pw > 0) {
@@ -316,9 +319,10 @@ template<typename T, typename F>
 
 template<typename T, typename F>
 ::testing::AssertionResult CheckFloatFormat(
-    const char *expr, const fmt::with_fmt_ex_t<T, F>& wfmt) {
+    const char *expr, const fmt::with_fmt_t<T, fmt::field_formatter<F>>& wfmt) {
 
-    const F& f = wfmt.formatter;
+    const fmt::field_formatter<F>& ffmt = wfmt.formatter;
+    const F& f = ffmt.formatter();
     T x = wfmt.value;
     std::string refstr = ref_float_format(f, 0, false, x);
 
@@ -330,7 +334,7 @@ template<typename T, typename F>
         return ::testing::AssertionFailure()
             << "Mismatched formatted string for "
             << "x = " << x << ": \n"
-            << "  pos: " << wfmt.width << ", " << wfmt.leftjust << "\n"
+            << "  pos: " << ffmt.width() << ", " << ffmt.leftjust() << "\n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
             << "  showpos: " << f.any(fmt::showpos) << "\n"
@@ -373,6 +377,8 @@ std::vector<double> prepare_test_floats() {
 
 template<class F>
 void test_float_fmt(const F& f, size_t prec, bool upper_, bool padzeros_, bool showpos_) {
+    using fmt::ff;
+
     ASSERT_EQ(prec, f.precision());
     ASSERT_EQ(upper_, f.any(fmt::uppercase));
     ASSERT_EQ(padzeros_, f.any(fmt::padzeros));
@@ -386,9 +392,9 @@ void test_float_fmt(const F& f, size_t prec, bool upper_, bool padzeros_, bool s
         for (size_t w: widths) {
             auto wfmt_0 = fmt::with(x, f);
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_0);
-            auto wfmt_r = fmt::with(x, f, w, false);
+            auto wfmt_r = fmt::with(x, f | ff(w, false));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_r);
-            auto wfmt_l = fmt::with(x, f, w, true);
+            auto wfmt_l = fmt::with(x, f | ff(w, true));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_l);
         }
     }

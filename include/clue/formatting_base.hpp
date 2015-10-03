@@ -20,7 +20,7 @@ namespace fmt {
 
 //===============================================
 //
-//  Formatting flags
+//  Basic supporting
 //
 //===============================================
 
@@ -31,6 +31,14 @@ enum {
 };
 
 typedef unsigned int flag_t;
+
+// with functions
+
+template<typename T, typename Fmt>
+struct with_fmt_t {
+    const T& value;
+    const Fmt formatter;
+};
 
 //===============================================
 //
@@ -294,6 +302,74 @@ private:
     }
 };
 
+
+//===============================================
+//
+//  Field formatting
+//
+//===============================================
+
+struct ffspec_t {
+    size_t width;
+    bool leftjust;
+};
+
+constexpr ffspec_t ff(size_t width) noexcept {
+    return ffspec_t{width, false};
+}
+
+constexpr ffspec_t ff(size_t width, bool leftjust) noexcept {
+    return ffspec_t{width, leftjust};
+}
+
+
+template<class Fmt>
+class field_formatter {
+private:
+    Fmt fmt_;
+    size_t width_;
+    bool leftjust_;
+
+public:
+    field_formatter(const Fmt& f, const ffspec_t& fs) :
+        fmt_(f), width_(fs.width), leftjust_(fs.leftjust) {}
+
+    constexpr const Fmt& formatter() const {
+        return fmt_;
+    }
+
+    constexpr size_t width() const {
+        return width_;
+    }
+
+    constexpr bool leftjust() const {
+        return leftjust_;
+    }
+
+    field_formatter operator | (const ffspec_t& fs) const {
+        return field_formatter(fmt_, fs);
+    }
+
+public:
+    template<typename T>
+    size_t max_formatted_length(const T& x) const noexcept {
+        size_t n = fmt_.max_formatted_length(x);
+        return n > width_ ? n : width_;
+    }
+
+    template<typename T, typename charT>
+    size_t formatted_write(const T& x, charT *buf, size_t buf_len) const {
+        return fmt_.formatted_write(x, width_, leftjust_, buf, buf_len);
+    }
+};
+
+template<class Fmt>
+inline enable_if_t<::std::is_class<Fmt>::value, field_formatter<Fmt>>
+operator | (const Fmt& f, const ffspec_t& fs) {
+    return field_formatter<Fmt>(f, fs);
+}
+
+
 //===============================================
 //
 //  Default formatting
@@ -331,34 +407,6 @@ default_string_formatter get_default_formatter(const basic_string_view<charT, Tr
 template<typename charT, typename Traits, typename Allocator>
 default_string_formatter get_default_formatter(const ::std::basic_string<charT, Traits, Allocator>&) noexcept {
     return default_string_formatter{};
-}
-
-// with functions
-
-template<typename T, typename Fmt>
-struct with_fmt_t {
-    const T& value;
-    const Fmt formatter;
-};
-
-template<typename T, typename Fmt>
-struct with_fmt_ex_t {
-    const T& value;
-    const Fmt formatter;
-    size_t width;
-    bool leftjust;
-};
-
-template<typename T, typename Fmt>
-inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_t<T, Fmt>>
-with(const T& v, const Fmt& fmt) {
-    return with_fmt_t<T, Fmt>{v, fmt};
-}
-
-template<typename T, typename Fmt>
-inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_ex_t<T, Fmt>>
-with(const T& v, const Fmt& fmt, size_t width, bool ljust=false) {
-    return with_fmt_ex_t<T, Fmt>{v, fmt, width, ljust};
 }
 
 

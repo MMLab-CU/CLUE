@@ -41,17 +41,18 @@ In C++11, the range for-loop syntax is introduced, which allow concise expressio
 
 Documentation of ``value_range`` and relevant functions are given below.
 
-The ``value_range`` class template
------------------------------------
+The ``value_range`` and ``stepped_value_range`` class templates
+---------------------------------------------------------------
 
 Formally, the class template ``value_range`` is defined as:
 
 .. cpp:class:: value_range<T, D, Traits>
 
+    Classes to represent stepped ranges, such as ``1, 2, 3, 4, ...``.
+
     :param T: The value type.
     :param D: The difference type. This can be omitted, and it will be, by default, set to ``default_difference<T>::type``.
     :param Traits: A traits class that specifies the behavior of the value type ```T``. This class has to satisfy the *EnumerableValueTraits* concept, which will be explained in the section enumerable_value_traits_. In general, one may omit this, and it will be, by default, set to ``value_type_traits<T, D>``.
-
 
 .. cpp:class:: default_difference<T>
 
@@ -61,17 +62,31 @@ Formally, the class template ``value_range`` is defined as:
 
     To enumerate non-numerical types (*e.g.* dates), one should specialize ``default_difference<T>`` to provide a suitable difference type.
 
+.. cpp:class:: stepped_value_range<T, S, D, Traits>
+
+    Classes to represent stepped ranges, such as ``1, 3, 5, 7, ...``.
+
+    :param T: The value type.
+    :param S: The step type.
+    :param D: The difference type. By default, it is ``default_difference_type<T>::type``.
+    :param Traits: The trait class for ``T``. By default, it is ``value_type_traits<T, D>``.
+
+.. note::
+
+    For ``stepped_value_range<T, S>``, only unsigned integral types for ``T`` and ``S`` are supported at this point.
+
 
 Member types
 -------------
 
-The class ``value_range<T>`` contains a series of member typedefs as follows:
+The class ``value_range<T>`` or ``stepped_value_range<T, S>`` contains a series of member typedefs as follows:
 
 ============================= ============================================
  **types**                     **definitions**
 ----------------------------- --------------------------------------------
 ``value_type``                 ``T``
 ``difference_type``            ``D``
+``step_type``                  ``S``
 ``traits_type``                ``Traits``
 ``size_type``                  ``std::size_t``
 ``pointer``                    ``const T*``
@@ -82,19 +97,40 @@ The class ``value_range<T>`` contains a series of member typedefs as follows:
 ``const_iterator``             ``iterator``
 ============================= ============================================
 
+.. note::
+
+    For ``value_range<T>``, the ``step_type`` is the same as ``size_type``.
+
 
 Construction
 -------------
 
-The ``value_range<T>`` class has a simple constructor.
+The ``value_range<T>`` and ``stepped_value_range<T, S>`` classes have simple constructors.
 
-.. cpp:function:: constexpr value_range(const T& first, const T& last)
+.. cpp:function:: constexpr value_range(const T& vbegin, const T& vend)
 
-    Constructs a value range with beginning value ``first`` (inclusive) and ending value ``last`` (exclusive).
+    :param vbegin: The beginning value (inclusive).
+    :param vend:   The ending value (exclusive).
+
+    For example, ``value_range(0, 3)`` indicates the following sequence ``0, 1, 2``.
+
+.. cpp:function:: stepped_value_range(const T& vbegin, const T& vend, const S& step)
+
+    :param vbegin: The beginning value (inclusive).
+    :param vend:   The ending value (exclusive).
+    :param step:   The incremental step.
+
+    For example, ``stepped_value_range(0, 2, 5)`` indicates the following sequence ``0, 2, 4``.
 
 .. note::
 
-    It also has a copy constructor, an assignment operator, a destructor and a ``swap`` member function, all with default behaviors.
+    These classes also have a copy constructor, an assignment operator, a destructor and a ``swap`` member function, all with default behaviors.
+
+.. note::
+
+    For stepped ranges, the **step must be positive**. Zero or negative step would result in undefined behavior. The size of a stepped range is computed as
+    ``(e - b + (s - 1)) / s``.
+
 
 In addition, convenient constructing functions are provided, with which the user does not need to explictly specify the value type (which would be infered from the arguments):
 
@@ -106,15 +142,15 @@ In addition, convenient constructing functions are provided, with which the user
 
     Equivalent to ``value_range<T>(a, b)``.
 
-.. cpp:function:: value_range<S> indices(const Container& c)
+.. cpp:function:: value_range<Siz> indices(const Container& c)
 
-    Returns a value range that contains indices from ``0`` to ``c.size() - 1``. Here, the value type ``S`` is ``Container::size_type``.
+    Returns a value range that contains indices from ``0`` to ``c.size() - 1``. Here, the value type ``Siz`` is ``Container::size_type``.
 
 
 Properties and element access
 -------------------------------
 
-The ``value_range<T>`` class provides member functions that allow access of the basic properties and individual values in the range:
+The ``value_range<T>`` and ``stepped_value_range<T, S>`` classes provide a similar set of member functions that allow access of the basic properties and individual values in the range, as follows.
 
 .. cpp:function:: constexpr size_type size() const noexcept
 
@@ -124,6 +160,12 @@ The ``value_range<T>`` class provides member functions that allow access of the 
 
     Get whether the range is empty, *i.e.* contains no values.
 
+.. cpp:function:: constexpr size_type step() const noexcept
+
+    Get the step size.
+
+    :note: For ``value_range<T>``, the step size is always ``1``.
+
 .. cpp:function:: constexpr T front() const noexcept
 
     Get the first value within the range.
@@ -132,11 +174,11 @@ The ``value_range<T>`` class provides member functions that allow access of the 
 
     Get the last value **within** the range.
 
-.. cpp:function:: constexpr T first() const noexcept
+.. cpp:function:: constexpr T begin_value() const noexcept
 
     Get the first value in the range (equivalent to ``front()``).
 
-.. cpp:function:: constexpr T last() const noexcept
+.. cpp:function:: constexpr T end_value() const noexcept
 
     Get the value that specifies the end of the value, which is the value next to ``back()``.
 
@@ -172,7 +214,7 @@ Iterators
 
 .. note::
 
-    A value range does not actually store the values in the range. Hence, the iterators are *proxies* that do not refer to an existing location in memory. Instead, ``*iter`` returns the value itself instead of a reference. In spite of this subtle difference from a typical iterator, we find that it works perfectly with most STL algorithms.
+    A value range or stepped value range does not actually store the values in the range. Hence, the iterators are *proxies* that do not refer to an existing location in memory. Instead, ``*iter`` returns the value itself instead of a reference. In spite of this subtle difference from a typical iterator, we find that it works perfectly with most STL algorithms.
 
 
 .. _enumerable_value_traits:

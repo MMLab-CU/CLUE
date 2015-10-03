@@ -302,6 +302,7 @@ public:
     typedef D difference_type;
     typedef Traits traits_type;
     typedef typename ::std::size_t size_type;
+    typedef size_type step_type;
 
     typedef const T& reference;
     typedef const T& const_reference;
@@ -337,6 +338,10 @@ public:
 
     constexpr size_type size() const noexcept {
         return static_cast<size_type>(Traits::difference(vend_, vbegin_));
+    }
+
+    constexpr step_type step() const noexcept {
+        return 1;
     }
 
     constexpr bool empty() const noexcept {
@@ -386,7 +391,7 @@ template<typename T,
          typename D=typename default_difference<T>::type,
          typename Traits=value_range_traits<T, D>>
 class stepped_value_range {
-    static_assert(::std::is_unsigned<T>::value && ::std::is_unsigned<S>::value,
+    static_assert(::std::is_integral<T>::value && ::std::is_integral<S>::value,
             "stepped_range<T, S>: only cases where both T and S are unsigned integers are supported.");
 public:
     // types
@@ -413,11 +418,13 @@ private:
 public:
     // constructor/copy/swap
 
-    constexpr stepped_value_range(const T& vbegin, const T& vend, const S& step) :
+    stepped_value_range(const T& vbegin, const T& vend, const S& step) :
         vbegin_(vbegin),
         vend_(vend),
         step_(step),
-        len_((vend - vbegin + (step - 1)) / step) {}
+        len_((vend - vbegin + (step - 1)) / step) {
+        CLUE_ASSERT(step > 0);
+    }
 
     constexpr stepped_value_range(const stepped_value_range&) = default;
 

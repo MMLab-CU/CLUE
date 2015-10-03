@@ -13,6 +13,7 @@ void test_unit_range(const clue::value_range<T>& rgn, const T& a, const T& b) {
     ASSERT_EQ(b,   rgn.end_value());
     ASSERT_EQ(a,   rgn.front());
     ASSERT_EQ(b-1, rgn.back());
+    ASSERT_EQ(1,   rgn.step());
 
     ASSERT_EQ(size_t(b - a), rgn.size());
     ASSERT_EQ((a == b), rgn.empty());
@@ -85,6 +86,7 @@ void test_stepped_range(const clue::stepped_value_range<T, S>& rgn, const T& a, 
 
     ASSERT_EQ(a, rgn.begin_value());
     ASSERT_EQ(b, rgn.end_value());
+    ASSERT_EQ(s, rgn.step());
 
     size_t len = rgn.size();
     if (a < b) {
@@ -279,4 +281,3 @@ TEST(SteppedRanges, Basics) {
         test_stepped_range(srange(2, 8, s), size_t(2), size_t(8), s);
     }
 }
-

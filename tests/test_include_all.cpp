@@ -5,6 +5,10 @@
 
 // ensure that all headers are actually included
 
+// misc
+using clue::_;
+using clue::pass;
+
 // array_view
 using clue::array_view;
 

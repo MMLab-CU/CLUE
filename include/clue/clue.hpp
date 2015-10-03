@@ -5,6 +5,8 @@
 
 #include <clue/config.hpp>
 
+#include <clue/misc.hpp>
+
 // type traits & meta-programming
 #include <clue/type_traits.hpp>
 #include <clue/meta.hpp>

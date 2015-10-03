@@ -143,14 +143,12 @@ public:
     }
 
     value_range_iterator operator++(int) noexcept {
-        T t(v_);
-        Traits::increment(v_);
+        T t(v_); Traits::increment(v_);
         return value_range_iterator(t);
     }
 
     value_range_iterator operator--(int) noexcept {
-        T t(v_);
-        Traits::decrement(v_);
+        T t(v_); Traits::decrement(v_);
         return value_range_iterator(t);
     }
 
@@ -178,6 +176,116 @@ public:
     }
 };
 
+
+template<typename T, typename S, typename Traits>
+class stepped_value_range_iterator {
+private:
+    T v_;
+    S s_;
+
+public:
+    typedef T value_type;
+    typedef T reference;
+    typedef const T* pointer;
+    typedef typename Traits::difference_type difference_type;
+    typedef ::std::random_access_iterator_tag iterator_category;
+
+public:
+    constexpr stepped_value_range_iterator(const T& v, const S& s) :
+        v_(v), s_(s) {}
+
+    // comparison
+
+    constexpr bool operator <  (const stepped_value_range_iterator& r) const noexcept {
+        return Traits::lt(v_, r.v_);
+    }
+
+    constexpr bool operator <= (const stepped_value_range_iterator& r) const noexcept {
+        return Traits::le(v_, r.v_);
+    }
+
+    constexpr bool operator >  (const stepped_value_range_iterator& r) const noexcept {
+        return Traits::lt(r.v_, v_);
+    }
+
+    constexpr bool operator >= (const stepped_value_range_iterator& r) const noexcept {
+        return Traits::le(r.v_, v_);
+    }
+
+    constexpr bool operator == (const stepped_value_range_iterator& r) const noexcept {
+        return Traits::eq(v_, r.v_);
+    }
+
+    constexpr bool operator != (const stepped_value_range_iterator& r) const noexcept {
+        return !Traits::eq(v_, r.v_);
+    }
+
+    // dereference
+
+    constexpr T operator* () const noexcept {
+        return T(v_);
+    }
+
+    constexpr T operator[](difference_type n) const noexcept {
+        return Traits::advance(v_, step_(n));
+    }
+
+    // increment & decrement
+
+    stepped_value_range_iterator& operator++() noexcept {
+        Traits::increment(v_, step_());
+        return *this;
+    }
+
+    stepped_value_range_iterator& operator--() noexcept {
+        Traits::decrement(v_, step_());
+        return *this;
+    }
+
+    stepped_value_range_iterator operator++(int) noexcept {
+        T t(v_); Traits::increment(v_, step_());
+        return stepped_value_range_iterator(t);
+    }
+
+    stepped_value_range_iterator operator--(int) noexcept {
+        T t(v_); Traits::decrement(v_, step_());
+        return stepped_value_range_iterator(t);
+    }
+
+    // arithmetics
+    constexpr stepped_value_range_iterator operator + (difference_type n) const noexcept {
+        return stepped_value_range_iterator(Traits::next(v_, step_(n)));
+    }
+
+    constexpr stepped_value_range_iterator operator - (difference_type n) const noexcept {
+        return stepped_value_range_iterator(Traits::prev(v_, step_(n)));
+    }
+
+    stepped_value_range_iterator& operator += (difference_type n) noexcept {
+        Traits::increment(v_, step_(n));
+        return *this;
+    }
+
+    stepped_value_range_iterator& operator -= (difference_type n) noexcept {
+        Traits::decrement(v_, step_(n));
+        return *this;
+    }
+
+    constexpr difference_type operator - (stepped_value_range_iterator r) const noexcept {
+        return Traits::difference(v_, r.v_) / step_();
+    }
+
+private:
+    constexpr difference_type step_() const noexcept {
+        return static_cast<difference_type>(s_);
+    }
+
+    constexpr difference_type step_(difference_type n) const noexcept {
+        return static_cast<difference_type>(s_) * n;
+    }
+};
+
+
 } // end namespace details
 
 
@@ -204,14 +312,14 @@ public:
     typedef iterator const_iterator;
 
 private:
-    T first_;
-    T last_;
+    T vbegin_;
+    T vend_;
 
 public:
     // constructor/copy/swap
 
-    constexpr value_range(const T& first, const T& last) :
-        first_(first), last_(last) {}
+    constexpr value_range(const T& vbegin, const T& vend) :
+        vbegin_(vbegin), vend_(vend) {}
 
     constexpr value_range(const value_range&) = default;
 
@@ -221,49 +329,49 @@ public:
 
     void swap(value_range& other) noexcept {
         using ::std::swap;
-        swap(first_, other.first_);
-        swap(last_, other.last_);
+        swap(vbegin_, other.vbegin_);
+        swap(vend_, other.vend_);
     }
 
     // properties
 
     constexpr size_type size() const noexcept {
-        return static_cast<size_type>(Traits::difference(last_, first_));
+        return static_cast<size_type>(Traits::difference(vend_, vbegin_));
     }
 
     constexpr bool empty() const noexcept {
-        return Traits::eq(first_, last_);
+        return Traits::eq(vbegin_, vend_);
     }
 
     // element access
 
-    constexpr       T  front() const noexcept { return first_; }
-    constexpr       T  back()  const noexcept { return Traits::prev(last_); }
-    constexpr const T& first() const noexcept { return first_; }
-    constexpr const T& last()  const noexcept { return last_; }
+    constexpr       T  front() const noexcept { return vbegin_; }
+    constexpr       T  back()  const noexcept { return Traits::prev(vend_); }
+    constexpr const T& begin_value() const noexcept { return vbegin_; }
+    constexpr const T& end_value()   const noexcept { return vend_; }
 
     constexpr T operator[](size_type pos) const {
-        return first_ + pos;
+        return Traits::next(vbegin_, pos);
     }
 
     constexpr T at(size_type pos) const {
         return pos < size() ?
-                first_ + pos :
-                (throw ::std::out_of_range("value_range::at"), first_);
+                vbegin_ + pos :
+                (throw ::std::out_of_range("value_range::at"), vbegin_);
     }
 
     // iterators
 
-    constexpr const_iterator begin()  const { return const_iterator(first_); }
-    constexpr const_iterator end()    const { return const_iterator(last_); }
+    constexpr const_iterator begin()  const { return const_iterator(vbegin_); }
+    constexpr const_iterator end()    const { return const_iterator(vend_); }
     constexpr const_iterator cbegin() const { return begin(); }
     constexpr const_iterator cend()   const { return end();   }
 
     // equality comparison
 
     constexpr bool operator==(const value_range& r) const noexcept {
-        return Traits::eq(first_, r.first_) &&
-               Traits::eq(last_,  r.last_);
+        return Traits::eq(vbegin_, r.vbegin_) &&
+               Traits::eq(vend_,  r.vend_);
     }
 
     constexpr bool operator!=(const value_range& r) const noexcept {
@@ -271,6 +379,132 @@ public:
     }
 
 }; // end class value_range
+
+
+template<typename T,
+         typename S,
+         typename D=typename default_difference<T>::type,
+         typename Traits=value_range_traits<T, D>>
+class stepped_value_range {
+    static_assert(::std::is_unsigned<T>::value && ::std::is_unsigned<S>::value,
+            "stepped_range<T, S>: only cases where both T and S are unsigned integers are supported.");
+public:
+    // types
+    typedef T value_type;
+    typedef S step_type;
+    typedef D difference_type;
+    typedef Traits traits_type;
+    typedef typename ::std::size_t size_type;
+
+    typedef const T& reference;
+    typedef const T& const_reference;
+    typedef const T* pointer;
+    typedef const T* const_pointer;
+
+    typedef details::stepped_value_range_iterator<T, S, Traits> iterator;
+    typedef iterator const_iterator;
+
+private:
+    T vbegin_;
+    T vend_;
+    S step_;
+    size_type len_;
+
+public:
+    // constructor/copy/swap
+
+    constexpr stepped_value_range(const T& vbegin, const T& vend, const S& step) :
+        vbegin_(vbegin),
+        vend_(vend),
+        step_(step),
+        len_((vend - vbegin + (step - 1)) / step) {}
+
+    constexpr stepped_value_range(const stepped_value_range&) = default;
+
+    ~stepped_value_range() = default;
+
+    stepped_value_range& operator=(const stepped_value_range&) = default;
+
+    void swap(stepped_value_range& other) noexcept {
+        using ::std::swap;
+        swap(vbegin_, other.vbegin_);
+        swap(vend_, other.vend_);
+        swap(step_, other.step_);
+        swap(len_, other.len_);
+    }
+
+    // properties
+
+    constexpr size_type size() const noexcept {
+        return len_;
+    }
+
+    constexpr step_type step() const noexcept {
+        return step_;
+    }
+
+    constexpr bool empty() const noexcept {
+        return len_ == 0;
+    }
+
+    // element access
+
+    constexpr T front() const noexcept {
+        return vbegin_;
+    }
+
+    constexpr T back()  const noexcept {
+        return Traits::next(vbegin_,
+            static_cast<difference_type>(step_ * (len_ - 1)));
+    }
+
+    constexpr const T& begin_value() const noexcept {
+        return vbegin_;
+    }
+
+    constexpr const T& end_value() const noexcept {
+        return vend_;
+    }
+
+    constexpr T operator[](size_type pos) const {
+        return Traits::next(vbegin_, static_cast<difference_type>(step_ * pos));
+    }
+
+    constexpr T at(size_type pos) const {
+        return pos < size() ?
+                vbegin_ + pos :
+                (throw ::std::out_of_range("value_range::at"), vbegin_);
+    }
+
+    // iterators
+
+    constexpr const_iterator begin() const {
+        return const_iterator(vbegin_, step_);
+    }
+
+    constexpr const_iterator end() const {
+        return const_iterator(
+            Traits::next(vbegin_, static_cast<difference_type>(step_ * len_)),
+            step_);
+    }
+
+    constexpr const_iterator cbegin() const { return begin(); }
+    constexpr const_iterator cend()   const { return end();   }
+
+    // equality comparison
+
+    constexpr bool operator==(const stepped_value_range& r) const noexcept {
+        return Traits::eq(vbegin_, r.vbegin_) &&
+               Traits::eq(step_,  r.step_) &&
+               Traits::eq(len_, r.len_);
+    }
+
+    constexpr bool operator!=(const stepped_value_range& r) const noexcept {
+        return !(operator == (r));
+    }
+
+}; // end class stepped_value_range
+
 
 template<typename T>
 constexpr value_range<T> vrange(const T& u) {

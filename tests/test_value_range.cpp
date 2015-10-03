@@ -9,8 +9,8 @@ void test_unit_range(const clue::value_range<T>& rgn, const T& a, const T& b) {
     using std::size_t;
     using difference_type = typename clue::value_range<T>::difference_type;
 
-    ASSERT_EQ(a,   rgn.first());
-    ASSERT_EQ(b,   rgn.last());
+    ASSERT_EQ(a,   rgn.begin_value());
+    ASSERT_EQ(b,   rgn.end_value());
     ASSERT_EQ(a,   rgn.front());
     ASSERT_EQ(b-1, rgn.back());
 

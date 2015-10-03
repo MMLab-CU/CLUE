@@ -14,7 +14,7 @@ with(const T& v, const Fmt& fmt) {
 }
 
 template<typename T>
-inline auto with(const T& x, ffspec_t fs) ->
+inline auto with(const T& x, const fieldfmt& fs) ->
     with_fmt_t<T, field_formatter<decltype(get_default_formatter(x))> > {
     return with(x, get_default_formatter(x) | fs);
 }

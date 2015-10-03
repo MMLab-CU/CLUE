@@ -309,17 +309,17 @@ private:
 //
 //===============================================
 
-struct ffspec_t {
+struct fieldfmt {
     size_t width;
     bool leftjust;
 };
 
-constexpr ffspec_t ff(size_t width) noexcept {
-    return ffspec_t{width, false};
+constexpr fieldfmt ff(size_t width) noexcept {
+    return fieldfmt{width, false};
 }
 
-constexpr ffspec_t ff(size_t width, bool leftjust) noexcept {
-    return ffspec_t{width, leftjust};
+constexpr fieldfmt ff(size_t width, bool leftjust) noexcept {
+    return fieldfmt{width, leftjust};
 }
 
 
@@ -331,7 +331,7 @@ private:
     bool leftjust_;
 
 public:
-    field_formatter(const Fmt& f, const ffspec_t& fs) :
+    field_formatter(const Fmt& f, const fieldfmt& fs) :
         fmt_(f), width_(fs.width), leftjust_(fs.leftjust) {}
 
     constexpr const Fmt& formatter() const {
@@ -346,7 +346,7 @@ public:
         return leftjust_;
     }
 
-    field_formatter operator | (const ffspec_t& fs) const {
+    field_formatter operator | (const fieldfmt& fs) const {
         return field_formatter(fmt_, fs);
     }
 
@@ -365,7 +365,7 @@ public:
 
 template<class Fmt>
 inline enable_if_t<::std::is_class<Fmt>::value, field_formatter<Fmt>>
-operator | (const Fmt& f, const ffspec_t& fs) {
+operator | (const Fmt& f, const fieldfmt& fs) {
     return field_formatter<Fmt>(f, fs);
 }
 

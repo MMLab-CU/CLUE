@@ -140,13 +140,14 @@ TEST(StringBuilder, WriteSeq) {
     // without `with` helper, one has to write so much ...
     using with_fixed = fmt::with_fmt_t<int, fmt::fixed_formatter>;
     using with_sci = fmt::with_fmt_t<double, fmt::sci_formatter>;
-    using fchar_t = fmt::field_formatter<fmt::default_char_formatter>;
+    using char_fmt = fmt::default_char_formatter<char>;
+    using fchar_t = fmt::field_formatter<char_fmt>;
     using with_fchar = fmt::with_fmt_t<char, fchar_t>;
 
     sb.clear();
     sb << with_fixed{ 1, fmt::fixed().precision(4) } << ", "
        << with_sci{ 2.5, fmt::sci().precision(3) } << ", "
-       << "'" << with_fchar{ 'a', fchar_t{fmt::default_char_formatter{}, fmt::ff(3)} } << "'";
+       << "'" << with_fchar{ 'a', fchar_t{char_fmt{}, fmt::ff(3)} } << "'";
 
     ASSERT_EQ("1.0000, 2.500e+00, '  a'", sb.str());
 }

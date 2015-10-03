@@ -67,44 +67,43 @@ public:
 
     // formatting
 
-    template<typename T>
-    size_t max_formatted_length(T x) const noexcept {
-        size_t n = ndigits(x, base_);
-        if (x < 0 || any(showpos)) n++;
-        return n;
-    }
-
     template<typename T, typename charT>
-    size_t formatted_write(T x, charT *buf, size_t buf_len) const {
-        bool showpos_ = any(showpos);
-        switch (base_) {
-            case  8:
-                return details::render(x, details::int_render_helper<T,8>(x),
-                    showpos_, buf, buf_len);
-            case 10:
-                return details::render(x, details::int_render_helper<T,10>(x),
-                    showpos_, buf, buf_len);
-            case 16:
-                return details::render(x, details::int_render_helper<T,16>(x, any(uppercase)),
-                    showpos_, buf, buf_len);
+    size_t operator() (T x, charT *buf, size_t buf_len) const {
+        if (buf) {
+            bool showpos_ = any(showpos);
+            switch (base_) {
+                case  8:
+                    return details::render(x, details::int_render_helper<T,8>(x),
+                        showpos_, buf, buf_len);
+                case 10:
+                    return details::render(x, details::int_render_helper<T,10>(x),
+                        showpos_, buf, buf_len);
+                case 16:
+                    return details::render(x, details::int_render_helper<T,16>(x, any(uppercase)),
+                        showpos_, buf, buf_len);
+            }
+            return 0;
+        } else {
+            size_t n = ndigits(x, base_);
+            if (x < 0 || any(showpos)) n++;
+            return n;
         }
-        return 0;
     }
 
     template<typename T, typename charT>
-    size_t formatted_write(T x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
+    size_t field_write(T x, const fieldfmt& fs, charT *buf, size_t buf_len) const {
         bool showpos_ = any(showpos);
         bool padzeros_ = any(padzeros);
         switch (base_) {
             case  8:
                 return details::render(x, details::int_render_helper<T,8>(x),
-                    showpos_, padzeros_, width, ljust, buf, buf_len);
+                    showpos_, padzeros_, fs.width, fs.leftjust, buf, buf_len);
             case 10:
                 return details::render(x, details::int_render_helper<T,10>(x),
-                    showpos_, padzeros_, width, ljust, buf, buf_len);
+                    showpos_, padzeros_, fs.width, fs.leftjust, buf, buf_len);
             case 16:
                 return details::render(x, details::int_render_helper<T,16>(x, any(uppercase)),
-                    showpos_, padzeros_, width, ljust, buf, buf_len);
+                    showpos_, padzeros_, fs.width, fs.leftjust, buf, buf_len);
         }
         return 0;
     }
@@ -124,23 +123,22 @@ public:
 
     // formatting
 
-    template<typename T>
-    size_t max_formatted_length(T x) const noexcept {
-        size_t n = details::ndigits_dec(details::uabs(x));
-        if (x < 0 || any(showpos)) n++;
-        return n;
+    template<typename T, typename charT>
+    size_t operator() (T x, charT *buf, size_t buf_len) const {
+        if (buf) {
+            return details::render(x,
+                details::int_render_helper<T,10>(x), any(showpos), buf, buf_len);
+        } else {
+            size_t n = details::ndigits_dec(details::uabs(x));
+            if (x < 0 || any(showpos)) n++;
+            return n;
+        }
     }
 
     template<typename T, typename charT>
-    size_t formatted_write(T x, charT *buf, size_t buf_len) const {
-        return details::render(x,
-            details::int_render_helper<T,10>(x), any(showpos), buf, buf_len);
-    }
-
-    template<typename T, typename charT>
-    size_t formatted_write(T x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
+    size_t field_write(T x, const fieldfmt& fs, charT *buf, size_t buf_len) const {
         return details::render(x, details::int_render_helper<T,10>(x),
-            false, false, width, ljust, buf, buf_len);
+            false, false, fs.width, fs.leftjust, buf, buf_len);
     }
 };
 
@@ -224,30 +222,30 @@ public:
 
     // formatting
 
-    size_t max_formatted_length(double x) const noexcept {
-        size_t n = 0;
-        if (::std::isfinite(x)) {
-            n = fmt_traits_t::maxfmtlength(x, precision_, any(showpos));
-        } else if (::std::isinf(x)) {
-            n = ::std::signbit(x) || any(showpos) ? 4 : 3;
+    template<typename charT>
+    size_t operator() (double x, charT *buf, size_t buf_len) const {
+        if (buf) {
+            return field_write(x, ff(0), buf, buf_len);
         } else {
-            CLUE_ASSERT(::std::isnan(x));
-            n = any(showpos) ? 4 : 3;
+            size_t n = 0;
+            if (::std::isfinite(x)) {
+                n = fmt_traits_t::maxfmtlength(x, precision_, any(showpos));
+            } else if (::std::isinf(x)) {
+                n = ::std::signbit(x) || any(showpos) ? 4 : 3;
+            } else {
+                CLUE_ASSERT(::std::isnan(x));
+                n = any(showpos) ? 4 : 3;
+            }
+            return n;
         }
-        return n;
     }
 
     template<typename charT>
-    size_t formatted_write(double x, charT *buf, size_t buf_len) const {
-        return formatted_write(x, 0, false, buf, buf_len);
-    }
-
-    template<typename charT>
-    size_t formatted_write(double x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
+    size_t field_write(double x, const fieldfmt& fs, charT *buf, size_t buf_len) const {
         char cfmt[16];
         const char fsym = details::float_fmt_traits<Tag>::printf_sym(any(uppercase));
-        details::float_cfmt_impl(cfmt, fsym, width, precision_,
-                ljust, any(showpos), any(padzeros));
+        details::float_cfmt_impl(cfmt, fsym, fs.width, precision_,
+                fs.leftjust, any(showpos), any(padzeros));
         size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
         CLUE_ASSERT(n < buf_len);
         return n;
@@ -255,22 +253,17 @@ public:
 };
 
 
-class grisu_formatter {
+class grisu_formatter : public formatter_base<grisu_formatter, false> {
 public:
-    size_t max_formatted_length(double x) const noexcept {
-        return 27;
-    }
-
     template<typename charT>
-    size_t formatted_write(double x, charT *buf, size_t buf_len) const {
-        size_t n = (size_t)grisu_impl::dtoa(x, buf);
-        CLUE_ASSERT(n < buf_len);
-        return n;
-    }
-
-    template<typename charT>
-    size_t formatted_write(double x, size_t width, bool ljust, charT *buf, size_t buf_len) const {
-        return formatted_write_unknown_length(*this, x, width, ljust, buf, buf_len);
+    size_t operator() (double x, charT *buf, size_t buf_len) const {
+        if (buf) {
+            size_t n = (size_t)grisu_impl::dtoa(x, buf);
+            CLUE_ASSERT(n < buf_len);
+            return n;
+        } else {
+            return 27;
+        }
     }
 };
 

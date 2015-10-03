@@ -18,53 +18,36 @@ struct Triplet {
 //
 // The implementation can build on top of string_builder
 //
-
-class TripletFormatter {
+class TripletFormatter : public clue::fmt::formatter_base<TripletFormatter> {
 public:
-    size_t max_formatted_length(const Triplet& t) const noexcept {
-        using namespace clue::fmt;
-        size_t m1 = ndigits(t.v1, 10);
-        size_t m2 = ndigits(t.v2, 10);
-        size_t m3 = ndigits(t.v3, 10);
-        // note: strlen("(, , )") = 6
-        return m1 + m2 + m3 + 6;
-    }
-
     template<typename charT>
-    size_t formatted_write(const Triplet& t, charT *buf, size_t buf_len) const {
-        clue::basic_ref_string_builder<charT> s(buf, buf_len);
-        s << '('
-          << t.v1 << ", "
-          << t.v2 << ", "
-          << t.v3 << ')';
-        buf[s.size()] = '\0';
-        return s.size();
-    }
-
-    // Implementing the formatting with width & adjustment can be tedious,
-    // one can resort to the provided implementation helper, such as
-    //
-    //  'formatted_write_known_length'
-    //      or
-    //  'formatted_write_unknown_length'
-    //
-    // to simplify the implementation
-    //
-    template<typename charT>
-    size_t formatted_write(const Triplet& t, size_t width, bool leftjust,
-                           charT *buf, size_t buf_len) const {
-        size_t n = max_formatted_length(t);
-        return clue::fmt::formatted_write_known_length(
-            *this, t, n, width, leftjust, buf, buf_len);
+    size_t operator() (const Triplet& t, charT *buf, size_t buf_len) const {
+        if (buf) {
+            // write formatted string to the given buffer,
+            // and return the number of written characters
+            // (excluding the null terminator)
+            clue::basic_ref_string_builder<charT> s(buf, buf_len);
+            s << '('
+              << t.v1 << ", "
+              << t.v2 << ", "
+              << t.v3 << ')';
+            buf[s.size()] = '\0';
+            return s.size();
+        } else {
+            // compute the length of the formatted string
+            using namespace clue::fmt;
+            size_t m1 = ndigits(t.v1, 10);
+            size_t m2 = ndigits(t.v2, 10);
+            size_t m3 = ndigits(t.v3, 10);
+            return m1 + m2 + m3 + 6;
+        }
     }
 };
-
 
 // set TripletFormatter as default for Triplet
 CLUE_DEFAULT_FORMATTER(const Triplet&, TripletFormatter)
 
 };
-
 
 
 // ----- client code -----

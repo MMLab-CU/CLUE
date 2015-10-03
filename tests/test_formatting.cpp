@@ -17,13 +17,15 @@ TEST(Formatting, Csprintf) {
 
 template<class T, class Fmt>
 void test_formatter(const T& x, const Fmt& f, const std::string& refstr) {
+    using fmt::ff;
+
     const size_t buf_len = 128;
     static char buf[buf_len];
 
-    size_t flen = f.max_formatted_length(x);
+    size_t flen = f(x, static_cast<char*>(nullptr), 0);
     ASSERT_LT(flen, 100);
 
-    size_t wlen = f.formatted_write(x, buf, flen + 1);
+    size_t wlen = f(x, buf, flen + 1);
     ASSERT_EQ(flen, wlen);
 
     std::string s(buf);
@@ -35,12 +37,12 @@ void test_formatter(const T& x, const Fmt& f, const std::string& refstr) {
         size_t expect_wlen = (std::max)(flen, w);
         std::string pad = w > flen ? std::string(w - flen, ' ') : std::string();
 
-        wlen = f.formatted_write(x, w, false, buf, buf_len);
+        wlen = f.field_write(x, ff(w, false), buf, buf_len);
         std::string s_r(buf);
         ASSERT_EQ(expect_wlen, wlen);
         ASSERT_EQ(pad + s, s_r);
 
-        wlen = f.formatted_write(x, w, true, buf, buf_len);
+        wlen = f.field_write(x, ff(w, true), buf, buf_len);
         std::string s_l(buf);
         ASSERT_EQ(expect_wlen, wlen);
         ASSERT_EQ(s + pad, s_l);
@@ -53,14 +55,13 @@ TEST(Formatting, DefaultBoolFmt) {
 }
 
 TEST(Formatting, DefaultCharFmt) {
-    test_formatter('a', fmt::default_char_formatter{}, "a");
+    test_formatter('a', fmt::default_char_formatter<char>{}, "a");
 }
 
-
 void test_default_string_formatter(const std::string& src) {
-    test_formatter(src, fmt::default_string_formatter{}, src);
-    test_formatter(string_view(src), fmt::default_string_formatter{}, src);
-    test_formatter(src.c_str(), fmt::default_string_formatter{}, src);
+    test_formatter(src, fmt::default_string_formatter<char>{}, src);
+    test_formatter(string_view(src), fmt::default_string_formatter<char>{}, src);
+    test_formatter(src.c_str(), fmt::default_string_formatter<char>{}, src);
 }
 
 TEST(Formatting, DefaultStringFmt) {

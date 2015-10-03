@@ -21,9 +21,9 @@ inline auto with(const T& x, const fieldfmt& fs) ->
 
 template<typename T, typename Fmt>
 inline ::std::string strf(const T& x, const Fmt& fmt) {
-    size_t fmt_len = fmt.max_formatted_length(x);
+    size_t fmt_len = fmt(x, static_cast<char*>(nullptr), 0);
     ::std::string s(fmt_len, '\0');
-    size_t wlen = fmt.formatted_write(x, const_cast<char*>(s.data()), fmt_len + 1);
+    size_t wlen = fmt(x, const_cast<char*>(s.data()), fmt_len + 1);
     CLUE_ASSERT(wlen <= fmt_len);
     if (wlen < fmt_len) {
         s.resize(wlen);

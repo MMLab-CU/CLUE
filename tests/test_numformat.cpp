@@ -66,7 +66,7 @@ template<typename T, typename F>
     T x = wfmt.value;
     std::string refstr = ref_int_format(f, 0, false, x);
 
-    size_t flen = f.max_formatted_length(x);
+    size_t flen = f(x, static_cast<char*>(nullptr), 0);
     if (refstr.size() != flen) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted length for "
@@ -81,7 +81,7 @@ template<typename T, typename F>
     }
 
     char rbuf[128];
-    f.formatted_write(x, rbuf, 128);
+    f(x, rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {
@@ -109,7 +109,7 @@ template<typename T, typename F>
     std::string refstr = ref_int_format(f, ffmt.width(), ffmt.leftjust(), x);
 
     char rbuf[128];
-    f.formatted_write(x, ffmt.width(), ffmt.leftjust(), rbuf, 128);
+    f.field_write(x, ffmt.spec(), rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {
@@ -283,7 +283,7 @@ template<typename T, typename F>
     size_t rl = refstr.size();
     size_t fl_max = rl <= 8 ? rl + 1 : rl + 2;
 
-    size_t flen = f.max_formatted_length(x);
+    size_t flen = f(x, static_cast<char*>(nullptr), 0);
     if (!(flen >= rl && flen <= fl_max)) {
         return ::testing::AssertionFailure()
             << "Mismatched formatted length for "
@@ -299,7 +299,7 @@ template<typename T, typename F>
     }
 
     char rbuf[128];
-    f.formatted_write(x, rbuf, 128);
+    f(x, rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {
@@ -327,7 +327,7 @@ template<typename T, typename F>
     std::string refstr = ref_float_format(f, 0, false, x);
 
     char rbuf[128];
-    f.formatted_write(x, rbuf, 128);
+    f(x, rbuf, 128);
     std::string r(rbuf);
 
     if (refstr != r) {
@@ -439,6 +439,7 @@ TEST(FloatFmt, SciFmt) {
 
 template<class F>
 void test_exact_float_fmt(const F& f) {
+    using fmt::ff;
     const size_t buf_len = 32;
     char buf[buf_len];
 
@@ -446,7 +447,7 @@ void test_exact_float_fmt(const F& f) {
     std::vector<size_t> widths = {0, 5, 12};
 
     for (double x: xs) {
-        f.formatted_write(x, buf, buf_len);
+        f(x, buf, buf_len);
         std::string s0(buf);
         size_t l0 = s0.size();
 
@@ -458,7 +459,7 @@ void test_exact_float_fmt(const F& f) {
         }
 
         for (size_t w: widths) {
-            f.formatted_write(x, w, false, buf, buf_len);
+            f.field_write(x, ff(w, false), buf, buf_len);
             std::string s_r(buf);
             if (w <= l0) {
                 ASSERT_EQ(s0, s_r);
@@ -466,7 +467,7 @@ void test_exact_float_fmt(const F& f) {
                 ASSERT_EQ(std::string(w - l0, ' ') + s0, s_r);
             }
 
-            f.formatted_write(x, w, true, buf, buf_len);
+            f.field_write(x, ff(w, true), buf, buf_len);
             std::string s_l(buf);
             if (w <= l0) {
                 ASSERT_EQ(s0, s_l);
@@ -521,7 +522,7 @@ TEST(FloatFmt, GrisuExamples) {
     for (const auto& e: entries) {
         double x = e.first;
         const char *refstr = e.second;
-        size_t nch = f.formatted_write(x, result, 32);
+        size_t nch = f(x, result, 32);
 
         // std::printf("x = %g, r = \"%s\", grisu = \"%s\"\n", x, refstr, result);
         ASSERT_LT(nch, 25);

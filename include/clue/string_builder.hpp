@@ -100,9 +100,9 @@ public:
 
     template<typename T, typename Fmt>
     void writef(const T& x, Fmt&& fmt) {
-        size_t max_n = fmt.max_formatted_length(x);
+        size_t max_n = fmt(x, static_cast<charT*>(nullptr), 0);
         charT *p = take_next(max_n + 1);
-        size_t n = fmt.formatted_write(x, p, max_n + 1);
+        size_t n = fmt(x, p, max_n + 1);
         advance(n);
     }
 

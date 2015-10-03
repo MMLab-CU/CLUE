@@ -293,33 +293,19 @@ constexpr sci_formatter   sci()   noexcept { return sci_formatter();   }
 
 namespace details {
     template<typename T>
-    struct default_formatter_map {
-        using type =
-            conditional_t<::std::is_integral<T>::value,
-                default_int_formatter,
-            conditional_t<::std::is_floating_point<T>::value,
-                default_float_formatter,
-                void
-        > >;
-    };
-
-    template<typename T>
-    using default_formatter_map_t = typename default_formatter_map<T>::type;
-
-    template<typename Fmt>
-    struct default_formatter_helper {
-        using type = Fmt;
-        static constexpr type get() noexcept { return type{}; }
-    };
-
-    template<>
-    struct default_formatter_helper<void> {};
+    using default_arith_formatter_t =
+        conditional_t<::std::is_integral<T>::value,
+            default_int_formatter,
+            default_float_formatter>;
 }
 
 template<typename T>
-struct default_formatter :
-    public details::default_formatter_helper<
-        details::default_formatter_map_t<T>> {};
+constexpr enable_if_t<
+    ::std::is_arithmetic<T>::value,
+    details::default_arith_formatter_t<T>>
+get_default_formatter(const T&) {
+    return details::default_arith_formatter_t<T>{};
+}
 
 
 } // end namespace fmt

@@ -59,18 +59,12 @@ public:
     }
 };
 
+
+// set TripletFormatter as default for Triplet
+CLUE_DEFAULT_FORMATTER(const Triplet&, TripletFormatter)
+
 };
 
-// register the formatter as default for my::Triplet
-
-namespace clue { namespace fmt {
-
-template<> struct default_formatter<mylib::Triplet> {
-    using type = mylib::TripletFormatter;
-    static constexpr type get() noexcept { return type{}; }
-};
-
-} }  // end namespace clue::fmt
 
 
 // ----- client code -----

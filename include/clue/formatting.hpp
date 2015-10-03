@@ -7,7 +7,18 @@
 namespace clue {
 namespace fmt {
 
-// to-string formatting
+template<typename T>
+inline auto with(const T& v, size_t width, bool ljust=false) ->
+    decltype(with(v, get_default_formatter(v), width, ljust)) {
+    return with(v, get_default_formatter(v), width, ljust);
+}
+
+
+//===============================================
+//
+//  String formatting
+//
+//===============================================
 
 template<typename T, typename Fmt>
 inline ::std::string strf(const T& x, const Fmt& fmt) {

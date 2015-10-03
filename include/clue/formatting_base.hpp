@@ -294,82 +294,57 @@ private:
     }
 };
 
-
 //===============================================
 //
-//  Generic formatting
+//  Default formatting
 //
 //===============================================
 
-template<typename T> struct default_formatter;
+#define CLUE_DEFAULT_FORMATTER(TDecl, F) \
+    F get_default_formatter(TDecl) noexcept { \
+        return F{};\
+    }
 
-template<typename T>
-inline typename default_formatter<decay_t<T>>::type
-get_default_formatter(const T& x) noexcept {
-    return default_formatter<decay_t<T>>::get();
-}
+// for boolean
 
-template<typename T>
-using default_formatter_t = typename default_formatter<T>::type;
+CLUE_DEFAULT_FORMATTER(bool, default_bool_formatter)
 
-// for bool
+// for characters
 
-template<> struct default_formatter<bool> {
-    using type = default_bool_formatter;
-    static constexpr type get() noexcept { return type{}; }
-};
+CLUE_DEFAULT_FORMATTER(char,     default_char_formatter)
+CLUE_DEFAULT_FORMATTER(wchar_t,  default_char_formatter)
+CLUE_DEFAULT_FORMATTER(char16_t, default_char_formatter)
+CLUE_DEFAULT_FORMATTER(char32_t, default_char_formatter)
 
-// for characters and char*
+// for strings
 
-#define CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(CHARTYPE) \
-    template<> struct default_formatter<CHARTYPE> { \
-        using type = default_char_formatter; \
-        static constexpr type get() noexcept { return type{}; } \
-    }; \
-    template<> struct default_formatter<CHARTYPE*> { \
-        using type = default_string_formatter; \
-        static constexpr type get() noexcept { return type{}; } \
-    };  \
-    template<> struct default_formatter<const CHARTYPE*> { \
-        using type = default_string_formatter; \
-        static constexpr type get() noexcept { return type{}; } \
-    };
-
-CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(char)
-CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(wchar_t)
-CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(char16_t)
-CLUE_DEFINE_DEFAULT_CHAR_AND_STR_FORMATTER(char32_t)
-
-// for string types
+CLUE_DEFAULT_FORMATTER(const char*,     default_string_formatter)
+CLUE_DEFAULT_FORMATTER(const wchar_t*,  default_string_formatter)
+CLUE_DEFAULT_FORMATTER(const char16_t*, default_string_formatter)
+CLUE_DEFAULT_FORMATTER(const char32_t*, default_string_formatter)
 
 template<typename charT, typename Traits>
-struct default_formatter<basic_string_view<charT, Traits>> {
-    using type = default_string_formatter;
-    static constexpr type get() noexcept {
-        return type{};
-    }
-};
+default_string_formatter get_default_formatter(const basic_string_view<charT, Traits>&) noexcept {
+    return default_string_formatter{};
+}
 
 template<typename charT, typename Traits, typename Allocator>
-struct default_formatter<::std::basic_string<charT, Traits, Allocator>> {
-    using type = default_string_formatter;
-    static constexpr type get() noexcept {
-        return type{};
-    }
-};
+default_string_formatter get_default_formatter(const ::std::basic_string<charT, Traits, Allocator>&) noexcept {
+    return default_string_formatter{};
+}
 
 // with functions
 
 template<typename T, typename Fmt>
 struct with_fmt_t {
     const T& value;
-    const Fmt& formatter;
+    const Fmt formatter;
 };
 
 template<typename T, typename Fmt>
 struct with_fmt_ex_t {
     const T& value;
-    const Fmt& formatter;
+    const Fmt formatter;
     size_t width;
     bool leftjust;
 };
@@ -384,12 +359,6 @@ template<typename T, typename Fmt>
 inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_ex_t<T, Fmt>>
 with(const T& v, const Fmt& fmt, size_t width, bool ljust=false) {
     return with_fmt_ex_t<T, Fmt>{v, fmt, width, ljust};
-}
-
-template<typename T>
-inline with_fmt_ex_t<T, default_formatter_t<decay_t<T>>>
-with(const T& v, size_t width, bool ljust=false) {
-    return with(v, default_formatter<decay_t<T>>::get(), width, ljust);
 }
 
 

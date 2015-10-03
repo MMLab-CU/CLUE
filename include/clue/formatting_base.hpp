@@ -53,12 +53,12 @@ struct fieldfmt {
     bool leftjust;
 };
 
-constexpr fieldfmt ff(size_t width) noexcept {
-    return fieldfmt{width, false};
+constexpr fieldfmt align_left(size_t width) noexcept {
+    return fieldfmt{width, true};
 }
 
-constexpr fieldfmt ff(size_t width, bool leftjust) noexcept {
-    return fieldfmt{width, leftjust};
+constexpr fieldfmt align_right(size_t width) noexcept {
+    return fieldfmt{width, false};
 }
 
 
@@ -297,7 +297,7 @@ public:
     template<typename T, typename charT>
     size_t operator() (const T& x, charT *buf, size_t buf_len) const {
         if (buf) {
-            return fmt_.field_write(x, ff(width_, leftjust_), buf, buf_len);
+            return fmt_.field_write(x, fieldfmt{width_, leftjust_}, buf, buf_len);
         } else {
             size_t n = fmt_(x, static_cast<charT*>(nullptr), 0);
             return n > width_ ? n : width_;

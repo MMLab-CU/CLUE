@@ -224,7 +224,7 @@ public:
     template<typename charT>
     size_t operator() (double x, charT *buf, size_t buf_len) const {
         if (buf) {
-            return field_write(x, ff(0), buf, buf_len);
+            return field_write(x, align_right(0), buf, buf_len);
         } else {
             size_t n = 0;
             if (::std::isfinite(x)) {

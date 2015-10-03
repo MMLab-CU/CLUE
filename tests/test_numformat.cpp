@@ -187,9 +187,9 @@ void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
         for (size_t w: widths) {
             auto wfmt_0 = withf(x, f);
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_0);
-            auto wfmt_r = withf(x, f | ff(w, false));
+            auto wfmt_r = withf(x, f | align_right(w));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_r);
-            auto wfmt_l = withf(x, f | ff(w, true));
+            auto wfmt_l = withf(x, f | align_left(w));
             ASSERT_PRED_FORMAT1(CheckIntFormat, wfmt_l);
         }
     }
@@ -388,9 +388,9 @@ void test_float_fmt(const F& f, size_t prec, bool upper_, bool padzeros_, bool s
         for (size_t w: widths) {
             auto wfmt_0 = withf(x, f);
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_0);
-            auto wfmt_r = withf(x, f | ff(w, false));
+            auto wfmt_r = withf(x, f | align_right(w));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_r);
-            auto wfmt_l = withf(x, f | ff(w, true));
+            auto wfmt_l = withf(x, f | align_left(w));
             ASSERT_PRED_FORMAT1(CheckFloatFormat, wfmt_l);
         }
     }
@@ -454,7 +454,7 @@ void test_exact_float_fmt(const F& f) {
         }
 
         for (size_t w: widths) {
-            f.field_write(x, ff(w, false), buf, buf_len);
+            f.field_write(x, align_right(w), buf, buf_len);
             std::string s_r(buf);
             if (w <= l0) {
                 ASSERT_EQ(s0, s_r);
@@ -462,7 +462,7 @@ void test_exact_float_fmt(const F& f) {
                 ASSERT_EQ(std::string(w - l0, ' ') + s0, s_r);
             }
 
-            f.field_write(x, ff(w, true), buf, buf_len);
+            f.field_write(x, align_left(w), buf, buf_len);
             std::string s_l(buf);
             if (w <= l0) {
                 ASSERT_EQ(s0, s_l);

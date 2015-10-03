@@ -35,12 +35,12 @@ void test_formatter(const T& x, const Fmt& f, const std::string& refstr) {
         size_t expect_wlen = (std::max)(flen, w);
         std::string pad = w > flen ? std::string(w - flen, ' ') : std::string();
 
-        wlen = f.field_write(x, ff(w, false), buf, buf_len);
+        wlen = f.field_write(x, align_right(w), buf, buf_len);
         std::string s_r(buf);
         ASSERT_EQ(expect_wlen, wlen);
         ASSERT_EQ(pad + s, s_r);
 
-        wlen = f.field_write(x, ff(w, true), buf, buf_len);
+        wlen = f.field_write(x, align_left(w), buf, buf_len);
         std::string s_l(buf);
         ASSERT_EQ(expect_wlen, wlen);
         ASSERT_EQ(s + pad, s_l);
@@ -96,22 +96,16 @@ TEST(Formatting, WithFunction) {
     auto sf1 = str(withf(123, f));
     ASSERT_EQ("123.00", sf1);
 
-    auto wfe = str(withf(123, ff(5)));
-    ASSERT_EQ("  123", wfe);
-
-    auto wfe_r = str(withf(123, ff(5, false)));
+    auto wfe_r = str(withf(123, align_right(5)));
     ASSERT_EQ("  123", wfe_r);
 
-    auto wfe_l = str(withf(123, ff(5, true)));
+    auto wfe_l = str(withf(123, align_left(5)));
     ASSERT_EQ("123  ", wfe_l);
 
-    auto sfe = str(withf(123, f | ff(8)));
-    ASSERT_EQ("  123.00", sfe);
-
-    auto sfe_r = str(withf(123, f | ff(8, false)));
+    auto sfe_r = str(withf(123, f | align_right(8)));
     ASSERT_EQ("  123.00", sfe_r);
 
-    auto sfe_l = str(withf(123, f | ff(8, true)));
+    auto sfe_l = str(withf(123, f | align_left(8)));
     ASSERT_EQ("123.00  ", sfe_l);
 }
 
@@ -126,6 +120,6 @@ TEST(Formatting, StrConcat) {
     auto sf2 = str(withf(123, f), withf(456, f));
     ASSERT_EQ("123.00456.00", sf2);
 
-    auto sf3 = str(withf(123, f), ", ", '~', withf(456, f | ff(8)));
+    auto sf3 = str(withf(123, f), ", ", '~', withf(456, f | align_right(8)));
     ASSERT_EQ("123.00, ~  456.00", sf3);
 }

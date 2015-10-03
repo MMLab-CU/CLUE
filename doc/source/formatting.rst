@@ -333,3 +333,37 @@ Generally, it can be tedious to implement the ``field_write`` method. So, we pro
     The second template parameter of ``formatter_base`` is a boolean constant which should be set to ``true`` when ``operator()(x, (char*)(0), 0)`` **always** yield the **exact** formatted length. The internal implementation takes advantage of this fact to achieve higher efficiency.
 
 The source file ``examples/ex_newformatter.cpp`` provides a complete example to show how to write a formatter for a new type.
+
+
+Relations with standard I/O facilities
+----------------------------------------
+
+It is worth stressing that our goal is never to provide an alternative to the standard I/O facilities, which is way beyond our scope. Instead, the formatting facilities are primarily to provide convenient ways to construct formatted strings. One should still use ``<iostream>`` or ``<cstdio>`` to interact with the console of disk files.
+
+What motivates us to develop this module is to provide the capacility of customized printing of collections. The following code snippet shows how one can use the formatter framework to specify how a vector should be printed to an output stream.
+
+.. code-block:: cpp
+
+    template<typename T, typename Fmt>
+    void pretty_print(std::ostream& os, const std::vector<T>& vec, const Fmt& fmt) {
+        for (const T& x: vec) {
+            os << clue::strf(x, fmt) << std::endl;
+        }
+    }
+
+This code does the job, but is not super efficient, as ``strf`` allocates a new string for each element.
+With the class ``string_builder``, this can be made more efficient.
+
+.. code-block:: cpp
+
+    template<typename T, typename Fmt>
+    void pretty_print(std::ostream& os, const std::vector<T>& vec, const Fmt& fmt) {
+        clue::string_builder sbd;
+        for (const T& x: vec) {
+            sbd.clear();
+            (sbd << clue::withf(x, fmt)).output(os);
+            os << std::endl;
+        }
+    }
+
+Note that the ``clear`` method of ``string_builder`` does not free the memory, and therefore the formatting of the next element can be done on the buffer that's already there (the buffer may grow overtime).

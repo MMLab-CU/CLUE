@@ -31,36 +31,36 @@ ndigits(T x, const unsigned base=10) noexcept {
 class int_formatter {
 private:
     unsigned base_;
-    fmt_flag_t flags_;
+    fmt flags_;
 
 public:
     // construction & properties
 
     constexpr int_formatter() noexcept :
-        base_(10), flags_(static_cast<fmt_flag_t>(0)) {}
+        base_(10), flags_(static_cast<fmt>(0)) {}
 
     explicit constexpr int_formatter(unsigned base) noexcept :
-        base_(base), flags_(static_cast<fmt_flag_t>(0)) {}
+        base_(base), flags_(static_cast<fmt>(0)) {}
 
-    constexpr int_formatter(unsigned base, fmt_flag_t flags) :
+    constexpr int_formatter(unsigned base, fmt flags) :
         base_(base), flags_(flags) {}
 
     constexpr unsigned base() const noexcept { return base_; }
-    constexpr fmt_flag_t flags() const noexcept { return flags_; }
+    constexpr fmt flags() const noexcept { return flags_; }
 
     constexpr int_formatter base(unsigned v) const noexcept {
         return int_formatter(v, flags_);
     }
 
-    constexpr int_formatter flags(fmt_flag_t v) const noexcept {
+    constexpr int_formatter flags(fmt v) const noexcept {
         return int_formatter(base_, v);
     }
 
-    constexpr int_formatter operator | (fmt_flag_t v) const noexcept {
+    constexpr int_formatter operator | (fmt v) const noexcept {
         return int_formatter(base_, flags_ | v);
     }
 
-    constexpr bool any(fmt_flag_t msk) const noexcept {
+    constexpr bool any(fmt msk) const noexcept {
         return masked_any(flags_, msk);
     }
 
@@ -69,7 +69,7 @@ public:
     template<typename T, typename charT>
     size_t operator() (T x, charT *buf, size_t buf_len) const {
         if (buf) {
-            bool showpos_ = any(fmt_flag_t::showpos);
+            bool showpos_ = any(fmt::showpos);
             switch (base_) {
                 case  8:
                     return details::render(x, details::int_render_helper<T,8>(x),
@@ -78,21 +78,21 @@ public:
                     return details::render(x, details::int_render_helper<T,10>(x),
                         showpos_, buf, buf_len);
                 case 16:
-                    return details::render(x, details::int_render_helper<T,16>(x, any(fmt_flag_t::uppercase)),
+                    return details::render(x, details::int_render_helper<T,16>(x, any(fmt::uppercase)),
                         showpos_, buf, buf_len);
             }
             return 0;
         } else {
             size_t n = ndigits(x, base_);
-            if (x < 0 || any(fmt_flag_t::showpos)) n++;
+            if (x < 0 || any(fmt::showpos)) n++;
             return n;
         }
     }
 
     template<typename T, typename charT>
     size_t field_write(T x, const fieldfmt& fs, charT *buf, size_t buf_len) const {
-        bool showpos_ = any(fmt_flag_t::showpos);
-        bool padzeros_ = any(fmt_flag_t::padzeros);
+        bool showpos_ = any(fmt::showpos);
+        bool padzeros_ = any(fmt::padzeros);
         switch (base_) {
             case  8:
                 return details::render(x, details::int_render_helper<T,8>(x),
@@ -101,7 +101,7 @@ public:
                 return details::render(x, details::int_render_helper<T,10>(x),
                     showpos_, padzeros_, fs.width, fs.leftjust, buf, buf_len);
             case 16:
-                return details::render(x, details::int_render_helper<T,16>(x, any(fmt_flag_t::uppercase)),
+                return details::render(x, details::int_render_helper<T,16>(x, any(fmt::uppercase)),
                     showpos_, padzeros_, fs.width, fs.leftjust, buf, buf_len);
         }
         return 0;
@@ -114,9 +114,9 @@ public:
     // properties
 
     constexpr unsigned base() const noexcept { return 10; }
-    constexpr fmt_flag_t flags() const noexcept { return static_cast<fmt_flag_t>(0); }
+    constexpr fmt flags() const noexcept { return static_cast<fmt>(0); }
 
-    constexpr bool any(fmt_flag_t msk) const noexcept {
+    constexpr bool any(fmt msk) const noexcept {
         return false;
     }
 
@@ -126,10 +126,10 @@ public:
     size_t operator() (T x, charT *buf, size_t buf_len) const {
         if (buf) {
             return details::render(x,
-                details::int_render_helper<T,10>(x), any(fmt_flag_t::showpos), buf, buf_len);
+                details::int_render_helper<T,10>(x), any(fmt::showpos), buf, buf_len);
         } else {
             size_t n = details::ndigits_dec(details::uabs(x));
-            if (x < 0 || any(fmt_flag_t::showpos)) n++;
+            if (x < 0 || any(fmt::showpos)) n++;
             return n;
         }
     }
@@ -186,7 +186,7 @@ class float_formatter {
 private:
     typedef details::float_fmt_traits<Tag> fmt_traits_t;
     size_t precision_;
-    fmt_flag_t flags_;
+    fmt flags_;
 
 public:
     typedef Tag tag_type;
@@ -194,28 +194,28 @@ public:
     // construction & properties
 
     constexpr float_formatter() noexcept :
-        precision_(6), flags_(static_cast<fmt_flag_t>(0)) {}
+        precision_(6), flags_(static_cast<fmt>(0)) {}
 
-    constexpr float_formatter(size_t precision, fmt_flag_t flags) :
+    constexpr float_formatter(size_t precision, fmt flags) :
         precision_(precision), flags_(flags) {}
 
     constexpr size_t precision() const noexcept { return precision_; }
-    constexpr fmt_flag_t flags() const noexcept { return flags_; }
+    constexpr fmt flags() const noexcept { return flags_; }
 
 
     constexpr float_formatter precision(size_t v) const noexcept {
         return float_formatter(v, flags_);
     }
 
-    constexpr float_formatter flags(fmt_flag_t v) const noexcept {
+    constexpr float_formatter flags(fmt v) const noexcept {
         return float_formatter(precision_, v);
     }
 
-    constexpr float_formatter operator | (fmt_flag_t v) const noexcept {
+    constexpr float_formatter operator | (fmt v) const noexcept {
         return float_formatter(precision_, flags_ | v);
     }
 
-    constexpr bool any(fmt_flag_t msk) const noexcept {
+    constexpr bool any(fmt msk) const noexcept {
         return masked_any(flags_, msk);
     }
 
@@ -228,12 +228,12 @@ public:
         } else {
             size_t n = 0;
             if (::std::isfinite(x)) {
-                n = fmt_traits_t::maxfmtlength(x, precision_, any(fmt_flag_t::showpos));
+                n = fmt_traits_t::maxfmtlength(x, precision_, any(fmt::showpos));
             } else if (::std::isinf(x)) {
-                n = ::std::signbit(x) || any(fmt_flag_t::showpos) ? 4 : 3;
+                n = ::std::signbit(x) || any(fmt::showpos) ? 4 : 3;
             } else {
                 CLUE_ASSERT(::std::isnan(x));
-                n = any(fmt_flag_t::showpos) ? 4 : 3;
+                n = any(fmt::showpos) ? 4 : 3;
             }
             return n;
         }
@@ -242,9 +242,9 @@ public:
     template<typename charT>
     size_t field_write(double x, const fieldfmt& fs, charT *buf, size_t buf_len) const {
         char cfmt[16];
-        const char fsym = details::float_fmt_traits<Tag>::printf_sym(any(fmt_flag_t::uppercase));
+        const char fsym = details::float_fmt_traits<Tag>::printf_sym(any(fmt::uppercase));
         details::float_cfmt_impl(cfmt, fsym, fs.width, precision_,
-                fs.leftjust, any(fmt_flag_t::showpos), any(fmt_flag_t::padzeros));
+                fs.leftjust, any(fmt::showpos), any(fmt::padzeros));
         size_t n = (size_t)::std::snprintf(buf, buf_len, cfmt, x);
         CLUE_ASSERT(n < buf_len);
         return n;

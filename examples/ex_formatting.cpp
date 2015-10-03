@@ -45,7 +45,7 @@ int main() {
     // print records
     for (const auto& u: users) {
         std::cout << str("  |  ",
-            with(u.id, dec() | fmt_flag_t::padzeros | ff(widths[0])), "  |  ",
+            with(u.id, dec() | fmt::padzeros | ff(widths[0])), "  |  ",
             with(u.name, ff(widths[1], true)), "  |  ",
             with(u.score, fixed().precision(2) | ff(widths[2])), "  |  "
         ) << std::endl;

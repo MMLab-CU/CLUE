@@ -23,18 +23,18 @@ namespace clue {
 //
 //===============================================
 
-enum class fmt_flag_t: unsigned int {
+enum class fmt: unsigned int {
     uppercase = 0x01,
     padzeros  = 0x02,
     showpos   = 0x04
 };
 
-constexpr fmt_flag_t operator | (fmt_flag_t a, fmt_flag_t b) noexcept {
-    return static_cast<fmt_flag_t>(
+constexpr fmt operator | (fmt a, fmt b) noexcept {
+    return static_cast<fmt>(
         static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
 }
 
-constexpr bool masked_any(fmt_flag_t a, fmt_flag_t m) noexcept {
+constexpr bool masked_any(fmt a, fmt m) noexcept {
     return static_cast<bool>(
         static_cast<unsigned int>(a) & static_cast<unsigned int>(m));
 }

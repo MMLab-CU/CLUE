@@ -19,12 +19,12 @@ std::string ref_int_format(const F& f, size_t width, bool ljust, long x) {
     if (x < 0) {
         *p++ = '-';
         if (pw > 0) pw--;
-    } else if (f.any(fmt_flag_t::showpos)) {
+    } else if (f.any(fmt::showpos)) {
         *p++ = '+';
         if (pw > 0) pw--;
     }
 
-    bool pzeros = f.any(fmt_flag_t::padzeros);
+    bool pzeros = f.any(fmt::padzeros);
     if (ljust) pzeros = false;
 
     *p++ = '%';
@@ -41,7 +41,7 @@ std::string ref_int_format(const F& f, size_t width, bool ljust, long x) {
     *p++ = 'l';
     switch (f.base()) {
         case 8: *p++ = 'o'; break;
-        case 16: *p++ = f.any(fmt_flag_t::uppercase) ? 'X' : 'x'; break;
+        case 16: *p++ = f.any(fmt::uppercase) ? 'X' : 'x'; break;
         default: *p++ = 'u';
     }
     *p = '\0';
@@ -72,8 +72,8 @@ template<typename T, typename F>
             << "Mismatched formatted length for "
             << " x = " << x << ":\n"
             << "  base: " << f.base() << "\n"
-            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = " << flen << "\n"
             << "  EXPECT = " << refstr.size()
@@ -89,8 +89,8 @@ template<typename T, typename F>
             << "Mismatched formatted string for "
             << " x = " << x << ":\n"
             << "  base: " << f.base() << "\n"
-            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
             << "  EXPECT = \"" << refstr << "\"";
@@ -118,8 +118,8 @@ template<typename T, typename F>
             << " x = " << x << ":\n"
             << "  pos: " << ffmt.width() << ", " << ffmt.leftjust() << "\n"
             << "  base: " << f.base() << "\n"
-            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
             << "  EXPECT = \"" << refstr << "\"";
@@ -176,8 +176,8 @@ std::vector<long> prepare_test_ints(size_t base, bool show=false) {
 template<class F>
 void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
     ASSERT_EQ(base_, f.base());
-    ASSERT_EQ(padzeros_, f.any(fmt_flag_t::padzeros));
-    ASSERT_EQ(showpos_,  f.any(fmt_flag_t::showpos));
+    ASSERT_EQ(padzeros_, f.any(fmt::padzeros));
+    ASSERT_EQ(showpos_,  f.any(fmt::showpos));
 
     // combination coverage
     std::vector<size_t> widths = {0, 4, 8, 12, 20, 26};
@@ -198,9 +198,9 @@ void test_int_fmt(const F& f, unsigned base_, bool padzeros_, bool showpos_) {
 template<class F>
 void test_int_fmt_x(const F& fbase, unsigned base_) {
     test_int_fmt(fbase, base_, false, false);
-    test_int_fmt(fbase | fmt_flag_t::showpos,  base_, false, true);
-    test_int_fmt(fbase | fmt_flag_t::padzeros, base_, true, false);
-    test_int_fmt(fbase | fmt_flag_t::padzeros | fmt_flag_t::showpos, base_, true, true);
+    test_int_fmt(fbase | fmt::showpos,  base_, false, true);
+    test_int_fmt(fbase | fmt::padzeros, base_, true, false);
+    test_int_fmt(fbase | fmt::padzeros | fmt::showpos, base_, true, true);
 }
 
 
@@ -221,7 +221,7 @@ TEST(IntFmt, HexFmt) {
 }
 
 TEST(IntFmt, UHexFmt) {
-    test_int_fmt_x(hex() | fmt_flag_t::uppercase, 16);
+    test_int_fmt_x(hex() | fmt::uppercase, 16);
 }
 
 
@@ -232,10 +232,10 @@ TEST(IntFmt, UHexFmt) {
 //=====================================
 
 inline char notation(const fixed_formatter& f) {
-    return f.any(fmt_flag_t::uppercase) ? 'F' : 'f';
+    return f.any(fmt::uppercase) ? 'F' : 'f';
 }
 inline char notation(const sci_formatter& f)   {
-    return f.any(fmt_flag_t::uppercase) ? 'E' : 'e';
+    return f.any(fmt::uppercase) ? 'E' : 'e';
 }
 
 template<class F>
@@ -245,9 +245,9 @@ std::string ref_float_format(const F& f, size_t width, bool ljust, double x) {
     char cfmt[16];
     char *p = cfmt;
     *p++ = '%';
-    if (f.any(fmt_flag_t::showpos)) *p++ = '+';
+    if (f.any(fmt::showpos)) *p++ = '+';
     if (ljust) *p++ = '-';
-    else if (f.any(fmt_flag_t::padzeros)) *p++ = '0';
+    else if (f.any(fmt::padzeros)) *p++ = '0';
 
     if (pw > 0) {
         if (pw >= 10) {
@@ -288,8 +288,8 @@ template<typename T, typename F>
             << "x = " << x << ": \n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
-            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = " << flen << "\n"
             << "  EXPECT = " << refstr.length()
@@ -306,8 +306,8 @@ template<typename T, typename F>
             << "x = " << x << ": \n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
-            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
             << "  EXPECT = \"" << refstr << "\"";
@@ -335,8 +335,8 @@ template<typename T, typename F>
             << "  pos: " << ffmt.width() << ", " << ffmt.leftjust() << "\n"
             << "  notation: " << notation(f) << "\n"
             << "  precision: " << f.precision() << "\n"
-            << "  showpos: " << f.any(fmt_flag_t::showpos) << "\n"
-            << "  padzeros: " << f.any(fmt_flag_t::padzeros) << "\n"
+            << "  showpos: " << f.any(fmt::showpos) << "\n"
+            << "  padzeros: " << f.any(fmt::padzeros) << "\n"
             << "Result:\n"
             << "  ACTUAL = \"" << r << "\"\n"
             << "  EXPECT = \"" << refstr << "\"";
@@ -376,9 +376,9 @@ std::vector<double> prepare_test_floats() {
 template<class F>
 void test_float_fmt(const F& f, size_t prec, bool upper_, bool padzeros_, bool showpos_) {
     ASSERT_EQ(prec, f.precision());
-    ASSERT_EQ(upper_, f.any(fmt_flag_t::uppercase));
-    ASSERT_EQ(padzeros_, f.any(fmt_flag_t::padzeros));
-    ASSERT_EQ(showpos_,  f.any(fmt_flag_t::showpos));
+    ASSERT_EQ(upper_, f.any(fmt::uppercase));
+    ASSERT_EQ(padzeros_, f.any(fmt::padzeros));
+    ASSERT_EQ(showpos_,  f.any(fmt::showpos));
 
     // combination coverage
     std::vector<size_t> widths = {0, 5, 12};
@@ -403,14 +403,14 @@ void test_float_fmt_x(const F& fbase) {
 
     for(size_t prec: precisions) {
         auto f000 = fbase.precision(prec);
-        auto f001 = f000 | fmt_flag_t::showpos;
-        auto f010 = f000 | fmt_flag_t::padzeros;
-        auto f011 = f000 | fmt_flag_t::showpos | fmt_flag_t::padzeros;
+        auto f001 = f000 | fmt::showpos;
+        auto f010 = f000 | fmt::padzeros;
+        auto f011 = f000 | fmt::showpos | fmt::padzeros;
 
-        auto f100 = fbase.precision(prec) | fmt_flag_t::uppercase;
-        auto f101 = f100 | fmt_flag_t::showpos;
-        auto f110 = f100 | fmt_flag_t::padzeros;
-        auto f111 = f100 | fmt_flag_t::showpos | fmt_flag_t::padzeros;
+        auto f100 = fbase.precision(prec) | fmt::uppercase;
+        auto f101 = f100 | fmt::showpos;
+        auto f110 = f100 | fmt::padzeros;
+        auto f111 = f100 | fmt::showpos | fmt::padzeros;
 
         test_float_fmt(f000, prec, false, false, false);
         test_float_fmt(f001, prec, false, false,  true);

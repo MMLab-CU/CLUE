@@ -244,21 +244,21 @@ public:
 
     stepped_value_range_iterator operator++(int) noexcept {
         T t(v_); Traits::increment(v_, step_());
-        return stepped_value_range_iterator(t);
+        return stepped_value_range_iterator(t, s_);
     }
 
     stepped_value_range_iterator operator--(int) noexcept {
         T t(v_); Traits::decrement(v_, step_());
-        return stepped_value_range_iterator(t);
+        return stepped_value_range_iterator(t, s_);
     }
 
     // arithmetics
     constexpr stepped_value_range_iterator operator + (difference_type n) const noexcept {
-        return stepped_value_range_iterator(Traits::next(v_, step_(n)));
+        return stepped_value_range_iterator(Traits::next(v_, step_(n)), s_);
     }
 
     constexpr stepped_value_range_iterator operator - (difference_type n) const noexcept {
-        return stepped_value_range_iterator(Traits::prev(v_, step_(n)));
+        return stepped_value_range_iterator(Traits::prev(v_, step_(n)), s_);
     }
 
     stepped_value_range_iterator& operator += (difference_type n) noexcept {
@@ -472,7 +472,7 @@ public:
 
     constexpr T at(size_type pos) const {
         return pos < size() ?
-                vbegin_ + pos :
+                operator[](pos) :
                 (throw ::std::out_of_range("value_range::at"), vbegin_);
     }
 

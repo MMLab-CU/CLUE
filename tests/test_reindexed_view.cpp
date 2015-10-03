@@ -155,3 +155,24 @@ TEST(ReindexedView, WithValueRange) {
     for (auto x: v1) r2.push_back(x);
     ASSERT_EQ(r2r, r2);
 }
+
+
+TEST(ReindexedView, WithSteppedRange) {
+    using srange = clue::stepped_value_range<std::size_t, std::size_t>;
+
+    std::vector<int> src(S);
+    srange inds(0, 5, 2);
+    auto v1 = reindexed(src, inds);
+
+    std::vector<int> r1r{src[0], src[2], src[4]};
+    std::vector<int> r1(v1.begin(), v1.end());
+    ASSERT_EQ(r1r, r1);
+
+    v1[1] = -456;
+    ASSERT_EQ(-456, src[2]);
+
+    std::vector<int> r2r{src[0], -456, src[4]};
+    std::vector<int> r2;
+    for (auto x: v1) r2.push_back(x);
+    ASSERT_EQ(r2r, r2);
+}

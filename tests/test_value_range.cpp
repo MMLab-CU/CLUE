@@ -78,6 +78,91 @@ void test_unit_range(const clue::value_range<T>& rgn, const T& a, const T& b) {
 }
 
 
+template<typename T, typename S>
+void test_stepped_range(const clue::stepped_value_range<T, S>& rgn, const T& a, const T& b, const S& s) {
+    using std::size_t;
+    using difference_type = typename clue::value_range<T>::difference_type;
+
+    ASSERT_EQ(a, rgn.begin_value());
+    ASSERT_EQ(b, rgn.end_value());
+
+    size_t len = rgn.size();
+    if (a < b) {
+        ASSERT_GT(len, 0);
+        ASSERT_LT(a + (len-1) * s, b);
+    }
+    ASSERT_GE(a + len * s,     b);
+    ASSERT_EQ((a == b), rgn.empty());
+    ASSERT_EQ((len == 0), rgn.empty());
+
+    if (!rgn.empty()) {
+        ASSERT_EQ(a,   rgn.front());
+        ASSERT_EQ(a + (len-1) * s, rgn.back());
+    }
+
+    auto ifirst = rgn.begin();
+    auto ilast  = rgn.end();
+
+    if (!rgn.empty()) {
+        ASSERT_EQ(a, *ifirst);
+        ASSERT_EQ(a + len * s, *ilast);
+    }
+    ASSERT_EQ((a == b), (ifirst == ilast));
+    ASSERT_EQ((a != b), (ifirst != ilast));
+    ASSERT_EQ((a <  b), (ifirst <  ilast));
+    ASSERT_EQ((a <= b), (ifirst <= ilast));
+    ASSERT_EQ((a >  b), (ifirst >  ilast));
+    ASSERT_EQ((a >= b), (ifirst >= ilast));
+
+    difference_type n = (difference_type)(len);
+    ASSERT_EQ(ilast, ifirst + n);
+    ASSERT_EQ(ifirst, ilast - n);
+    ASSERT_EQ(n, ilast - ifirst);
+    ASSERT_EQ(n, std::distance(ifirst, ilast));
+
+    for (size_t i = 0; i < len; ++i) {
+        ASSERT_EQ(a + i * s, rgn[i]);
+        ASSERT_EQ(a + i * s, rgn.at(i));
+    }
+    ASSERT_THROW(rgn.at(size_t(n)), std::out_of_range);
+
+    T e = a + len * s;
+    if (!rgn.empty()) {
+        auto i1 = ifirst;
+        ASSERT_EQ(a,   *(i1++));
+        ASSERT_EQ(a+s, *i1);
+        ASSERT_EQ(a+s, *(i1--));
+        ASSERT_EQ(a,   *i1);
+
+        auto i2 = ifirst;
+        ASSERT_EQ(a+s, *(++i2));
+        ASSERT_EQ(a+s, *i2);
+        ASSERT_EQ(a,   *(--i2));
+        ASSERT_EQ(a,   *i2);
+
+        i1 += 1;
+        ASSERT_EQ(a+s, *i1);
+        i1 -= 1;
+        ASSERT_EQ(a, *i1);
+
+        ASSERT_EQ(a+s, *(ifirst+1));
+        ASSERT_EQ(e-s, *(ilast-1));
+    }
+
+    std::vector<T> v_gt;
+    for (T x = a; x < b; x += s) v_gt.push_back(x);
+    ASSERT_TRUE(v_gt.size() == rgn.size());
+
+    std::vector<T> v1;
+    for (auto x: rgn) v1.push_back(x);
+    ASSERT_EQ(v_gt, v1);
+
+    std::vector<T> v2(ifirst, ilast);
+    ASSERT_EQ(v_gt, v2);
+}
+
+
+
 TEST(ValueRanges, IntRanges) {
 
     using irange = clue::value_range<int>;
@@ -175,3 +260,23 @@ TEST(ValueRanges, StlAlgorithms) {
     std::vector<int> tr_r{9, 16, 25, 36, 49};
     ASSERT_EQ(tr_r, tr);
 }
+
+
+TEST(SteppedRanges, Basics) {
+    using std::size_t;
+    using srange = clue::stepped_value_range<std::size_t, std::size_t>;
+
+    test_stepped_range(srange(0, 0, 1), size_t(0), size_t(0), size_t(1));
+    test_stepped_range(srange(5, 5, 1), size_t(5), size_t(5), size_t(1));
+
+    std::vector<size_t> steps38{1, 2, 3, 4, 5, 6};
+    for (size_t s: steps38) {
+        test_stepped_range(srange(3, 8, s), size_t(3), size_t(8), s);
+    }
+
+    std::vector<size_t> steps28{1, 2, 3, 4, 5, 6};
+    for (size_t s: steps28) {
+        test_stepped_range(srange(2, 8, s), size_t(2), size_t(8), s);
+    }
+}
+

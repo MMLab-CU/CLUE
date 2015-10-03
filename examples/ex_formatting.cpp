@@ -47,7 +47,7 @@ int main() {
         std::cout << str("  |  ",
             withf(u.id, dec() | fmt::padzeros | align_right(widths[0])), "  |  ",
             withf(u.name, align_left(widths[1])), "  |  ",
-            withf(u.score, fixed().precision(2) | align_right(widths[2])), "  |  "
+            withf(u.score, fixed() | precision(2) | align_right(widths[2])), "  |  "
         ) << std::endl;
     }
     std::cout << sepline << std::endl;

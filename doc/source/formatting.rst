@@ -222,23 +222,18 @@ Below, we use a code-snippet to explain the use of these formatters.
     // Get & set properties
     // ---------------------
 
-    f.base();       // get the base radix (for int_formatter)
-    f.base(n);      // return a new formatter with base n
-                    // with other settings preserved.
+    f.base();           // get the base radix (for int_formatter)
 
-    f.precision();  // get the precision (for float_formatter)
-    f.precision(n); // return a new formatter with precision n
-                    // with other settings preserved.
+    f.precision();      // get the precision (for float_formatter)
+    f | precision(n);   // return a new formatter with precision n
+                        // with other settings preserved.
 
-    f.flags();      // get the flags (of type flag_t)
-    f.flags(v);     // return a new formatter with flags v
-                    // with other settings preserved
+    f.flags();          // get the flags (of type flag_t)
+    f | my_flags;       // return a new formatter with certain flags turned on
+                        // with other settings preserved.
 
-    f.any(msk);     // get whether a certain flag is turned on
-                    // e.g. f.any(uppercase)
-
-    f | my_flags;   // return a new formatter with certain flags turned on
-                    // with other settings preserved.
+    f.any(msk);         // get whether a certain flag is turned on
+                        // e.g. f.any(fmt::uppercase)
 
     // Examples
     // ---------

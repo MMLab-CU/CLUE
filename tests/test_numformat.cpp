@@ -402,15 +402,15 @@ void test_float_fmt_x(const F& fbase) {
     std::vector<size_t> precisions{0, 2, 9};
 
     for(size_t prec: precisions) {
-        auto f000 = fbase.precision(prec);
-        auto f001 = f000 | fmt::showpos;
-        auto f010 = f000 | fmt::padzeros;
-        auto f011 = f000 | fmt::showpos | fmt::padzeros;
+        auto f000 = fbase | precision(prec);
+        auto f001 = f000  | fmt::showpos;
+        auto f010 = f000  | fmt::padzeros;
+        auto f011 = f000  | fmt::showpos | fmt::padzeros;
 
-        auto f100 = fbase.precision(prec) | fmt::uppercase;
-        auto f101 = f100 | fmt::showpos;
-        auto f110 = f100 | fmt::padzeros;
-        auto f111 = f100 | fmt::showpos | fmt::padzeros;
+        auto f100 = fbase | precision(prec) | fmt::uppercase;
+        auto f101 = f100  | fmt::showpos;
+        auto f110 = f100  | fmt::padzeros;
+        auto f111 = f100  | fmt::showpos | fmt::padzeros;
 
         test_float_fmt(f000, prec, false, false, false);
         test_float_fmt(f001, prec, false, false,  true);
@@ -532,7 +532,3 @@ TEST(FloatFmt, GrisuFmt) {
         "Default float formatter should be the Grisu formatter");
     test_exact_float_fmt(grisu_formatter{});
 }
-
-
-
-

@@ -145,8 +145,8 @@ TEST(StringBuilder, WriteSeq) {
     using with_fchar = with_fmt_t<char, fchar_t>;
 
     sb.clear();
-    sb << with_fixed{ 1, fixed().precision(4) } << ", "
-       << with_sci{ 2.5, sci().precision(3) } << ", "
+    sb << with_fixed{ 1, fixed() | precision(4) } << ", "
+       << with_sci{ 2.5, sci() | precision(3) } << ", "
        << "'" << with_fchar{ 'a', fchar_t{char_fmt{}, align_right(3)} } << "'";
 
     ASSERT_EQ("1.0000, 2.500e+00, '  a'", sb.str());

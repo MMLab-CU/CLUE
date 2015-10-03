@@ -92,7 +92,7 @@ TEST(Formatting, FmtStr) {
 }
 
 TEST(Formatting, WithFunction) {
-    auto f = fixed().precision(2);
+    auto f = fixed() | precision(2);
     auto sf1 = str(withf(123, f));
     ASSERT_EQ("123.00", sf1);
 
@@ -116,7 +116,7 @@ TEST(Formatting, StrConcat) {
     ASSERT_EQ("abc.xyz", str("abc", '.', "xyz"));
     ASSERT_EQ("1+2 = 3", str(1, '+', 2, " = ", 3));
 
-    auto f = fixed().precision(2);
+    auto f = fixed() | precision(2);
     auto sf2 = str(withf(123, f), withf(456, f));
     ASSERT_EQ("123.00456.00", sf2);
 

@@ -48,14 +48,6 @@ public:
     constexpr unsigned base() const noexcept { return base_; }
     constexpr fmt flags() const noexcept { return flags_; }
 
-    constexpr int_formatter base(unsigned v) const noexcept {
-        return int_formatter(v, flags_);
-    }
-
-    constexpr int_formatter flags(fmt v) const noexcept {
-        return int_formatter(base_, v);
-    }
-
     constexpr int_formatter operator | (fmt v) const noexcept {
         return int_formatter(base_, flags_ | v);
     }
@@ -202,15 +194,6 @@ public:
     constexpr size_t precision() const noexcept { return precision_; }
     constexpr fmt flags() const noexcept { return flags_; }
 
-
-    constexpr float_formatter precision(size_t v) const noexcept {
-        return float_formatter(v, flags_);
-    }
-
-    constexpr float_formatter flags(fmt v) const noexcept {
-        return float_formatter(precision_, v);
-    }
-
     constexpr float_formatter operator | (fmt v) const noexcept {
         return float_formatter(precision_, flags_ | v);
     }
@@ -251,6 +234,23 @@ public:
     }
 };
 
+// set precision
+
+struct precision_setter {
+    size_t value;
+};
+
+constexpr precision_setter precision(size_t v) noexcept {
+    return precision_setter{v};
+}
+
+template<typename Tag>
+constexpr float_formatter<Tag> operator | (const float_formatter<Tag>& f, precision_setter ps) noexcept {
+    return float_formatter<Tag>(ps.value, f.flags());
+}
+
+
+// Grisu formatter
 
 class grisu_formatter : public formatter_base<grisu_formatter, false> {
 public:

@@ -81,6 +81,16 @@ foreach (tname ${UNIT_TESTS})
     add_test(NAME ${tname} COMMAND ${tname})
 endforeach()
 
+set(THREADING_TESTS
+    test_shared_mutex
+)
+
+foreach(tname ${THREADING_TESTS})
+    add_executable(${tname} ${TESTS}/${tname}.cpp)
+    add_test(NAME ${tname} COMMAND ${tname})
+endforeach()
+
+
 ###################################
 #
 #  Examples

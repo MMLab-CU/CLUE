@@ -22,6 +22,8 @@
 
 namespace clue {
 
+using std::unique_lock;
+
 namespace details {
 
 class shared_mutex_impl {
@@ -38,10 +40,13 @@ class shared_mutex_impl {
 
 public:
     // constructs the mutex
-    shared_mutex_impl();
+    shared_mutex_impl() :
+        state_(0) {}
 
     // destroys the mutex
-    ~shared_mutex_impl();
+    ~shared_mutex_impl() {
+        std::lock_guard<mutex_t> _(mut_);
+    }
 
     shared_mutex_impl(const shared_mutex_impl&) = delete;
 
@@ -102,8 +107,7 @@ public:
 
     // unlocks the mutex
     void unlock() {
-        std::lock_guard<mutex_t> lk_g(mut_);
-
+        std::lock_guard<mutex_t> _(mut_);
         state_ = 0;
         gate1_.notify_all();
     }

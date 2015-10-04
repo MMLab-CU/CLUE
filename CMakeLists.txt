@@ -87,7 +87,8 @@ set(THREADING_TESTS
 
 foreach(tname ${THREADING_TESTS})
     add_executable(${tname} ${TESTS}/${tname}.cpp)
-    add_test(NAME ${tname} COMMAND ${tname})
+    target_link_libraries(${tname} ${CMAKE_THREAD_LIBS_INIT})
+    add_test(NAME ${tname} COMMAND ${tname})    
 endforeach()
 
 

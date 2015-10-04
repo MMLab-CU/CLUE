@@ -21,8 +21,11 @@
 #   endif
 #endif
 
-
 #include <cassert>
+
+#ifndef CHAR_BIT
+#define CHAR_BIT 8
+#endif
 
 // to turn CLUE_ASSERT into no-op, one can pre-define CLUE_NDEBUG
 //

@@ -18,7 +18,7 @@ Below is a list of components available in the library.
 
 #### Basic Utilites
 
-- Class template ``optional``: for representing nullable values. **(backported from CELF)**
+- Class template ``optional``: for representing nullable values. **(backport from CELF)**
 - Timing tools: ``stop_watch`` class and timing functions.
 - Class template ``value_range``: so you can write ``for (auto x: vrange(1, 10)) { ... }``.
 - Class template ``array_view``: wrap a memory block into an STL-like view.
@@ -38,11 +38,12 @@ Below is a list of components available in the library.
 - Meta-types (*e.g.* ``type_<T>``, ``int_<V>``, ``bool_<V>``, etc) and meta-functions (*e.g* ``meta::plus``, ``meta::and``, ``meta::all``, ``meta::select``, etc)
 - Meta-sequence: static list of types, and algorithms.
 
-**Note:** Certain components are marked with **backport**. Such components are introduced in the [C++14 Standard](https://en.wikipedia.org/wiki/C%2B%2B14) or the [C++ Extensions for Library Fundamentals (CELF), ISO/IEC TS 19568:xxxx](http://en.cppreference.com/w/cpp/experimental/lib_extensions). While they were not introduced to C++11, they can be implemented within the capacity of C++11 standard. We provide an implementation (using libc++ as a reference implementation) here (within the namespace ``clue``) that works with C++11.
-
 #### Concurrency programming support
 
-- Classes ``shared_mutex``, ``shared_timed_mutex``, and ``shared_lock``: to support read/write lock. **(backported from C++14/C++17)**.
+- Classes ``shared_mutex``, ``shared_timed_mutex``, and ``shared_lock``: to support read/write lock. **(backport from C++14/C++17)**.
+
+
+**Note:** Certain components are marked with **backport**. Such components are introduced in the [C++14 Standard](https://en.wikipedia.org/wiki/C%2B%2B14) or the [C++ Extensions for Library Fundamentals (CELF), ISO/IEC TS 19568:xxxx](http://en.cppreference.com/w/cpp/experimental/lib_extensions). While they were not introduced to C++11, they can be implemented within the capacity of C++11 standard. We provide an implementation (using libc++ as a reference implementation) here (within the namespace ``clue``) that works with C++11.
 
 
 ## Dependencies

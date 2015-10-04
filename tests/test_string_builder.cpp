@@ -152,6 +152,30 @@ TEST(StringBuilder, WriteSeq) {
     ASSERT_EQ("1.0000, 2.500e+00, '  a'", sb.str());
 }
 
+
+TEST(StringBuilder, WriteDelimited) {
+    string_builder sb;
+    using seq_t = std::vector<int>;
+    seq_t xs0;
+
+    delimited_t<seq_t, default_int_formatter> ds0{xs0, default_int_formatter{}, ", "};
+    sb << ds0;
+    ASSERT_EQ(0, sb.size());
+    ASSERT_EQ("", sb.str());
+    sb.clear();
+
+    std::vector<int> xs{1, 2, 3};
+    delimited_t<seq_t, default_int_formatter> ds1{xs, default_int_formatter{}, ", "};
+    sb << ds1;
+    ASSERT_EQ("1, 2, 3", sb.str());
+    sb.clear();
+
+    delimited_t<seq_t, fixed_formatter> ds2{xs, fixed() | precision(2), " "};
+    sb << ds2;
+    ASSERT_EQ("1.00 2.00 3.00", sb.str());
+}
+
+
 TEST(StringBuilder, StreamOutput) {
     string_builder sb;
     sb.write("abcdef");

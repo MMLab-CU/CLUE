@@ -130,6 +130,22 @@ public:
         return *this;
     }
 
+    template<typename Seq, typename Fmt>
+    generic_string_builder& operator << (const delimited_t<Seq, Fmt>& ds) {
+        const Seq& s = ds.seq;
+        auto p = s.begin();
+        auto p_end = s.end();
+        if (p != p_end) {
+            writef(*p++, ds.elem_fmt);
+            size_t dl = std::strlen(ds.delimiter);
+            while (p != p_end) {
+                write(ds.delimiter, dl);
+                writef(*p++, ds.elem_fmt);
+            }
+        }
+        return *this;
+    }
+
     // Modifiers
 
     void clear() noexcept {

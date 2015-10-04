@@ -6,6 +6,8 @@
 
 namespace clue {
 
+// With & Delimited function
+
 template<typename T, typename Fmt>
 inline enable_if_t<::std::is_class<Fmt>::value, with_fmt_t<T, Fmt>>
 withf(const T& v, const Fmt& fmt) {
@@ -17,6 +19,21 @@ inline auto withf(const T& x, const fieldfmt& fs) ->
     with_fmt_t<T, field_formatter<decltype(get_default_formatter(x))> > {
     return withf(x, get_default_formatter(x) | fs);
 }
+
+template<class Seq, class Fmt>
+inline delimited_t<Seq, Fmt> delimited(const Seq& seq, const Fmt& efmt, const char *delim) {
+    return delimited_t<Seq, Fmt>{seq, efmt, delim};
+}
+
+template<class Seq>
+inline auto delimited(const Seq& seq, const char *delim) ->
+    delimited_t<Seq, decltype(get_default_formatter(*(seq.begin())))> {
+    using fmt_t = decltype(get_default_formatter(*(seq.begin())));
+    return delimited_t<Seq, fmt_t>{seq, fmt_t{}, delim};
+}
+
+
+// String formatting
 
 template<typename T, typename Fmt>
 inline ::std::string strf(const T& x, const Fmt& fmt) {
@@ -44,6 +61,14 @@ inline ::std::string str(with_fmt_t<T, Fmt> wfmt) {
     return strf(wfmt.value, wfmt.formatter);
 }
 
+template<typename Seq, typename Fmt>
+inline ::std::string str(const delimited_t<Seq, Fmt>& ds) {
+    string_builder sb;
+    sb << ds;
+    return sb.str();
+}
+
+// String concatenation
 
 namespace details {
 
@@ -66,6 +91,7 @@ inline std::string str(const T1& x, Rest&&... rest) {
     details::insert_to(sb, x, ::std::forward<Rest>(rest)...);
     return sb.str();
 }
+
 
 } // end namespace clue
 

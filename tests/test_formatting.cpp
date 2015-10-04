@@ -109,6 +109,20 @@ TEST(Formatting, WithFunction) {
     ASSERT_EQ("123.00  ", sfe_l);
 }
 
+TEST(Formatting, DelimitedSeq) {
+    std::vector<int> xs0;
+    auto s0 = str(delimited(xs0, ", "));
+    ASSERT_EQ("", s0);
+
+    std::vector<int> xs{1, 2, 3};
+    auto s1 = str(delimited(xs, ", "));
+    ASSERT_EQ("1, 2, 3", s1);
+
+    auto s2 = str(delimited(xs, fixed() | precision(2), " "));
+    ASSERT_EQ("1.00 2.00 3.00", s2);
+}
+
+
 TEST(Formatting, StrConcat) {
     ASSERT_EQ("", str());
     ASSERT_EQ("123", str(123));

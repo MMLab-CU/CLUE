@@ -352,6 +352,20 @@ default_string_formatter<T> get_default_formatter(const ::std::basic_string<T, T
 }
 
 
+//===============================================
+//
+//  Delimited Sequence formatting
+//
+//===============================================
+
+template<class Seq, class Fmt>
+struct delimited_t {
+    const Seq& seq;
+    Fmt elem_fmt;
+    const char *delimiter;
+};
+
+
 } // end namespace clue
 
 #endif

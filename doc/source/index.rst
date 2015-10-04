@@ -40,3 +40,11 @@ Meta-programming tools
    type_traits.rst
    meta.rst
    meta_seq.rst
+
+Concurrent programming
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 1
+
+   shared_mutex.rst

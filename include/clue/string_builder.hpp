@@ -112,6 +112,7 @@ public:
         if (width > max_n) max_n = width;
         charT *p = take_next(max_n + 1);
         size_t n = fmt.formatted_write(x, width, ljust, p, max_n + 1);
+        CLUE_ASSERT(!(p[n]));
         advance(n);
     }
 
@@ -120,28 +121,6 @@ public:
     template<typename T>
     generic_string_builder& operator << (const T& x) {
         writef(x, get_default_formatter(x));
-        return *this;
-    }
-
-    generic_string_builder& operator << (charT c) {
-        write(c);
-        return *this;
-    }
-
-    generic_string_builder& operator << (const charT* s) {
-        write(s);
-        return *this;
-    }
-
-    template<typename Traits>
-    generic_string_builder& operator << (const basic_string_view<charT, Traits>& s) {
-        write(s.data(), s.size());
-        return *this;
-    }
-
-    template<typename Traits, typename Allocator>
-    generic_string_builder& operator << (const ::std::basic_string<charT, Traits, Allocator>& s) {
-        write(s.data(), s.size());
         return *this;
     }
 

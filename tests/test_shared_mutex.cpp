@@ -164,5 +164,6 @@ void test_shared_lock() {
 int main() {
     test_exclusive_lock();
     test_shared_lock();
+    return 0;
 }
 

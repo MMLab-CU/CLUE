@@ -23,6 +23,7 @@
 // other facilities
 #include <clue/optional.hpp>
 #include <clue/timing.hpp>
+#include <clue/memory.hpp>
 
 // concurrency
 #include <clue/shared_mutex.hpp>

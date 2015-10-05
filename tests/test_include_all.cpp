@@ -9,6 +9,10 @@
 using clue::_;
 using clue::pass;
 
+// memory
+using clue::aligned_alloc;
+using clue::aligned_free;
+
 // array_view
 using clue::array_view;
 

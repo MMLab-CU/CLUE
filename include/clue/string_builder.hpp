@@ -4,7 +4,6 @@
 #include <clue/numformat.hpp>
 #include <array>
 #include <new>  // for bad_alloc
-#include <ostream>
 
 namespace clue {
 

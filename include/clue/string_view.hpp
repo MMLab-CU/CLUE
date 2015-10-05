@@ -9,16 +9,10 @@
 #ifndef CLUE_STRING_VIEW__
 #define CLUE_STRING_VIEW__
 
-#include <clue/config.hpp>
-
-#include <cstddef>
-#include <type_traits>
+#include <clue/container_common.hpp>
 #include <string>
-#include <algorithm>
-#include <iterator>
 #include <ostream>
-#include <stdexcept>
-#include <limits>
+
 
 namespace clue {
 

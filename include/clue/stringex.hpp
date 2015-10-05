@@ -7,7 +7,6 @@
 #ifndef CLUE_STRINGEX__
 #define CLUE_STRINGEX__
 
-#include <clue/config.hpp>
 #include <clue/type_traits.hpp>
 #include <clue/string_view.hpp>
 #include <cctype>

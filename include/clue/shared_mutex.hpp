@@ -15,7 +15,7 @@
 #ifndef CLUE_SHARED_MUTEX__
 #define CLUE_SHARED_MUTEX__
 
-#include <clue/config.hpp>
+#include <clue/common.hpp>
 #include <mutex>
 #include <condition_variable>
 #include <chrono>

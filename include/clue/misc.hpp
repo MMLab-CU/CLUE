@@ -3,7 +3,7 @@
 
 // Miscellaneous utilities
 
-#include <clue/config.hpp>
+#include <clue/common.hpp>
 
 namespace clue {
 

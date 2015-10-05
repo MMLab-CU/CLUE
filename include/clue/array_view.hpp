@@ -7,13 +7,7 @@
 #ifndef CLUE_ARRAY_VIEW__
 #define CLUE_ARRAY_VIEW__
 
-#include <clue/config.hpp>
-#include <cstddef>
-#include <type_traits>
-#include <iterator>
-#include <algorithm>
-#include <limits>
-#include <stdexcept>
+#include <clue/container_common.hpp>
 
 namespace clue {
 

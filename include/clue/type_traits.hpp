@@ -7,8 +7,7 @@
 #ifndef CLUE_TYPE_TRAITS__
 #define CLUE_TYPE_TRAITS__
 
-#include <clue/config.hpp>
-#include <type_traits>
+#include <clue/common.hpp>
 
 namespace clue {
 

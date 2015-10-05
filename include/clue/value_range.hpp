@@ -1,10 +1,7 @@
 #ifndef CLUE_VALUE_RANGE__
 #define CLUE_VALUE_RANGE__
 
-#include <clue/config.hpp>
-#include <type_traits>
-#include <algorithm>
-#include <stdexcept>
+#include <clue/container_common.hpp>
 
 namespace clue {
 

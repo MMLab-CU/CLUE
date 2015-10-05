@@ -55,6 +55,11 @@ using clue::value_range;
 // string_view
 using clue::string_view;
 
+// shared_mutex
+using clue::shared_mutex;
+using clue::shared_timed_mutex;
+using clue::shared_lock;
+
 int main() {
     return 0;
 }

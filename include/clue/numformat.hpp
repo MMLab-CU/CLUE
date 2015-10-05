@@ -4,7 +4,6 @@
 #include <clue/formatting_base.hpp>
 #include <clue/internal/numfmt.hpp>
 #include <clue/internal/grisu.hpp>
-#include <cstdint>
 
 namespace clue {
 

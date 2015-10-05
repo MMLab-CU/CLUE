@@ -3,8 +3,6 @@
 #ifndef CLUE_CLUE__
 #define CLUE_CLUE__
 
-#include <clue/config.hpp>
-
 #include <clue/misc.hpp>
 
 // type traits & meta-programming
@@ -25,5 +23,8 @@
 // other facilities
 #include <clue/optional.hpp>
 #include <clue/timing.hpp>
+
+// concurrency
+#include <clue/shared_mutex.hpp>
 
 #endif

@@ -1,7 +1,6 @@
 #ifndef CLUE_FORMATTING__
 #define CLUE_FORMATTING__
 
-#include <clue/formatting_base.hpp>
 #include <clue/string_builder.hpp>
 
 namespace clue {

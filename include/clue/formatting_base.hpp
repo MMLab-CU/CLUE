@@ -1,19 +1,12 @@
 #ifndef CLUE_FORMATTING_BASE__
 #define CLUE_FORMATTING_BASE__
 
-#include <clue/config.hpp>
-#include <clue/type_traits.hpp>
 #include <clue/stringex.hpp>
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstdint>
 #include <cstdarg>
-
-#include <string>
-#include <stdexcept>
-#include <algorithm>
 
 namespace clue {
 

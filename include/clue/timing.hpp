@@ -7,9 +7,8 @@
 #ifndef CLUE_TIMING__
 #define CLUE_TIMING__
 
-#include <clue/config.hpp>
+#include <clue/common.hpp>
 #include <chrono>
-#include <cstddef>
 
 namespace clue {
 

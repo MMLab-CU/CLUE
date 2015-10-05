@@ -9,16 +9,7 @@
 #ifndef CLUE_OPTIONAL__
 #define CLUE_OPTIONAL__
 
-#include <clue/config.hpp>
-
-#include <utility>
-#include <type_traits>
-#include <initializer_list>
-#include <cassert>
-#include <functional>
-#include <string>
-#include <stdexcept>
-#include <cassert>
+#include <clue/container_common.hpp>
 
 namespace clue {
 

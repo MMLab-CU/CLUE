@@ -36,3 +36,6 @@
 build
 build-*
 .idea
+
+# Others
+.clang_complete

@@ -47,6 +47,33 @@ inline std::string sstr() {
     return std::string();
 }
 
+template<class Seq>
+struct Delimits {
+    const Seq& seq;
+    const char *delimiter;
+
+    Delimits(const Seq& s, const char *delim)
+        : seq(s), delimiter(delim) {}
+};
+
+template<class Seq>
+inline Delimits<Seq> delimits(const Seq& seq, const char *delim) {
+    return Delimits<Seq>(seq, delim);
+}
+
+template<class Seq>
+inline std::ostream& operator << (std::ostream& out, const Delimits<Seq>& a) {
+    auto it = a.seq.begin();
+    auto it_end = a.seq.end();
+    if (it != it_end) {
+        out << *it;
+        ++it;
+        for(;it != it_end; ++it)
+            out << a.delimiter << *it;
+    }
+    return out;
+}
+
 }
 
 #endif

@@ -21,3 +21,13 @@ TEST(Misc, SStr) {
     ASSERT_EQ("123", sstr(123));
     ASSERT_EQ("1 + 2 = 3", sstr(1, " + ", 2, " = ", 3));
 }
+
+TEST(Misc, Delims) {
+    using clue::delimits;
+
+    std::vector<int> xs0;
+    ASSERT_EQ("", sstr(delimits(xs0, ", ")));
+
+    std::vector<int> xs1{1, 2, 3};
+    ASSERT_EQ("1, 2, 3", sstr(delimits(xs1, ", ")));
+}

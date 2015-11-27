@@ -13,3 +13,11 @@ TEST(Misc, MakeUnique) {
     ASSERT_EQ("abc", *p);
 }
 
+
+TEST(Misc, SStr) {
+    using clue::sstr;
+
+    ASSERT_EQ("", sstr());
+    ASSERT_EQ("123", sstr(123));
+    ASSERT_EQ("1 + 2 = 3", sstr(1, " + ", 2, " = ", 3));
+}

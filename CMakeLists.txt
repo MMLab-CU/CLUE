@@ -71,6 +71,7 @@ set(UNIT_TESTS
     test_reindexed_view
     test_meta
     test_meta_seq
+    test_misc
     test_include_all
 )
 

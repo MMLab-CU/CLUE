@@ -1,5 +1,4 @@
 #include <clue/misc.hpp>
-#include <string>
 #include <gtest/gtest.h>
 
 TEST(Misc, MakeUnique) {
@@ -14,20 +13,10 @@ TEST(Misc, MakeUnique) {
 }
 
 
-TEST(Misc, SStr) {
-    using clue::sstr;
+TEST(Misc, TempBuffer) {
+    using clue::temporary_buffer;
 
-    ASSERT_EQ("", sstr());
-    ASSERT_EQ("123", sstr(123));
-    ASSERT_EQ("1 + 2 = 3", sstr(1, " + ", 2, " = ", 3));
-}
-
-TEST(Misc, Delims) {
-    using clue::delimits;
-
-    std::vector<int> xs0;
-    ASSERT_EQ("", sstr(delimits(xs0, ", ")));
-
-    std::vector<int> xs1{1, 2, 3};
-    ASSERT_EQ("1, 2, 3", sstr(delimits(xs1, ", ")));
+    temporary_buffer<int> buf(12);
+    ASSERT_TRUE(buf.data() != nullptr);
+    ASSERT_GE(buf.capacity(), 12);
 }

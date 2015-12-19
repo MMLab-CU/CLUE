@@ -13,9 +13,9 @@
 // string and formatting
 #include <clue/string_view.hpp>
 #include <clue/stringex.hpp>
-#include <clue/formatting.hpp>
+#include <clue/sformat.hpp>
 
-// ranges and views
+// arrays
 #include <clue/value_range.hpp>
 #include <clue/array_view.hpp>
 #include <clue/reindexed_view.hpp>

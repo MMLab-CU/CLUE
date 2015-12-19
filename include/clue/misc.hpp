@@ -21,58 +21,30 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 }
 
 
-namespace details {
+template<typename T>
+class temporary_buffer final {
+private:
+    std::pair<T*, std::ptrdiff_t> ret_;
 
-template<class A>
-inline void insert_to_stream(std::ostream& os, A&& x) {
-    os << x;
-}
+public:
+    temporary_buffer(size_t n)
+        : ret_(std::get_temporary_buffer<T>(static_cast<ptrdiff_t>(n))) {}
 
-template<class A, class... Rest>
-inline void insert_to_stream(std::ostream& os, A&& x, Rest&&... rest) {
-    os << x;
-    insert_to_stream(os, std::forward<Rest>(rest)...);
-}
-
-} // end namespace details
-
-template<class... Args>
-inline std::string sstr(Args&&... args) {
-    std::stringstream ss;
-    details::insert_to_stream(ss, std::forward<Args>(args)...);
-    return ss.str();
-}
-
-inline std::string sstr() {
-    return std::string();
-}
-
-template<class Seq>
-struct Delimits {
-    const Seq& seq;
-    const char *delimiter;
-
-    Delimits(const Seq& s, const char *delim)
-        : seq(s), delimiter(delim) {}
-};
-
-template<class Seq>
-inline Delimits<Seq> delimits(const Seq& seq, const char *delim) {
-    return Delimits<Seq>(seq, delim);
-}
-
-template<class Seq>
-inline std::ostream& operator << (std::ostream& out, const Delimits<Seq>& a) {
-    auto it = a.seq.begin();
-    auto it_end = a.seq.end();
-    if (it != it_end) {
-        out << *it;
-        ++it;
-        for(;it != it_end; ++it)
-            out << a.delimiter << *it;
+    ~temporary_buffer() {
+        std::return_temporary_buffer(ret_.first);
     }
-    return out;
-}
+
+    temporary_buffer(const temporary_buffer&) = delete;
+    temporary_buffer& operator= (const temporary_buffer&) = delete;
+
+    size_t capacity() const noexcept {
+        return static_cast<size_t>(ret_.second);
+    }
+
+    T* data() noexcept {
+        return ret_.first;
+    }
+};
 
 }
 

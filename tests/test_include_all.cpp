@@ -17,8 +17,8 @@ using clue::aligned_free;
 using clue::array_view;
 
 // formatting
-using clue::withf;
-using clue::str;
+using clue::cfmt;
+using clue::sstr;
 
 // meta
 using clue::meta::type_;
@@ -26,18 +26,11 @@ using clue::meta::type_;
 // meta_seq
 using clue::meta::seq_;
 
-// numformat
-using clue::int_formatter;
-using clue::float_formatter;
-
 // optional
 using clue::optional;
 
 // reindexed_view
 using clue::reindexed_view;
-
-// string_builder
-using clue::string_builder;
 
 // string_view
 using clue::string_view;

@@ -63,9 +63,7 @@ set(UNIT_TESTS
     test_optional
     test_string_view
     test_stringex
-    test_formatting
-    test_numformat
-    test_string_builder
+    test_sformat
     test_value_range
     test_array_view
     test_reindexed_view
@@ -103,25 +101,9 @@ set(EXAMPLES
     ex_stopwatch
     ex_timing
     ex_strings
-    ex_formatting
-    ex_newformatter
 )
 
 foreach (name ${EXAMPLES})
     add_executable(${name} examples/${name}.cpp)
 endforeach()
 
-###################################
-#
-#  Performance evaluation
-#
-###################################
-
-set(PERFS
-    perf_strgrow
-    perf_numfmt
-)
-
-foreach (name ${PERFS})
-    add_executable(${name} perf/${name}.cpp)
-endforeach()

@@ -35,6 +35,13 @@ public:
         std::lock_guard<mutex_type> lk(mut_);
     }
 
+    void clear() {
+        std::lock_guard<mutex_type> lk(mut_);
+        while (!empty()) {
+            queue_.pop();
+        }
+    }
+
     void push(const T& x) {
         std::lock_guard<mutex_type> lk(mut_);
         queue_.push(x);

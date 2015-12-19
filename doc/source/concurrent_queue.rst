@@ -22,6 +22,10 @@ This class has a default constructor, but it is not copyable or movable. The cla
 
     Block until all updating (*e.g.* push or pop) are done.
 
+.. cpp:function:: void clear()
+
+    Clear the queue (pop all remaining elements).
+
 .. cpp:function:: void push(const T& x)
 
     Push an element ``x`` to the back of the queue.

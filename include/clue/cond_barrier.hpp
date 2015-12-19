@@ -40,11 +40,9 @@ public:
 
     template<class Pred>
     T wait(Pred&& pred) {
-        if (pred(value_)) return value_;        
-        while(!pred(value_)) {
-            std::unique_lock<mutex_type> cv_lk(cv_mut_);
-            cv_.wait(cv_lk);
-        }
+        if (pred(value_)) return value_;
+        std::unique_lock<mutex_type> cv_lk(cv_mut_);
+        cv_.wait(cv_lk, [&](){ return pred(value_); });
         return value_;
     }
 };

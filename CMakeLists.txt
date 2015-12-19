@@ -106,7 +106,7 @@ set(EXAMPLES
 
 set(THREAD_EXAMPLES
     ex_ccqueue
-    ex_notifyval
+    ex_condbarrier
 )
 
 foreach (name ${EXAMPLES})

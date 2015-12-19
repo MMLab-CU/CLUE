@@ -49,3 +49,4 @@ Concurrent programming
 
    shared_mutex.rst
    concurrent_queue.rst
+   cond_barrier.rst

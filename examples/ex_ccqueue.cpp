@@ -35,7 +35,7 @@ int main() {
     // consumers
     std::thread consumer([&](){
         while (remain_nitems > 0) {
-            sleep(consume_time);
+            sleep_for(consume_time);
             double v = Q.wait_pop();
             std::printf("consumer[*] << %g\n", v);
             -- remain_nitems;

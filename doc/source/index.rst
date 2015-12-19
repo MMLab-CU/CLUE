@@ -48,3 +48,4 @@ Concurrent programming
    :maxdepth: 1
 
    shared_mutex.rst
+   concurrent_queue.rst

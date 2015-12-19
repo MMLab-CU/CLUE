@@ -82,6 +82,7 @@ endforeach()
 
 set(THREADING_TESTS
     test_shared_mutex
+    test_threadsafe
 )
 
 foreach(tname ${THREADING_TESTS})

@@ -102,8 +102,11 @@ set(EXAMPLES
     ex_stopwatch
     ex_timing
     ex_strings
+    ex_ccqueue
 )
 
 foreach (name ${EXAMPLES})
     add_executable(${name} examples/${name}.cpp)
 endforeach()
+
+target_link_libraries(ex_ccqueue, ${CMAKE_THREAD_LIBS_INIT})

@@ -82,13 +82,13 @@ endforeach()
 
 set(THREADING_TESTS
     test_shared_mutex
-    test_threadsafe
+    test_concurrent_queue
 )
 
 foreach(tname ${THREADING_TESTS})
     add_executable(${tname} ${TESTS}/${tname}.cpp)
     target_link_libraries(${tname} ${CMAKE_THREAD_LIBS_INIT})
-    add_test(NAME ${tname} COMMAND ${tname})    
+    add_test(NAME ${tname} COMMAND ${tname})
 endforeach()
 
 
@@ -107,4 +107,3 @@ set(EXAMPLES
 foreach (name ${EXAMPLES})
     add_executable(${name} examples/${name}.cpp)
 endforeach()
-

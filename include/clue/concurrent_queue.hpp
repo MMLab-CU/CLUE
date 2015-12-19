@@ -1,62 +1,11 @@
-#ifndef CLUE_THREADSAFE__
-#define CLUE_THREADSAFE__
+#ifndef CLUE_CONCURRENT_QUEUE__
+#define CLUE_CONCURRENT_QUEUE__
 
 #include <clue/common.hpp>
 #include <mutex>
-#include <stack>
 #include <queue>
 
 namespace clue {
-
-template<class T, class Container=std::deque<T>>
-class thsafe_stack final {
-private:
-    using mutex_type = std::mutex;
-    std::stack<T, Container> stack_;
-    mutex_type mut_;
-
-public:
-    ~thsafe_stack() {
-        synchronize();
-    }
-
-    size_t size() const {
-        return stack_.size();
-    }
-
-    bool empty() const {
-        return stack_.empty();
-    }
-
-    void synchronize() {
-        std::lock_guard<mutex_type> lk(mut_);
-    }
-
-    void push(const T& x) {
-        std::lock_guard<mutex_type> lk(mut_);
-        stack_.push(x);
-    }
-
-    void push(T&& x) {
-        std::lock_guard<mutex_type> lk(mut_);
-        stack_.push(std::move(x));
-    }
-
-    template<class... Args>
-    void push(Args&&... args) {
-        std::lock_guard<mutex_type> lk(mut_);
-        stack_.emplace(std::forward<Args>(args)...);
-    }
-
-    bool try_pop(T& dst) {
-        std::lock_guard<mutex_type> lk(mut_);
-        if (empty()) return false;
-        dst = std::move(stack_.top());
-        stack_.pop();
-        return true;
-    }
-};
-
 
 template<class T, class Container=std::deque<T>>
 class thsafe_queue final {
@@ -64,6 +13,9 @@ private:
     using mutex_type = std::mutex;
     std::queue<T, Container> queue_;
     mutex_type mut_;
+
+    std::condition_variable cv1_; // notify when the queue becomes non-empty
+    mutex_type cv1_mut_;
 
 public:
     ~thsafe_queue() {
@@ -85,19 +37,24 @@ public:
     void push(const T& x) {
         std::lock_guard<mutex_type> lk(mut_);
         queue_.push(x);
+        if (size() == 1) cv1_.notify_one();
     }
 
     void push(T&& x) {
         std::lock_guard<mutex_type> lk(mut_);
         queue_.push(std::move(x));
+        if (size() == 1) cv1_.notify_one();
     }
 
     template<class... Args>
     void push(Args&&... args) {
         std::lock_guard<mutex_type> lk(mut_);
         queue_.emplace(std::forward<Args>(args)...);
+        if (size() == 1) cv1_.notify_one();
     }
 
+    // If it is non empty, pop and write the front element to dst,
+    // and return true, otherwise, it returns false immediately.
     bool try_pop(T& dst) {
         std::lock_guard<mutex_type> lk(mut_);
         if (empty()) return false;
@@ -105,8 +62,19 @@ public:
         queue_.pop();
         return true;
     }
-};
 
+    // Wait until non-empty and then pop
+    T wait_pop() {
+        std::lock_guard<mutex_type> lk(mut_);
+        if (empty()) {
+            std::unique_lock<mutex_type> lk1(cv1_mut_);
+            cv1_.wait(lk1);
+        }
+        T x = std::move(queue_.front());
+        queue_.pop();
+        return std::move(x);
+    }
+};
 
 
 } // end namespace clue

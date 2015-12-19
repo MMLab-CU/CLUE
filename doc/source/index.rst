@@ -28,8 +28,7 @@ String and formatting
 
    string_view.rst
    stringex.rst
-   formatting.rst
-   string_builder.rst
+   sformat.rst
 
 Meta-programming tools
 ~~~~~~~~~~~~~~~~~~~~~~~

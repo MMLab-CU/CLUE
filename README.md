@@ -29,8 +29,6 @@ Below is a list of components available in the library.
 - Class template ``string_view``: light-weight wrapper of sub-strings. **(backport from CELF)**
 - Extensions of string functionalities (*e.g.* trimming, value parsing, and tokenizers).
 - In-memory string formatting and extensible formatter systems.
-- Efficient integer and floating point formatting (*e.g.* Grisu algorithm).
-- Efficient string builder (on managed memory or external buffer).
 
 #### Meta programming tools
 
@@ -41,7 +39,9 @@ Below is a list of components available in the library.
 #### Concurrency programming support
 
 - Classes ``shared_mutex``, ``shared_timed_mutex``, and ``shared_lock``: to support read/write lock. **(backport from C++14/C++17)**.
-
+- Class ``concurrent_queue``: thread-safe queues, which can be used as a task queue.
+- Class ``cond_barrier``: a variable that allow threads to wait on certain conditions of its value.
+- Class ``thread_pool``: thread pool (map tasks to a small number of threads).
 
 **Note:** Certain components are marked with **backport**. Such components are introduced in the [C++14 Standard](https://en.wikipedia.org/wiki/C%2B%2B14) or the [C++ Extensions for Library Fundamentals (CELF), ISO/IEC TS 19568:xxxx](http://en.cppreference.com/w/cpp/experimental/lib_extensions). While they were not introduced to C++11, they can be implemented within the capacity of C++11 standard. We provide an implementation (using libc++ as a reference implementation) here (within the namespace ``clue``) that works with C++11.
 

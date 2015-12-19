@@ -134,6 +134,10 @@ public:
             if (pe->th.joinable()) pe->th.join();
             pe->terminated = true;
         }
+
+        // clear the threads
+        std::lock_guard<std::mutex> lk(vec_mut_);
+        entries_.clear();
     }
 
     // block until all current tasks finish
@@ -152,6 +156,10 @@ public:
 
         // clear queue
         states_.tsk_queue.clear();
+
+        // clear the threads
+        std::lock_guard<std::mutex> lk(vec_mut_);
+        entries_.clear();
     }
 
 }; // end class thread_pool

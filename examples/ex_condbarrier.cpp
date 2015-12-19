@@ -8,12 +8,12 @@ inline void sleep_for(size_t ms) {
 }
 
 int main() {
-    clue::cond_barrier<int> produce_gate(0, [](int n){ return n != 0; });
-    clue::cond_barrier<int> consume_gate(0, [](int n){ return n > 0; });
+    clue::cond_barrier<int> produce_gate(0);
+    clue::cond_barrier<int> consume_gate(0);
 
     std::thread producer([&](){
         for(;;) {
-            int num = produce_gate.wait();
+            int num = produce_gate.wait([](int n){ return n != 0; });
             produce_gate.set(0);
             if (num < 0) break; // use num < 0 to indicate the end
             int res = 0;
@@ -28,9 +28,14 @@ int main() {
     // response every 10 increments
     std::thread consumer([&](){
         for (int n = 1; n <= 5; ++n) {
-            produce_gate.set(n);  // notify the producer to process n items
-            int res = consume_gate.wait();     // wait until the production is done
+            // notify the producer to process n items
+            produce_gate.set(n);
+
+            // wait until the production is done
+            int res = consume_gate.wait([](int r){ return r > 0; });
             consume_gate.set(0);
+
+            // process the result
             std::printf("n = %d ==> res = %d\n", n, res);
         }
         produce_gate.set(-1);  // notify the producer to terminate

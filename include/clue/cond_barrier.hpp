@@ -15,24 +15,16 @@ private:
     mutex_type cv_mut_;
     mutex_type mut_;
     T value_;
-    std::function<bool(const T&)> pred_;
-    bool open_;
 
 public:
-    template<class Pred>
-    cond_barrier(const T& v0, Pred&& pred)
-        : value_(v0)
-        , pred_(std::move(pred))
-        , open_(pred_(value_)) {}
+    cond_barrier(const T& v0)
+        : value_(v0) {}
 
     void set(const T& v) {
         if (v != value_) {
             std::lock_guard<mutex_type> lk(mut_);
             value_ = v;
-            open_ = pred_(value_);
-            if (open_) {
-                cv_.notify_all();
-            }
+            cv_.notify_all();
         }
     }
 
@@ -42,30 +34,18 @@ public:
         T prev_v = value_;
         func(value_);
         if (value_ != prev_v) {
-            open_ = pred_(value_);
-            if (open_) {
-                cv_.notify_all();
-            }
+            cv_.notify_all();
         }
     }
 
-    T wait() {
-        if (open_) return value_;
-        std::unique_lock<mutex_type> cv_lk(cv_mut_);
-        cv_.wait(cv_lk);
+    template<class Pred>
+    T wait(Pred&& pred) {
+        if (pred(value_)) return value_;        
+        while(!pred(value_)) {
+            std::unique_lock<mutex_type> cv_lk(cv_mut_);
+            cv_.wait(cv_lk);
+        }
         return value_;
-    }
-
-    template<class Rep, class Period>
-    bool wait_for(const std::chrono::duration<Rep, Period>& dur, T& dst) {
-        if (open_) return true;
-        std::unique_lock<mutex_type> cv_lk(cv_mut_);
-        if (cv_.wait_for(cv_lk, dur)) {
-            dst = value_;
-            return true;
-        } else {
-            return false;
-        }
     }
 };
 

@@ -8,7 +8,7 @@
 namespace clue {
 
 template<class T, class Container=std::deque<T>>
-class thsafe_queue final {
+class concurrent_queue final {
 private:
     using mutex_type = std::mutex;
     std::queue<T, Container> queue_;
@@ -18,7 +18,7 @@ private:
     mutex_type cv1_mut_;
 
 public:
-    ~thsafe_queue() {
+    ~concurrent_queue() {
         synchronize();
     }
 
@@ -65,11 +65,11 @@ public:
 
     // Wait until non-empty and then pop
     T wait_pop() {
-        std::lock_guard<mutex_type> lk(mut_);
         if (empty()) {
             std::unique_lock<mutex_type> lk1(cv1_mut_);
             cv1_.wait(lk1);
         }
+        std::lock_guard<mutex_type> lk(mut_);
         T x = std::move(queue_.front());
         queue_.pop();
         return std::move(x);

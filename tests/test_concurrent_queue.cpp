@@ -7,7 +7,7 @@ void test_push_then_pop(size_t nt) {
     std::printf("testing push_then_pop ...\n");
     assert(nt > 0);
 
-    clue::thsafe_queue<int> Q;
+    clue::concurrent_queue<int> Q;
     int N = 10000;
 
     assert(Q.empty());
@@ -52,7 +52,39 @@ void test_push_then_pop(size_t nt) {
 }
 
 
+void test_concurrent_push_and_pop() {
+    std::printf("testing concurrent_push_and_pop ...\n");
+
+    clue::concurrent_queue<int> Q;
+    int N = 100;
+
+    std::thread producer([&Q,N](){
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        for (int i = 0; i < N; ++i) {
+            std::printf("push %d\n", i+1);
+            Q.push(i + 1);
+        }
+    });
+
+    int sum = 0;
+    std::thread consumer([&Q,N,&sum](){
+        for (int i = 0; i < N; ++i) {            
+            int v = Q.wait_pop();
+            std::printf("pop %d\n", v);
+            sum += v;
+        }
+    });
+
+    producer.join();
+    consumer.join();
+
+    int expect_sum = N * (N + 1) / 2;
+    // assert(sum == expect_sum);
+}
+
+
 int main() {
     size_t nt = 4;
     test_push_then_pop(nt);
+    test_concurrent_push_and_pop();
 }

@@ -6,7 +6,7 @@
 #include <chrono>
 #include <cstdio>
 
-inline void sleep(size_t ms) {
+inline void sleep_for(size_t ms) {
     std::this_thread::sleep_for(std::chrono::microseconds(ms));
 }
 
@@ -24,7 +24,7 @@ int main() {
     for (size_t t = 0; t < M; ++t) {
         producers.emplace_back([&Q,t,k,produce_time](){
             for (size_t i = 0; i < k; ++i) {
-                sleep(produce_time);
+                sleep_for(produce_time);
                 double v = i + 1;
                 std::printf("producer[%zu] >> %g\n", t, v);
                 Q.push(v);

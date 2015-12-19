@@ -56,21 +56,19 @@ void test_concurrent_push_and_pop() {
     std::printf("testing concurrent_push_and_pop ...\n");
 
     clue::concurrent_queue<int> Q;
-    int N = 100;
+    int N = 1000;
 
     std::thread producer([&Q,N](){
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         for (int i = 0; i < N; ++i) {
-            std::printf("push %d\n", i+1);
             Q.push(i + 1);
         }
     });
 
     int sum = 0;
     std::thread consumer([&Q,N,&sum](){
-        for (int i = 0; i < N; ++i) {            
+        for (int i = 0; i < N; ++i) {
             int v = Q.wait_pop();
-            std::printf("pop %d\n", v);
             sum += v;
         }
     });
@@ -79,7 +77,7 @@ void test_concurrent_push_and_pop() {
     consumer.join();
 
     int expect_sum = N * (N + 1) / 2;
-    // assert(sum == expect_sum);
+    assert(sum == expect_sum);
 }
 
 

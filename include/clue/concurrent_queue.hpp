@@ -3,6 +3,7 @@
 
 #include <clue/common.hpp>
 #include <mutex>
+#include <condition_variable>
 #include <queue>
 
 namespace clue {

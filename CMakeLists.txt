@@ -102,11 +102,18 @@ set(EXAMPLES
     ex_stopwatch
     ex_timing
     ex_strings
+)
+
+set(THREAD_EXAMPLES
     ex_ccqueue
+    ex_notifyval
 )
 
 foreach (name ${EXAMPLES})
     add_executable(${name} examples/${name}.cpp)
 endforeach()
 
-target_link_libraries(ex_ccqueue, ${CMAKE_THREAD_LIBS_INIT})
+foreach (name ${THREAD_EXAMPLES})
+    add_executable(${name} examples/${name}.cpp)
+    target_link_libraries(${name} ${CMAKE_THREAD_LIBS_INIT})
+endforeach()

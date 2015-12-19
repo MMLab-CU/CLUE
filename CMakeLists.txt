@@ -107,6 +107,7 @@ set(EXAMPLES
 set(THREAD_EXAMPLES
     ex_ccqueue
     ex_condbarrier
+    ex_threadpool
 )
 
 foreach (name ${EXAMPLES})

@@ -30,9 +30,7 @@ TEST(TextIO, LineStream) {
     const char *text = "abc\n  efg  \n\nxyz\n12";
     clue::line_stream lstr(text);
 
-    std::vector<std::string> lines;
-    while (!lstr.done())
-        lines.push_back(lstr.next().to_string());
+    std::vector<std::string> lines(lstr.begin(), lstr.end());
 
     ASSERT_EQ(5, lines.size());
 

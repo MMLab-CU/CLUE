@@ -83,6 +83,7 @@ endforeach()
 set(THREADING_TESTS
     test_shared_mutex
     test_concurrent_queue
+    test_thread_pool
 )
 
 foreach(tname ${THREADING_TESTS})

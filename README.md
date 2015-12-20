@@ -24,11 +24,13 @@ Below is a list of components available in the library.
 - Class template ``array_view``: wrap a memory block into an STL-like view.
 - Class template ``reindexed_view``: STL-like view of a subset of elements.
 
-#### Strings and formatting
+#### String and text processing
 
+- A collection of character predicates.
 - Class template ``string_view``: light-weight wrapper of sub-strings. **(backport from CELF)**
 - Extensions of string functionalities (*e.g.* trimming, value parsing, and tokenizers).
 - In-memory string formatting and extensible formatter systems.
+- Text I/O functionalities (*e.g.* read file into a string and wrap string into a stream of lines).
 
 #### Meta programming tools
 

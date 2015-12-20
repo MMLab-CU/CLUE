@@ -21,8 +21,8 @@ Basic utilites
    reindexed_view.rst
    misc.rst
 
-String and formatting
-~~~~~~~~~~~~~~~~~~~~~~~
+String and text processing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
    :maxdepth: 1
@@ -31,7 +31,8 @@ String and formatting
    string_view.rst
    stringex.rst
    sformat.rst
-
+   textio.rst
+   
 Meta-programming tools
 ~~~~~~~~~~~~~~~~~~~~~~~
 

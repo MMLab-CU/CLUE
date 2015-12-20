@@ -19,7 +19,7 @@ void test(size_t nth, size_t interval, size_t proc_time) {
     size_t ntsks = 20;
     for (size_t i = 0; i < ntsks; ++i) {
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-        tpool.push([i, proc_time](size_t tidx){ proc(tidx, i+1, proc_time); });
+        tpool.schedule([i, proc_time](size_t tidx){ proc(tidx, i+1, proc_time); });
     }
 
     tpool.join();

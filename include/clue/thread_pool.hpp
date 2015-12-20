@@ -140,7 +140,7 @@ public:
     }
 
     template<class F>
-    auto push(F&& f) -> std::future<decltype(f((size_t)0))> {
+    auto schedule(F&& f) -> std::future<decltype(f((size_t)0))> {
         CLUE_ASSERT(!stopped() && !done());
 
         using pck_task_t = std::packaged_task<decltype(f((size_t)0))(size_t)>;

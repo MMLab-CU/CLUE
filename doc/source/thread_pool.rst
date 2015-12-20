@@ -16,17 +16,37 @@ This is generally more efficient than spawning one thread for each task, especia
 
 The ``thread_pool`` class provides the following member functions:
 
-.. cpp:function:: bool empty() const
+.. cpp:function:: bool empty() const noexcept
 
     Return whether the pool is empty (contains no threads).
 
-.. cpp:function:: size_t size() const
+.. cpp:function:: size_t size() const noexcept
 
     Get the number of threads maintained by the pool.
 
-.. cpp:function:: size_t idle_count() const
+.. cpp:function:: std::thread& get_thread(size_t i)
 
-    Get the number of idle threads();
+    Get a reference to the ``i``-th thread.
+
+.. cpp:function:: const std::thread& get_thread(size_t i) const
+
+    Get a const-reference to the ``i``-th thread.
+
+.. cpp:function:: size_t num_scheduled_tasks() const noexcept
+
+    Get the total number of scheduled tasks (all the tasks that have ever been pushed to the queue).
+
+.. cpp:function:: size_t num_completed_tasks() const noexcept
+
+    Get the total number of tasks that have been completed.
+
+.. cpp:function:: bool stopped() const noexcept
+
+    Get whether the thread pool has been stopped (by calling ``stop()``).
+
+.. cpp:function:: bool done() const noexcept
+
+    Get whether all scheduled tasks have been done.
 
 .. cpp:function:: void resize(n)
 
@@ -36,23 +56,27 @@ The ``thread_pool`` class provides the following member functions:
 
         When ``n`` is less than ``size()``, the pool will be shrinked, trailing threads will be terminated and detached.
 
-.. cpp:function:: std::future<R> push(F&& f)
+.. cpp:function:: std::future<R> schedule(F&& f)
 
-    Push a task to the queue.
+    Schedule a task.
 
-    Here, ``f`` should be a function that accepts the thread index (of type ``size_t``) as an argument. ``f`` can return ``void``
-    or other value types. Let ``R`` be the type returned by ``f``, then this function returns a future of class ``std::future<R>``.
+    Here, ``f`` should be a functor/function that accepts a thread index of type ``size_t`` as an argument.
+    This function returns a future of class ``std::future<R>``, where ``R`` is the return type of ``f``.
+
+    This function would wrap ``f`` into a ``packaged_task`` and push it to the internal task queue. When a thread is available,
+    it will try to get a task from the front of the internal task queue and execute it.
 
     .. note::
 
-        If your task may accept more arguments, it is straightforward to use lambda functions to wrap it into a closure that
-        only accepts the thread index.
+        It is straightforward to push a function that accepts more arguments. One can just wrap it into a closure
+        using C++11's lambda function.
+
 
 .. cpp:function:: void join()
 
     Block until all tasks are completed.
 
-.. cpp:function:: void terminate()
+.. cpp:function:: void stop()
 
     Block until all active tasks (those being run) are completed. Then the queue will be cleared and all threads will be terminated.
 

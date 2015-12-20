@@ -52,10 +52,22 @@ using clue::value_range;
 // string_view
 using clue::string_view;
 
+// textio
+using clue::read_file_content;
+
 // shared_mutex
 using clue::shared_mutex;
 using clue::shared_timed_mutex;
 using clue::shared_lock;
+
+// concurrent_queue
+using clue::concurrent_queue;
+
+// concurrent_counter
+using clue::concurrent_counter;
+
+// thread_pool
+using clue::thread_pool;
 
 int main() {
     return 0;

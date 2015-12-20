@@ -24,8 +24,12 @@
 #include <clue/optional.hpp>
 #include <clue/timing.hpp>
 #include <clue/memory.hpp>
+#include <clue/textio.hpp>
 
 // concurrency
 #include <clue/shared_mutex.hpp>
+#include <clue/concurrent_queue.hpp>
+#include <clue/concurrent_counter.hpp>
+#include <clue/thread_pool.hpp>
 
 #endif

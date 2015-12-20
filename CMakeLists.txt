@@ -60,6 +60,7 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 ###################################
 
 set(UNIT_TESTS
+    test_misc
     test_optional
     test_string_view
     test_stringex
@@ -69,7 +70,7 @@ set(UNIT_TESTS
     test_reindexed_view
     test_meta
     test_meta_seq
-    test_misc
+    test_textio
     test_include_all
 )
 

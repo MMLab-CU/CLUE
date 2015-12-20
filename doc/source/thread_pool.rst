@@ -82,4 +82,5 @@ The ``thread_pool`` class provides the following member functions:
 
 .. note::
 
-    Both ``join()`` and ``terminate()`` will clear the thread pool and reset the number of threads to zero.
+    Both ``join()`` and ``stop()`` will clear the thread pool and reset the number of threads to zero. One can use ``resize()`` to
+    rebuild the pool and reuse it again.

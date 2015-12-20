@@ -82,6 +82,7 @@ endforeach()
 
 set(THREADING_TESTS
     test_shared_mutex
+    test_concurrent_counter
     test_concurrent_queue
     test_thread_pool
 )
@@ -106,8 +107,8 @@ set(EXAMPLES
 )
 
 set(THREAD_EXAMPLES
+    ex_cccounter
     ex_ccqueue
-    ex_condbarrier
     ex_threadpool
 )
 

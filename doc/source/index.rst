@@ -48,6 +48,6 @@ Concurrent programming
    :maxdepth: 1
 
    shared_mutex.rst
+   concurrent_counter.rst
    concurrent_queue.rst
-   cond_barrier.rst
    thread_pool.rst

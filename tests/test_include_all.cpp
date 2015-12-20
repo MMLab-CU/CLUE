@@ -54,6 +54,7 @@ using clue::string_view;
 
 // textio
 using clue::read_file_content;
+using clue::line_stream;
 
 // shared_mutex
 using clue::shared_mutex;

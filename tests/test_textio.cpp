@@ -24,3 +24,21 @@ TEST(TextIO, ReadFile) {
     std::string rtext = clue::read_file_content(tname);
     ASSERT_EQ(Text, rtext);
 }
+
+
+TEST(TextIO, LineStream) {
+    const char *text = "abc\n  efg  \n\nxyz\n12";
+    clue::line_stream lstr(text);
+
+    std::vector<std::string> lines;
+    while (!lstr.done())
+        lines.push_back(lstr.next().to_string());
+
+    ASSERT_EQ(5, lines.size());
+
+    ASSERT_EQ("abc\n", lines[0]);
+    ASSERT_EQ("  efg  \n", lines[1]);
+    ASSERT_EQ("\n", lines[2]);
+    ASSERT_EQ("xyz\n", lines[3]);
+    ASSERT_EQ("12", lines[4]);
+}

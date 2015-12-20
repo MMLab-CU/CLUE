@@ -2,7 +2,8 @@
 #define CLUE_TESTIO__
 
 #include <clue/common.hpp>
-#include <string>
+#include <clue/stringex.hpp>
+#include <cstring>
 #include <fstream>
 #include <stdexcept>
 
@@ -27,6 +28,43 @@ inline std::string read_file_content(const char *filename) {
 inline std::string read_file_content(const std::string& filename) {
     return read_file_content(filename.c_str());
 }
+
+
+// turn a multiline string to a stream of lines
+
+class line_stream {
+private:
+    const char *text_;
+    size_t len_;
+    size_t beg_;
+    size_t end_;
+
+public:
+    line_stream(const char* text, size_t len)
+        : text_(text)
+        , len_(len), beg_(0), end_(0) {}
+
+    explicit line_stream(const char* text)
+        : line_stream(text, std::strlen(text)) {}
+
+    bool done() const noexcept {
+        return end_ >= len_;
+    }
+
+    string_view next() noexcept {
+        if (end_ < len_) {
+            beg_ = end_;
+            while (end_ < len_ && !is_line_delim(end_)) end_++;
+            if (end_ < len_) end_++;
+        }
+        return string_view(text_ + beg_, end_ - beg_);
+    }
+
+private:
+    bool is_line_delim(size_t i) const noexcept {
+        return text_[i] == '\n';
+    }
+};
 
 }
 

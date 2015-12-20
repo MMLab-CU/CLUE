@@ -27,6 +27,7 @@ String and formatting
 .. toctree::
    :maxdepth: 1
 
+   chars.rst
    string_view.rst
    stringex.rst
    sformat.rst

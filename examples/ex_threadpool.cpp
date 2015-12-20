@@ -22,7 +22,7 @@ void test(size_t nth, size_t interval, size_t proc_time) {
         tpool.schedule([i, proc_time](size_t tidx){ proc(tidx, i+1, proc_time); });
     }
 
-    tpool.join();
+    tpool.wait_done();
     std::printf("\n");
 }
 

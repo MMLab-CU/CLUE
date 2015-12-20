@@ -68,19 +68,77 @@ The ``thread_pool`` class provides the following member functions:
 
     .. note::
 
-        It is straightforward to push a function that accepts more arguments. One can just wrap it into a closure
-        using C++11's lambda function.
+        It is straightforward to push a function that accepts more arguments. One can just wrap it into a closure using C++11's lambda function.
 
+.. cpp:function:: void close(bool stop_cmd=false)
+
+    Close the queue, so that no new tasks can be scheduled.
+
+    If ``stop_cmd`` is explicitly set to ``true``, it also sends a stopping command to all threads.
+
+    .. note::
+
+        This function returns immediately after closing the queue (and optionally sending the stopping command).
+        It won't wait for the threads to finish (for this purpose, one can call ``join()``).
+
+.. cpp:function:: void close_and_stop()
+
+    Equivalent to ``close(true)``.
 
 .. cpp:function:: void join()
 
+    Block until all threads finish.
+
+    A thread will finish when the current task is completed and then no task can be acquired (the queue is closed and empty) or when it is stopped explicitly by the stopping command.
+
+    .. note::
+
+        The thread pool can only be joined when it is closed. Otherwise a runtime error will be raised.
+        Also, when all threads finish, the function, this function will clear the thread pool, resizing it
+        to ``0`` threads. However, one can call ``resize(n)`` to reinstantiate a new set of threads.
+
+.. cpp:function:: void wait_done()
+
     Block until all tasks are completed.
+    Equivalent to ``close(); join();``.
 
-.. cpp:function:: void stop()
+.. cpp:function:: void stop_and_wait()
 
-    Block until all active tasks (those being run) are completed. Then the queue will be cleared and all threads will be terminated.
+    Block until all active tasks (those being run) are completed. Tasks that have been scheduled but have not been launched will remain in the queue (but won't be run by threads).
 
-.. note::
+    This is equivalent to ``close_and_stop(); join();``.
 
-    Both ``join()`` and ``stop()`` will clear the thread pool and reset the number of threads to zero. One can use ``resize()`` to
-    rebuild the pool and reuse it again.
+    One can later call ``resize()`` to re-instate a new set of threads to complete the remaining tasks or call
+    ``clear_tasks()`` to clear all remaining tasks.
+
+.. cpp:function:: void clear_tasks()
+
+    Clear all tasks that remain in the queue. This function won't affect those tasks that are being executed.
+
+
+
+**Example:** The following example shows how to schedule tasks and wait until when they are all done.
+
+.. code-block:: cpp
+
+    #include <clue/thread_pool.hpp>
+
+    void my_task(double arg) {
+        // some processing ...
+    }
+
+    int main() {
+        // construct a thread pool with 4 threads
+        clue::thread_pool P(4);
+
+        size_t n = 20;
+        for (size_t i = 0; i < n; ++i) {
+            double a = // get an argument;
+
+            // tid is the index of the thread
+            P.schedule([](size_t tid){ my_task(a); });
+        }
+
+        // wait until all tasks are completed
+        P.wait_done();
+    }

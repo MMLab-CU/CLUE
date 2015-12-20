@@ -1,74 +1,69 @@
 #ifndef CLUE_THREAD_POOL__
 #define CLUE_THREAD_POOL__
 
-#include <clue/concurrent_queue.hpp>
+#include <clue/common.hpp>
 #include <memory>
 #include <thread>
-#include <atomic>
 #include <mutex>
 #include <condition_variable>
 #include <future>
 #include <vector>
+#include <queue>
+#include <stdexcept>
+#include <cstdio>
 
 namespace clue {
 
 class thread_pool {
 private:
+    typedef std::mutex mutex_type;
     typedef std::function<void(size_t)> task_func_t;
-    typedef concurrent_queue<task_func_t> task_queue_t;
+    typedef std::queue<task_func_t> task_queue_t;
 
-    struct states_t {
-        task_queue_t tsk_queue;
-        std::condition_variable cv;
-        std::mutex cv_mut;
-        std::atomic<size_t> n_pushed;
-        std::atomic<size_t> n_completed;
-        bool done;
-        bool stopped;
-
-        states_t()
-            : n_pushed(0)
-            , n_completed(0)
-            , done(false)
-            , stopped(false) {}
-    };
-
-    struct entry_t{
-        states_t& st;
+    struct th_entry_t {
         size_t idx;
-        bool stopped;
         std::thread th;
+        bool stopped;
 
-        entry_t(states_t& s, size_t i)
-            : st(s), idx(i), stopped(false) {
-            th = std::thread([this](){
-                task_func_t tfun;
-                bool got_tsk = st.tsk_queue.try_pop(tfun);
-                for(;;) {
-                    // execute whatever remain in the queue
-                    while(got_tsk) {
-                        tfun(idx);
-                        ++ st.n_completed;
-                        if (stopped) return;
-                        got_tsk = st.tsk_queue.try_pop(tfun);
-                    }
-                    if (stopped || st.done) return;
+        template<class F>
+        th_entry_t(size_t i, F&& f)
+            : idx(i)
+            , th(f)
+            , stopped(false) {}
 
-                    // wait for notification
-                    std::unique_lock<std::mutex> cv_lk(st.cv_mut);
-                    st.cv.wait(cv_lk, [&](){
-                        if (stopped) return true;
-                        got_tsk = st.tsk_queue.try_pop(tfun);
-                        return got_tsk || stopped || st.done;
-                    });
-                }
-            });
+        void join() {
+            if (th.joinable()) th.join();
+        }
+
+        void stop() {
+            stopped = true;
         }
     };
 
-    states_t states_;
-    std::vector<std::unique_ptr<entry_t>> entries_;
-    std::mutex vec_mut_;  // to protect the vector of thread entries
+    std::vector<std::unique_ptr<th_entry_t>> entries_;
+    task_queue_t tsk_queue_;
+
+    struct state_t {
+        size_t n_pushed = 0;
+        size_t n_completed = 0;
+        bool closed = false;
+        bool done = false;
+        bool stopped = false;
+
+        void revive() {
+            closed = false;
+            done = false;
+            stopped = false;
+        }
+
+        bool alive() {
+            return !(stopped || done);
+        }
+    };
+    state_t st_;
+
+    mutable mutex_type mut_;
+    std::condition_variable cv_;
 
 public:
     thread_pool() = default;
@@ -77,122 +72,235 @@ public:
         resize(nthreads);
     }
 
-    bool empty() const noexcept {
+    bool empty() const {
+        std::lock_guard<mutex_type> lk(mut_);
         return entries_.empty();
     }
 
-    size_t size() const noexcept {
+    size_t size() const {
+        std::lock_guard<mutex_type> lk(mut_);
         return entries_.size();
     }
 
     const std::thread& get_thread(size_t idx) const {
+        std::lock_guard<mutex_type> lk(mut_);
         return entries_.at(idx)->th;
     }
 
     std::thread& get_thread(size_t idx) {
+        std::lock_guard<mutex_type> lk(mut_);
         return entries_.at(idx)->th;
     }
 
-    size_t num_scheduled_tasks() const noexcept {
-        return states_.n_pushed.load();
+    size_t num_scheduled_tasks() const {
+        std::lock_guard<mutex_type> lk(mut_);
+        return st_.n_pushed;
     }
 
-    size_t num_completed_tasks() const noexcept {
-        return states_.n_completed.load();
+    size_t num_completed_tasks() const {
+        std::lock_guard<mutex_type> lk(mut_);
+        return st_.n_completed;
     }
 
-    bool stopped() const noexcept {
-        return states_.stopped;
+    // "closed" means no new task can be scheduled
+    bool closed() const {
+        std::lock_guard<mutex_type> lk(mut_);
+        return st_.closed;
     }
 
-    bool done() const noexcept {
-        return states_.done;
+    // "done" means all scheduled tasks have been done
+    bool done() const {
+        std::lock_guard<mutex_type> lk(mut_);
+        return st_.done;
+    }
+
+    // "stopped" means stopped manually by calling "stop()"
+    bool stopped() const {
+        std::lock_guard<mutex_type> lk(mut_);
+        return st_.stopped;
     }
 
 public:
     void resize(size_t nthreads) {
-        size_t n0 = size();
-        if (nthreads > n0) {
-            // grow the thread pool
-            size_t na = nthreads - n0;
-            std::lock_guard<std::mutex> lk(vec_mut_);
-            entries_.reserve(nthreads);
-            for (size_t i = 0; i < na; ++i) {
-                entries_.emplace_back(new entry_t(states_, n0 + i));
-            }
-            states_.stopped = false;
-            states_.done = false;
-
-        } else if (nthreads < n0) {
-            // reduce the thread pool
-            size_t nr = n0 - nthreads;
-            std::lock_guard<std::mutex> lk(vec_mut_);
-
-            // terminate & detach threads
-            for (size_t i = 0; i < nr; ++i) {
-                entry_t& e = *(entries_.back());
-                e.stopped = true;
-                e.th.detach();
-                entries_.pop_back();
-            }
-            states_.cv.notify_all();
+        if (nthreads == entries_.size())
+            return;
+        {
+            std::lock_guard<mutex_type> lk(mut_);
+            resize_(nthreads);
         }
+        cv_.notify_all();
     }
 
     template<class F>
     auto schedule(F&& f) -> std::future<decltype(f((size_t)0))> {
-        CLUE_ASSERT(!stopped() && !done());
-
+        if (st_.closed) {
+            throw std::runtime_error(
+                "thread_pool::schedule: "
+                "Cannot schedule while the thread_pool is closed.");
+        }
         using pck_task_t = std::packaged_task<decltype(f((size_t)0))(size_t)>;
         auto sp = std::make_shared<pck_task_t>(std::forward<F>(f));
-        states_.tsk_queue.push([sp](size_t idx){
-            (*sp)(idx);
-        });
-        states_.n_pushed ++;
-        states_.cv.notify_one();
+        {
+            std::lock_guard<mutex_type> lk(mut_);
+            tsk_queue_.emplace([sp](size_t idx){
+                (*sp)(idx);
+            });
+            st_.n_pushed ++;
+        }
+        cv_.notify_one();
         return sp->get_future();
     }
 
-    // block until all tasks finish
+    // close the queue, so no new tasks can be added
+    void close(bool stop_cmd=false) {
+        if (st_.closed) return;
+        {
+            std::lock_guard<mutex_type> lk(mut_);
+            st_.closed = true;
+            if (stop_cmd) {
+                st_.stopped = true;
+                for (auto& pe: entries_) pe->stopped = true;
+            }
+        }
+        cv_.notify_all();
+    }
+
+    void close_and_stop() {
+        close(true);
+    }
+
+    // wait until all threads finish their jobs
+    // and then clear them
     void join() {
-        CLUE_ASSERT(!stopped() && !done());
-
-        states_.done = true;
-        states_.cv.notify_all();
-
+        if (!st_.closed) {
+            throw std::runtime_error(
+                "thread_pool::join: "
+                "The thread pool cannot be joined while it is not closed.");
+        }        
         for (auto& pe: entries_) {
-            if (pe->th.joinable()) pe->th.join();
-            pe->stopped = true;
+            pe->join();
         }
 
-        // clear the threads
-        std::lock_guard<std::mutex> lk(vec_mut_);
+        std::lock_guard<mutex_type> lk2(mut_);
+        st_.done = tsk_queue_.empty();
         entries_.clear();
+    }
+
+    // block until all tasks finish
+    void wait_done() {
+        close();
+        join();
     }
 
     // block until all current tasks finish
     // remaining tasks are all cleared
-    void stop() {
-        CLUE_ASSERT(!stopped() && !done());
+    void stop_and_wait() {
+        close_and_stop();
+        join();
+    }
 
-        states_.stopped = true;
-        for (auto& pe: entries_) {
-            pe->stopped = true;
+    void clear_tasks() {
+        bool to_notify = false;
+        {
+            std::lock_guard<mutex_type> lk(mut_);
+            to_notify = !tsk_queue_.empty();
+            while (!tsk_queue_.empty()) {
+                tsk_queue_.pop();
+            }
         }
-        states_.cv.notify_all();
+        if (to_notify)
+            cv_.notify_all();
+    }
 
-        // wait until active tasks are all finished
-        for (auto& pe: entries_) {
-            if (pe->th.joinable()) pe->th.join();
+private:
+    bool can_thread_exit(const th_entry_t& e) {
+        return e.stopped ||
+            (tsk_queue_.empty() && st_.closed);
+    }
+
+    bool try_pop_task(size_t th_idx, task_func_t& f) {
+        std::lock_guard<mutex_type> lk(mut_);
+        const th_entry_t& e = *(entries_.at(th_idx));
+        if (can_thread_exit(e)) return false;
+
+        if (!tsk_queue_.empty()) {
+            f = std::move(tsk_queue_.front());
+            tsk_queue_.pop();
+            return true;
+        } else {
+            return false;
         }
+    }
 
-        // clear queue
-        states_.done = states_.tsk_queue.empty();
-        states_.tsk_queue.clear();
+    // wait until:
+    // - a task is available: move task to f, and return true, or
+    // - the thread (th_idx) should stop: return false
+    //
+    bool wait_next_task(size_t th_idx, task_func_t& f) {
+        std::unique_lock<mutex_type> lk(mut_);
+        const th_entry_t& e = *(entries_.at(th_idx));
+        cv_.wait(lk, [this,&e](){
+            return can_thread_exit(e) || !tsk_queue_.empty();
+        });
+        if (!e.stopped && !tsk_queue_.empty()) {
+            f = std::move(tsk_queue_.front());
+            tsk_queue_.pop();
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-        // clear the threads
-        std::lock_guard<std::mutex> lk(vec_mut_);
-        entries_.clear();
+    void on_completed() {
+        std::lock_guard<mutex_type> lk(mut_);
+        st_.n_completed ++;
+    }
+
+    void resize_(size_t nthreads) {
+        size_t n0 = entries_.size();
+        if (nthreads > n0) {
+            // grow the thread pool
+            size_t na = nthreads - n0;
+            entries_.reserve(nthreads);
+            for (size_t i = 0; i < na; ++i)
+                add_thread();
+            st_.revive();
+
+        } else if (nthreads < n0) {
+            if (st_.alive()) {
+                throw std::runtime_error(
+                    "thread_pool::resize: "
+                    "The pool can be shrinked only when stopped or done.");
+            }
+            size_t nr = n0 - nthreads;
+            for (size_t i = 0; i < nr; ++i) {
+                entries_.pop_back();
+            }
+        }
+        CLUE_ASSERT(entries_.size() == nthreads);
+    }
+
+    void add_thread() {
+        size_t th_idx = entries_.size();
+        entries_.emplace_back(new th_entry_t(th_idx, [this, th_idx](){
+            task_func_t tfun;
+            bool got_tsk = this->try_pop_task(th_idx, tfun);
+            for(;;) {
+                // execute current task and whatever
+                // remain in the task queue
+                while (got_tsk) {
+                    tfun(th_idx);
+                    this->on_completed();
+                    got_tsk = this->try_pop_task(th_idx, tfun);
+                }
+                // wait for new task or a signal to stop
+                if (wait_next_task(th_idx, tfun)) {
+                    got_tsk = true;
+                } else {
+                    return;
+                }
+            }
+        }));
     }
 
 }; // end class thread_pool

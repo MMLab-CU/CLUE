@@ -18,6 +18,7 @@ Below is a list of components available in the library.
 
 #### Basic Utilites
 
+- Generic function ``make_unique``: for creating ``unique_ptr``. **(backport from C++14)**
 - Class template ``optional``: for representing nullable values. **(backport from CELF)**
 - Timing tools: ``stop_watch`` class and timing functions.
 - Class template ``value_range``: so you can write ``for (auto x: vrange(1, 10)) { ... }``.

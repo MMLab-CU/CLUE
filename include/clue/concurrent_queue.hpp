@@ -14,9 +14,7 @@ private:
     using mutex_type = std::mutex;
     std::queue<T, Container> queue_;
     mutex_type mut_;
-
     std::condition_variable cv1_; // notify when the queue becomes non-empty
-    mutex_type cv1_mut_;
 
 public:
     ~concurrent_queue() {
@@ -43,21 +41,27 @@ public:
     }
 
     void push(const T& x) {
-        std::lock_guard<mutex_type> lk(mut_);
-        queue_.push(x);
+        {
+            std::lock_guard<mutex_type> lk(mut_);
+            queue_.push(x);
+        }
         if (size() == 1) cv1_.notify_one();
     }
 
     void push(T&& x) {
-        std::lock_guard<mutex_type> lk(mut_);
-        queue_.push(std::move(x));
+        {
+            std::lock_guard<mutex_type> lk(mut_);
+            queue_.push(std::move(x));
+        }
         if (size() == 1) cv1_.notify_one();
     }
 
     template<class... Args>
     void push(Args&&... args) {
-        std::lock_guard<mutex_type> lk(mut_);
-        queue_.emplace(std::forward<Args>(args)...);
+        {
+            std::lock_guard<mutex_type> lk(mut_);
+            queue_.emplace(std::forward<Args>(args)...);
+        }
         if (size() == 1) cv1_.notify_one();
     }
 
@@ -73,11 +77,8 @@ public:
 
     // Wait until non-empty and then pop
     T wait_pop() {
-        if (empty()) {
-            std::unique_lock<mutex_type> lk1(cv1_mut_);
-            cv1_.wait(lk1);
-        }
-        std::lock_guard<mutex_type> lk(mut_);
+        std::unique_lock<mutex_type> lk(mut_);
+        cv1_.wait(lk, [this](){ return !empty(); });
         T x = std::move(queue_.front());
         queue_.pop();
         return std::move(x);

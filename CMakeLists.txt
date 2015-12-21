@@ -61,8 +61,8 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 
 set(UNIT_TESTS
     test_misc
+    test_predicates
     test_optional
-    test_chars
     test_string_view
     test_stringex
     test_sformat

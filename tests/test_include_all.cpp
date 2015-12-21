@@ -9,6 +9,13 @@
 using clue::_;
 using clue::pass;
 
+// predicates
+using clue::eq;
+using clue::chars::is_digit;
+using clue::chars::is_space;
+using clue::floats::is_inf;
+using clue::floats::is_nan;
+
 // memory
 using clue::aligned_alloc;
 using clue::aligned_free;
@@ -31,10 +38,6 @@ using clue::optional;
 
 // reindexed_view
 using clue::reindexed_view;
-
-// chars
-using clue::chars::is_space;
-using clue::chars::char_eq;
 
 // string_view
 using clue::string_view;

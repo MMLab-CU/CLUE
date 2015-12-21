@@ -9,7 +9,7 @@
 
 #include <clue/type_traits.hpp>
 #include <clue/string_view.hpp>
-#include <clue/chars.hpp>
+#include <clue/predicates.hpp>
 
 namespace clue {
 

@@ -179,6 +179,7 @@ CLUE_DEFINE_CHAR_PREDICATE(is_alnum, isalnum, iswalnum)
 CLUE_DEFINE_CHAR_PREDICATE(is_punct, ispunct, iswpunct)
 CLUE_DEFINE_CHAR_PREDICATE(is_upper, isupper, iswupper)
 CLUE_DEFINE_CHAR_PREDICATE(is_lower, islower, iswlower)
+CLUE_DEFINE_CHAR_PREDICATE(is_xdigit, isxdigit, iswxdigit)
 
 } // end namespace chars
 

@@ -161,6 +161,17 @@ TEST(CharPreds, IsDigit) {
     ASSERT_EQ(false, chars::is_digit(','));
 }
 
+TEST(CharPreds, IsXdigit) {
+    ASSERT_EQ(true,  chars::is_xdigit('1'));
+    ASSERT_EQ(true,  chars::is_xdigit('3'));
+    ASSERT_EQ(true,  chars::is_xdigit('9'));
+    ASSERT_EQ(true,  chars::is_xdigit('a'));
+    ASSERT_EQ(true,  chars::is_xdigit('f'));
+    ASSERT_EQ(false, chars::is_xdigit('x'));
+    ASSERT_EQ(false, chars::is_digit(' '));
+    ASSERT_EQ(false, chars::is_digit(','));
+}
+
 TEST(CharPreds, IsAlpha) {
     ASSERT_EQ(true,  chars::is_alpha('a'));
     ASSERT_EQ(true,  chars::is_alpha('A'));

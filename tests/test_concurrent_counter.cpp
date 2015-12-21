@@ -21,7 +21,7 @@ void test_basics() {
     long a = 0;
     long n = 0;
     std::thread listener([&](){
-        cc_a.wait( clue::count_gt(50) );
+        cc_a.wait( clue::gt(50) );
         stop = true;
         n = cc_n.get();
         a = cc_a.get();

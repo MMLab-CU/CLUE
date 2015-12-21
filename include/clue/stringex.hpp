@@ -31,14 +31,6 @@ struct is_cchar {
         ::std::is_same<T, wchar_t>::value;
 };
 
-inline bool is_space(char ch) {
-    return ::std::isspace(ch);
-}
-
-inline bool is_space(wchar_t ch) {
-    return ::std::iswspace(ch);
-}
-
 template<size_t N>
 inline bool _icmp(const char *s, const char *r) {
     for (size_t i = 0; i < N; ++i) {
@@ -273,7 +265,7 @@ trim_left(basic_string_view<charT, Traits> str) {
     if (str.empty()) return str;
     const charT *p = str.cbegin();
     const charT *end = str.cend();
-    while (p != end && details::is_space(*p)) ++p;
+    while (p != end && chars::is_space(*p)) ++p;
     return basic_string_view<charT, Traits>(p, ::std::size_t(end - p));
 }
 
@@ -283,7 +275,7 @@ trim_right(basic_string_view<charT, Traits> str) {
     if (str.empty()) return str;
     const charT *begin = str.cbegin();
     const charT *q = str.cend();
-    while (q != begin && details::is_space(*(q-1))) --q;
+    while (q != begin && chars::is_space(*(q-1))) --q;
     return basic_string_view<charT, Traits>(begin, ::std::size_t(q - begin));
 }
 
@@ -293,8 +285,8 @@ trim(basic_string_view<charT, Traits> str) {
     if (str.empty()) return str;
     const charT *p = str.cbegin();
     const charT *q = str.cend();
-    while (p != q && details::is_space(*p)) ++p;  // trim left
-    while (q != p && details::is_space(*(q-1))) --q;  // trim right
+    while (p != q && chars::is_space(*p)) ++p;  // trim left
+    while (q != p && chars::is_space(*(q-1))) --q;  // trim right
     return basic_string_view<charT, Traits>(p, ::std::size_t(q - p));
 }
 
@@ -336,13 +328,13 @@ template<typename Traits>
 inline bool is_valid_parse_end(basic_string_view<char, Traits> sv, const char *p) noexcept {
     if (p == sv.begin()) return false;
     const char *sv_end = sv.end();
-    while (p != sv_end && is_space(*p)) ++p;
+    while (p != sv_end && chars::is_space(*p)) ++p;
     return p == sv_end;
 }
 
 inline bool is_valid_parse_end(const char *sz, const char *p) noexcept {
     if (p == sz) return false;
-    while (*p && is_space(*p)) ++p;
+    while (*p && chars::is_space(*p)) ++p;
     return !(*p);
 }
 
@@ -397,7 +389,7 @@ struct bool_parse_helper {
     static type run(const char *p, char **pend) {
         // locate the begin
         const char *p0 = p;
-        while (*p0 && is_space(*p0)) p0++;
+        while (*p0 && chars::is_space(*p0)) p0++;
 
         // empty
         if (!(*p0)) {
@@ -407,7 +399,7 @@ struct bool_parse_helper {
 
         // locate the word end
         const char *p1 = p0 + 1;
-        while (*p1 && !is_space(*p1)) p1++;
+        while (*p1 && !chars::is_space(*p1)) p1++;
 
         // single non-space character
         if (p1 == p0 + 1) {

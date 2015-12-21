@@ -1,5 +1,7 @@
-Char Predicates
-================
+.. _predicates:
+
+Predicates
+============
 
 *CLUE++* provides a set of char-predicates (functors that take a ``char`` as input and returns ``bool``). These predicates can be very useful for parsing. All these predicates are encapsulated in the namespace ``clue::chars``.
 

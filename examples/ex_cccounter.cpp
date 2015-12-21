@@ -16,7 +16,7 @@ int main() {
 
     std::thread producer([&](){
         for(;;) {
-            cnt_orders.wait( count_ne(0) );
+            cnt_orders.wait( ne(0) );
             long n = cnt_orders.get();
             if (n < 0) break; // use num < 0 to indicate the end
 

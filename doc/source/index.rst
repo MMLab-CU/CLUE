@@ -19,6 +19,7 @@ Basic utilites
    value_range.rst
    array_view.rst
    reindexed_view.rst
+   predicates.rst
    misc.rst
 
 String and text processing
@@ -27,12 +28,11 @@ String and text processing
 .. toctree::
    :maxdepth: 1
 
-   chars.rst
    string_view.rst
    stringex.rst
    sformat.rst
    textio.rst
-   
+
 Meta-programming tools
 ~~~~~~~~~~~~~~~~~~~~~~~
 

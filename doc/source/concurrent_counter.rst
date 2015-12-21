@@ -43,20 +43,14 @@ This class has the following member functions:
 
     .. note::
 
-        *CLUE* has provided several useful predicates to be used here. Let ``cnt`` be the
-        internal count value.
-
-        - ``count_eq(v)`` returns ``true`` when ``cnt == v``.
-        - ``count_ne(v)`` returns ``true`` when ``cnt != v``.
-        - ``count_ge(v)`` returns ``true`` when ``cnt >= v``.
-        - ``count_gt(v)`` returns ``true`` when ``cnt > v``.
-        - ``count_le(v)`` returns ``true`` when ``cnt <= v``.
-        - ``count_lt(v)`` returns ``true`` when ``cnt < v``.
+        *CLUE* has provided a series of predicates that can be useful here. (Refer to :ref:`predicates` for details).
+        For example, if you want to wait until when the count value goes above a certain threshold ``m``, then
+        you may write ``wait( clue::ge(m) )`` (or ``wait( ge(m) )`` when the namespace ``clue`` is being used).
 
 .. cpp:function:: void wait(v)
 
     Waits until the count hits the given value ``v``.
-    Equivalent to ``wait(count_eq(v))``.
+    Equivalent to ``wait( clue::eq(v) )``.
 
 .. cpp:function:: bool wait_for(Pred&& pred, const std::chrono::duration& dur)
 
@@ -67,18 +61,18 @@ This class has the following member functions:
 
 .. cpp:function:: bool wait_for(long v, const std::chrono::duration& dur)
 
-    Equivalent to ``wait_for(count_eq(v), dur)``.
+    Equivalent to ``wait_for(clue::eq(v), dur)``.
 
-.. cpp:function:: bool wait_for(Pred&& pred, const std::chrono::time_point& t)
+.. cpp:function:: bool wait_until(Pred&& pred, const std::chrono::time_point& t)
 
     Waits until the count meets the specified condition or the time-out ``t``,
     whichever comes first.
 
     It returns whether the count meets the condition upon returning.
 
-.. cpp:function:: bool wait_for(long v, const std::chrono::duration& t)
+.. cpp:function:: bool wait_until(long v, const std::chrono::time_point& t)
 
-    Equivalent to ``wait_until(count_eq(v), t)``.
+    Equivalent to ``wait_until(clue::eq(v), t)``.
 
 
 **Examples:** The following example shows how a concurrent counter can be used in practice. In this example, a message will be printed when the accumulated value exceeds *100*.
@@ -94,7 +88,7 @@ This class has the following member functions:
     });
 
     std::thread listener([&](){
-        accum_val.wait( count_gt(100) );
+        accum_val.wait( clue::gt(100) );
         std::printf("accum_val goes beyond 100!\n");
     });
 

@@ -1,36 +1,16 @@
 #ifndef CLUE_CONCURRENT_COUNTER__
 #define CLUE_CONCURRENT_COUNTER__
 
-#include <clue/common.hpp>
+#include <clue/predicates.hpp>
 #include <mutex>
 #include <chrono>
 #include <condition_variable>
 
 namespace clue {
 
-typedef long counter_value_type;
-
-#define CLUE_DEFINE_COUNT_COMPARE_FUNCTOR(fname, op) \
-    struct fname##_t { \
-        counter_value_type rvalue; \
-        constexpr bool operator()(counter_value_type x) const noexcept { \
-            return x op rvalue; \
-        } \
-    }; \
-    constexpr fname##_t fname(long v) { \
-        return fname##_t{v}; \
-    }
-
-CLUE_DEFINE_COUNT_COMPARE_FUNCTOR(count_eq, ==)
-CLUE_DEFINE_COUNT_COMPARE_FUNCTOR(count_ne, !=)
-CLUE_DEFINE_COUNT_COMPARE_FUNCTOR(count_ge, >=)
-CLUE_DEFINE_COUNT_COMPARE_FUNCTOR(count_gt, >)
-CLUE_DEFINE_COUNT_COMPARE_FUNCTOR(count_le, <=)
-CLUE_DEFINE_COUNT_COMPARE_FUNCTOR(count_lt, <)
-
 class concurrent_counter {
 public:
-    typedef counter_value_type value_type;
+    typedef long value_type;
     typedef std::mutex mutex_type;
 
 private:
@@ -101,17 +81,17 @@ public:
     }
 
     void wait(long v) {
-        wait(count_eq(v));
+        wait(eq(v));
     }
 
     template<class Rep, class Period>
     bool wait_for(long v, const std::chrono::duration<Rep, Period>& dur) {
-        return wait_for(count_eq(v), dur);
+        return wait_for(eq(v), dur);
     }
 
     template<class Clk, class Dur>
     bool wait_until(long v, const std::chrono::time_point<Clk, Dur>& t) {
-        return wait_until(count_eq(v), t);
+        return wait_until(eq(v), t);
     }
 };
 

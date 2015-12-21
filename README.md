@@ -24,10 +24,10 @@ Below is a list of components available in the library.
 - Class template ``value_range``: so you can write ``for (auto x: vrange(1, 10)) { ... }``.
 - Class template ``array_view``: wrap a memory block into an STL-like view.
 - Class template ``reindexed_view``: STL-like view of a subset of elements.
+- A collection of predicate-generating functions to express conditions.
 
 #### String and text processing
 
-- A collection of character predicates.
 - Class template ``string_view``: light-weight wrapper of sub-strings. **(backport from CELF)**
 - Extensions of string functionalities (*e.g.* trimming, value parsing, and tokenizers).
 - In-memory string formatting and extensible formatter systems.

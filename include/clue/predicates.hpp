@@ -169,7 +169,7 @@ inline either_t<P1, P2> either(P1 p1, P2 p2) {
             return std::wfun(c); \
         } \
     }; \
-    cname##_t cname;
+    constexpr cname##_t cname{};
 
 CLUE_DEFINE_CHAR_PREDICATE(is_space, isspace, iswspace)
 CLUE_DEFINE_CHAR_PREDICATE(is_blank, isblank, iswblank)
@@ -200,7 +200,7 @@ namespace floats {
             return std::fun(x); \
         } \
     }; \
-    cname##_t cname;
+    constexpr cname##_t cname{};
 
 CLUE_DEFINE_FLOAT_PREDICATE(is_inf, isinf)
 CLUE_DEFINE_FLOAT_PREDICATE(is_nan, isnan)

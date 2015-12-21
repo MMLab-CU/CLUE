@@ -65,6 +65,74 @@ TEST(GenericPreds, CharsIn) {
     ASSERT_EQ(false, f('a'));
 }
 
+struct mod_ {
+    int b;
+    bool operator()(int x) const noexcept {
+        return x % b == 0;
+    }
+};
+
+
+TEST(GenericPreds, And) {
+    auto f1 = and_(gt(1));
+    ASSERT_EQ(false, f1(1));
+    ASSERT_EQ(true,  f1(2));
+    ASSERT_EQ(true,  f1(3));
+    ASSERT_EQ(true,  f1(4));
+    ASSERT_EQ(true,  f1(5));
+
+    auto f2 = and_(gt(1), lt(5));
+    ASSERT_EQ(false, f2(1));
+    ASSERT_EQ(true,  f2(2));
+    ASSERT_EQ(true,  f2(3));
+    ASSERT_EQ(true,  f2(4));
+    ASSERT_EQ(false, f2(5));
+
+    auto f3 = and_(gt(1), lt(5), mod_{2});
+    ASSERT_EQ(false, f3(1));
+    ASSERT_EQ(true,  f3(2));
+    ASSERT_EQ(false, f3(3));
+    ASSERT_EQ(true,  f3(4));
+    ASSERT_EQ(false, f3(5));
+
+    auto f4 = and_(gt(1), lt(5), mod_{2}, mod_{4});
+    ASSERT_EQ(false, f4(1));
+    ASSERT_EQ(false, f4(2));
+    ASSERT_EQ(false, f4(3));
+    ASSERT_EQ(true,  f4(4));
+    ASSERT_EQ(false, f4(5));
+}
+
+TEST(GenericPreds, Or) {
+    auto f1 = or_(mod_{2});
+    ASSERT_EQ(false, f1(1));
+    ASSERT_EQ(true,  f1(2));
+    ASSERT_EQ(false, f1(3));
+    ASSERT_EQ(false, f1(5));
+    ASSERT_EQ(false, f1(7));
+
+    auto f2 = or_(mod_{2}, mod_{3});
+    ASSERT_EQ(false, f2(1));
+    ASSERT_EQ(true,  f2(2));
+    ASSERT_EQ(true,  f2(3));
+    ASSERT_EQ(false, f2(5));
+    ASSERT_EQ(false, f2(7));
+
+    auto f3 = or_(mod_{2}, mod_{3}, mod_{5});
+    ASSERT_EQ(false, f3(1));
+    ASSERT_EQ(true,  f3(2));
+    ASSERT_EQ(true,  f3(3));
+    ASSERT_EQ(true,  f3(5));
+    ASSERT_EQ(false, f3(7));
+
+    auto f4 = or_(mod_{2}, mod_{3}, mod_{5}, mod_{7});
+    ASSERT_EQ(false, f4(1));
+    ASSERT_EQ(true,  f4(2));
+    ASSERT_EQ(true,  f4(3));
+    ASSERT_EQ(true,  f4(5));
+    ASSERT_EQ(true,  f4(7));
+}
+
 
 // For chars
 

@@ -1,7 +1,7 @@
 #ifndef CLUE_PREDICATES__
 #define CLUE_PREDICATES__
 
-#include <clue/common.hpp>
+#include <clue/preproc.hpp>
 #include <cmath>
 #include <cctype>
 #include <cwctype>
@@ -76,6 +76,69 @@ inline in_t<const char*> in(const char* chs) {
     return in_t<const char*>{chs};
 }
 
+
+// Compound predicates
+
+template<class... Preds> struct and_pred_t;
+template<class... Preds> struct or_pred_t;
+
+#define CLUE_PREDICATE_TPARAM_(n) class P##n
+#define CLUE_PREDICATE_TARG_(n) P##n
+#define CLUE_PREDICATE_FIELDDEF_(n) P##n p##n
+#define CLUE_PREDICATE_PREDTERM_(n) p##n(x)
+
+#define CLUE_DEFINE_AND_PREDS(N) \
+    template<CLUE_TERMLIST_##N(CLUE_PREDICATE_TPARAM_)> \
+    struct and_pred_t<CLUE_TERMLIST_##N(CLUE_PREDICATE_TARG_)> { \
+        CLUE_STMTLIST_##N(CLUE_PREDICATE_FIELDDEF_) \
+        template<typename X> \
+        bool operator()(const X& x) const noexcept { \
+            return CLUE_GENEXPR_##N(CLUE_PREDICATE_PREDTERM_, &&); \
+        } \
+    };
+
+#define CLUE_DEFINE_OR_PREDS(N) \
+    template<CLUE_TERMLIST_##N(CLUE_PREDICATE_TPARAM_)> \
+    struct or_pred_t<CLUE_TERMLIST_##N(CLUE_PREDICATE_TARG_)> { \
+        CLUE_STMTLIST_##N(CLUE_PREDICATE_FIELDDEF_) \
+        template<typename X> \
+        bool operator()(const X& x) const noexcept { \
+            return CLUE_GENEXPR_##N(CLUE_PREDICATE_PREDTERM_, ||); \
+        } \
+    };
+
+CLUE_DEFINE_AND_PREDS(1)
+CLUE_DEFINE_AND_PREDS(2)
+CLUE_DEFINE_AND_PREDS(3)
+CLUE_DEFINE_AND_PREDS(4)
+CLUE_DEFINE_AND_PREDS(5)
+CLUE_DEFINE_AND_PREDS(6)
+CLUE_DEFINE_AND_PREDS(7)
+CLUE_DEFINE_AND_PREDS(8)
+CLUE_DEFINE_AND_PREDS(9)
+
+CLUE_DEFINE_OR_PREDS(1)
+CLUE_DEFINE_OR_PREDS(2)
+CLUE_DEFINE_OR_PREDS(3)
+CLUE_DEFINE_OR_PREDS(4)
+CLUE_DEFINE_OR_PREDS(5)
+CLUE_DEFINE_OR_PREDS(6)
+CLUE_DEFINE_OR_PREDS(7)
+CLUE_DEFINE_OR_PREDS(8)
+CLUE_DEFINE_OR_PREDS(9)
+
+template<class... Preds>
+inline and_pred_t<Preds...> and_(const Preds&... preds) {
+    return and_pred_t<Preds...>{preds...};
+}
+
+template<class... Preds>
+inline or_pred_t<Preds...> or_(const Preds&... preds) {
+    return or_pred_t<Preds...>{preds...};
+}
+
+// Predicates for chars
+
 namespace chars {
 
 template<class P1, class P2>
@@ -119,6 +182,8 @@ CLUE_DEFINE_CHAR_PREDICATE(is_lower, islower, iswlower)
 
 } // end namespace chars
 
+
+// Predicates for floating point numbers
 
 namespace floats {
 

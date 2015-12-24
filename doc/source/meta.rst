@@ -266,6 +266,10 @@ A set of variadic meta-functions are provided to perform reduction over static v
 
     With a member constant ``value``, which equals the number of arguments whose member value is ``false``.
 
+.. cpp:class:: meta::all_same<Args...>
+
+    With a member constant ``value``, which indicates whether all argument types are the same.
+
 .. note::
 
     The meta-functions ``all`` and ``any`` both implement the *short-circuit behaviors*. They won't look further once the resultant value can be determined.

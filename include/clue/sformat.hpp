@@ -86,7 +86,7 @@ inline std::ostream& operator << (std::ostream& out, const cfmt_t<T>& a) {
     int n = std::snprintf(buf, bufSize, a.format, a.value);
     if (n < 0)
         throw std::invalid_argument("Failed cfmt caused by invalid argument.");
-    if (n < bufSize) {
+    if (static_cast<size_t>(n) < bufSize) {
         out << buf;
     } else {
         size_t bufSize2 = static_cast<size_t>(n+1);
@@ -106,7 +106,7 @@ inline std::string cfmt_s(const char *f, const Ts&... xs) {
     if (n < 0)
         throw std::invalid_argument("Failed cfmt caused by invalid argument.");
 
-    if (n < bufSize) {
+    if (static_cast<size_t>(n) < bufSize) {
         return std::string(buf, static_cast<size_t>(n));
     } else {
         size_t bufSize2 = static_cast<size_t>(n+1);

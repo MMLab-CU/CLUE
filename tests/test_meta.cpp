@@ -204,3 +204,26 @@ TEST(Meta, LazyAllAny) {
     ASSERT_EQ(true,  (meta::any<bf, bt, b0>::value));
     ASSERT_EQ(true,  (meta::any<bt, bf, b0>::value));
 }
+
+
+TEST(Meta, AllSame) {
+    ASSERT_EQ(true, (meta::all_same<i1>::value));
+
+    ASSERT_EQ(true,  (meta::all_same<i1, i1>::value));
+    ASSERT_EQ(false, (meta::all_same<i1, i2>::value));
+
+    ASSERT_EQ(true,  (meta::all_same<i1, i1, i1>::value));
+    ASSERT_EQ(false, (meta::all_same<i1, i1, i2>::value));
+    ASSERT_EQ(false, (meta::all_same<i1, i2, i1>::value));
+    ASSERT_EQ(false, (meta::all_same<i1, i2, i2>::value));
+    ASSERT_EQ(false, (meta::all_same<i2, i1, i1>::value));
+    ASSERT_EQ(false, (meta::all_same<i2, i1, i2>::value));
+    ASSERT_EQ(false, (meta::all_same<i2, i2, i1>::value));
+    ASSERT_EQ(true,  (meta::all_same<i2, i2, i2>::value));
+
+    ASSERT_EQ(true,  (meta::all_same<i1, i1, i1, i1>::value));
+    ASSERT_EQ(false, (meta::all_same<i2, i1, i1, i1>::value));
+    ASSERT_EQ(false, (meta::all_same<i1, i2, i1, i1>::value));
+    ASSERT_EQ(false, (meta::all_same<i1, i1, i2, i1>::value));
+    ASSERT_EQ(false, (meta::all_same<i1, i1, i1, i2>::value));
+}

@@ -356,6 +356,19 @@ template<typename... Args>
 struct count_false :
     public details::count_if_impl<not_, Args...> {};
 
+// all_same
+
+template<typename... Args>
+struct all_same;
+
+template<typename A>
+struct all_same<A> : public true_ {};
+
+template<typename A, typename B, typename... Rest>
+struct all_same<A, B, Rest...> :
+    public bool_<all_same<B, Rest...>::value && std::is_same<A, B>::value> {};
+
+
 
 } // end namespace meta
 } // end namespace clue

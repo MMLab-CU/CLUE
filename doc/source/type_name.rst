@@ -2,7 +2,7 @@
 =======================
 
 *CLUE* provides facilities to obtain (demangled) names of C++ types.
-All following functions are in the namespace ``clue``.
+All following functions are in the header ``<clue/type_name.hpp>``, and they are in the namespace ``clue``.
 
 .. cpp:function:: bool has_demangle()
 

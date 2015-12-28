@@ -2,6 +2,7 @@
 #define CLUE_DEMANGLE__
 
 #include <clue/common.hpp>
+#include <memory>
 #include <string>
 
 #ifdef __GNUC__

@@ -24,6 +24,7 @@ Below is a list of components available in the library.
 - Class template ``value_range``: so you can write ``for (auto x: vrange(1, 10)) { ... }``.
 - Class template ``array_view``: wrap a memory block into an STL-like view.
 - Class template ``reindexed_view``: STL-like view of a subset of elements.
+- ``type_name`` for getting demangled type names with supported compilers. 
 - A collection of predicate-generating functions to express conditions.
 
 #### String and text processing

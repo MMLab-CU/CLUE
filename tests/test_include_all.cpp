@@ -63,6 +63,10 @@ using clue::string_view;
 using clue::read_file_content;
 using clue::line_stream;
 
+// type_name
+using clue::demangle;
+using clue::type_name;
+
 // shared_mutex
 using clue::shared_mutex;
 using clue::shared_timed_mutex;

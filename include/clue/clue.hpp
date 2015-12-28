@@ -24,6 +24,7 @@
 #include <clue/optional.hpp>
 #include <clue/timing.hpp>
 #include <clue/memory.hpp>
+#include <clue/type_name.hpp>
 #include <clue/textio.hpp>
 
 // concurrency

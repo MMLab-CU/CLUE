@@ -20,6 +20,7 @@ Basic utilites
    array_view.rst
    reindexed_view.rst
    predicates.rst
+   type_name.rst
    misc.rst
 
 String and text processing

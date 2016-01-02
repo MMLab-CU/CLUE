@@ -87,6 +87,46 @@ Sometimes, it is useful to combine two types. For this purpose, we provide a ``p
     The meta-functions ``first`` and ``second`` are also specialized for other meta data structures, such as the *meta sequence*.
 
 
+Static Index Sequence
+-----------------------
+
+The library provides useful facilities to construct static index sequence, which is useful for splatting elements of a tuples as arguments.
+
+.. code-block:: cpp
+
+    // index_seq can be used to represent a static sequence of indexes
+    template<size_t... Inds>
+    struct index_seq{};
+
+    // make_index_seq<N> constructs index_seq<0, ..., N-1>
+
+    make_index_seq<0>;  // -> index_seq<>
+    make_index_seq<1>;  // -> index_seq<1>
+    make_index_seq<4>;  // -> index_seq<0, 1, 2, 3>
+
+The following example shows how one can leverage ``make_index_seq`` to splat tuple arguments.
+
+.. code-block:: cpp
+
+    // suppose you have a function join can accepts arbitrary number of arguments
+    template<class... Args>
+    void join(const Args&... args) { /* ... */ }
+
+    // the join_tup function can splat elements of a tuple
+
+    template<class... Args, size_t... I>
+    void join_tup_impl(const std::tuple<Args...>& tup, clue::meta::index_seq<I...>) {
+        join(std::get<I>(tup)...);
+    }
+
+    template<class... Args>
+    void join_tup(const std::tuple<Args...>& tup) {
+        join_tup_impl(tup, clue::meta::make_index_seq<sizeof...(Args)>{});
+    }
+
+    join_tup(std::make_tuple("abc", "xyz", 123));
+
+
 Basic functions
 ----------------
 

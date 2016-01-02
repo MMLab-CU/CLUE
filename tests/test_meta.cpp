@@ -24,6 +24,69 @@ TEST(Meta, Pairs) {
 }
 
 
+TEST(Meta, IndexSeq) {
+    using I_0 = meta::index_seq<>;
+    using I_1 = meta::index_seq<0>;
+    using I_2 = meta::index_seq<0,1>;
+    using I_3 = meta::index_seq<0,1,2>;
+    using I_4 = meta::index_seq<0,1,2,3>;
+    using I_5 = meta::index_seq<0,1,2,3,4>;
+    using I_6 = meta::index_seq<0,1,2,3,4,5>;
+    using I_7 = meta::index_seq<0,1,2,3,4,5,6>;
+    using I_8 = meta::index_seq<0,1,2,3,4,5,6,7>;
+    using I_9 = meta::index_seq<0,1,2,3,4,5,6,7,8>;
+    using I_10 = meta::index_seq<0,1,2,3,4,5,6,7,8,9>;
+    using I_11 = meta::index_seq<0,1,2,3,4,5,6,7,8,9,10>;
+    using I_12 = meta::index_seq<0,1,2,3,4,5,6,7,8,9,10,11>;
+
+    ASSERT_TRUE((std::is_same<I_0, meta::make_index_seq<0>>::value));
+    ASSERT_TRUE((std::is_same<I_1, meta::make_index_seq<1>>::value));
+    ASSERT_TRUE((std::is_same<I_2, meta::make_index_seq<2>>::value));
+    ASSERT_TRUE((std::is_same<I_3, meta::make_index_seq<3>>::value));
+    ASSERT_TRUE((std::is_same<I_4, meta::make_index_seq<4>>::value));
+    ASSERT_TRUE((std::is_same<I_5, meta::make_index_seq<5>>::value));
+    ASSERT_TRUE((std::is_same<I_6, meta::make_index_seq<6>>::value));
+    ASSERT_TRUE((std::is_same<I_7, meta::make_index_seq<7>>::value));
+    ASSERT_TRUE((std::is_same<I_8, meta::make_index_seq<8>>::value));
+    ASSERT_TRUE((std::is_same<I_9, meta::make_index_seq<9>>::value));
+    ASSERT_TRUE((std::is_same<I_10, meta::make_index_seq<10>>::value));
+    ASSERT_TRUE((std::is_same<I_11, meta::make_index_seq<11>>::value));
+    ASSERT_TRUE((std::is_same<I_12, meta::make_index_seq<12>>::value));
+}
+
+
+inline int sum_() {
+    return 0;
+}
+
+template<typename T, typename... Ts>
+inline int sum_(T x, Ts... rest) {
+    return x + sum_(rest...);
+}
+
+template<typename... Ts, size_t... Is>
+inline int tup_sum_(const std::tuple<Ts...>& tup, meta::index_seq<Is...>) {
+    return sum_(std::get<Is>(tup)...);
+}
+
+template<typename... Ts>
+inline int tup_sum(const std::tuple<Ts...>& tup) {
+    return tup_sum_(tup, meta::make_index_seq<sizeof...(Ts)>{});
+}
+
+TEST(Meta, TupleSum) {
+    ASSERT_EQ(0,  tup_sum(std::make_tuple()));
+    ASSERT_EQ(1,  tup_sum(std::make_tuple(1)));
+    ASSERT_EQ(3,  tup_sum(std::make_tuple(1, 2)));
+    ASSERT_EQ(6,  tup_sum(std::make_tuple(1, 2, 3)));
+    ASSERT_EQ(10, tup_sum(std::make_tuple(1, 2, 3, 4)));
+    ASSERT_EQ(15, tup_sum(std::make_tuple(1, 2, 3, 4, 5)));
+    ASSERT_EQ(21, tup_sum(std::make_tuple(1, 2, 3, 4, 5, 6)));
+    ASSERT_EQ(28, tup_sum(std::make_tuple(1, 2, 3, 4, 5, 6, 7)));
+    ASSERT_EQ(36, tup_sum(std::make_tuple(1, 2, 3, 4, 5, 6, 7, 8)));
+}
+
+
 TEST(Meta, ArithmeticFuns) {
     CHECK_META_F1(meta::int_<-3>, meta::negate, i3);
     CHECK_META_F1(i4, meta::next, i3);

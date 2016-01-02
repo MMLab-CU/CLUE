@@ -81,6 +81,62 @@ struct second<pair_<T1, T2>> {
 
 //===============================================
 //
+//   index sequences
+//
+//===============================================
+
+template<size_t... Inds>
+struct index_seq{
+    using type = index_seq;
+};
+
+namespace details {
+
+template<class S1, class S2>
+struct concat_index_seq;
+
+template<size_t... Inds1, size_t... Inds2>
+struct concat_index_seq<index_seq<Inds1...>, index_seq<Inds2...>>
+    : public index_seq<Inds1..., (sizeof...(Inds1)+Inds2)...> {};
+
+template<size_t N>
+struct make_index_seq_impl;
+
+template<>
+struct make_index_seq_impl<0> {
+    using type = index_seq<>;
+};
+
+template<>
+struct make_index_seq_impl<1> {
+    using type = index_seq<0>;
+};
+
+template<>
+struct make_index_seq_impl<2> {
+    using type = index_seq<0, 1>;
+};
+
+template<>
+struct make_index_seq_impl<3> {
+    using type = index_seq<0, 1, 2>;
+};
+
+template<size_t N>
+struct make_index_seq_impl {
+    using type = typename concat_index_seq<
+        typename make_index_seq_impl<N/2>::type,
+        typename make_index_seq_impl<N - N/2>::type>::type;
+};
+
+} // end namespace details
+
+template<size_t N>
+using make_index_seq = typename details::make_index_seq_impl<N>::type;
+
+
+//===============================================
+//
 //   basic functions
 //
 //===============================================

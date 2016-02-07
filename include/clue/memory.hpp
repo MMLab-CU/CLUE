@@ -15,7 +15,7 @@ namespace clue {
 
 inline void* aligned_alloc(size_t nbytes, unsigned int alignment)
 {
-    void* p = ::_aligned_malloc(nbytes, alignment));
+    void* p = ::_aligned_malloc(nbytes, alignment);
     if (!p)
     {
         throw std::bad_alloc();

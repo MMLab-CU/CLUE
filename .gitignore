@@ -38,5 +38,6 @@ build-*
 .idea
 
 # Others
+*.swp  
 .build-tools.cson
 .clang_complete

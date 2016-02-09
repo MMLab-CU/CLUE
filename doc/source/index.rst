@@ -32,6 +32,7 @@ String and text processing
    string_view.rst
    stringex.rst
    sformat.rst
+   stemplate.rst
    textio.rst
 
 Meta-programming tools

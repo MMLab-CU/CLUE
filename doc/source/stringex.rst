@@ -272,20 +272,3 @@ Formally, the function signature is given as below.
     :param f:  The call back function for processing tokens. Here, ``f`` should be a function, a lambda function, or a functor that takes in two inputs (the base address of the token and its length), and returns a boolean value that indicates whether to continue.
 
     This function stops when all tokens have been extracted and processed *or* when the callback function ``f`` returns ``false``.
-
-Simple Template
------------------
-
-*CLUE* provides a class ``simple_template`` for as a simple template engine for string rendering.
-
-.. code-block:: cpp
-
-    clue::simple_template stpl("$a + $b = $c");
-
-    std::unordered_map<std::string, int> dct;
-    dct["a"] = 123;
-    dct["b"] = 456;
-    dct["c"] = 579;
-
-    stpl.render(dct);        // returns a string "123 + 456 = 579"
-    stpl.render(out, dct);   // directly render to the output stream

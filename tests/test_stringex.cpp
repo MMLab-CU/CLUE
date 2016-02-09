@@ -1,7 +1,6 @@
 #include <clue/stringex.hpp>
 #include <gtest/gtest.h>
 #include <limits>
-#include <unordered_map>
 
 using std::string;
 using clue::string_view;
@@ -323,38 +322,4 @@ TEST(StringEx, Tokenize) {
     clue::foreach_token_of(xstr, ";, ", f);
     std::vector<std::string> tks2{"abc", "xy", "uvw"};
     ASSERT_EQ(tks2, v);
-}
-
-
-TEST(StringEx, SimpleTemplate) {
-    using clue::simple_template;
-
-    std::unordered_map<std::string, std::string> dict;
-    dict["a"] = "Alice";
-    dict["b"] = "Bob";
-    dict["c"] = "Cavin";
-
-    simple_template s0("");
-    ASSERT_EQ("", s0.render(dict));
-
-    simple_template s1("xyz");
-    ASSERT_EQ("xyz", s1.render(dict));
-
-    simple_template s2("$a");
-    ASSERT_EQ("Alice", s2.render(dict));
-
-    simple_template s3("call $a");
-    ASSERT_EQ("call Alice", s3.render(dict));
-
-    simple_template s4("$a$b");
-    ASSERT_EQ("AliceBob", s4.render(dict));
-
-    simple_template s5("[$a -> $b.$c]");
-    ASSERT_EQ("[Alice -> Bob.Cavin]", s5.render(dict));
-
-    simple_template s6("$a $+ $b");
-    ASSERT_EQ("Alice $+ Bob", s6.render(dict));
-
-    simple_template s_err("$a + $d.");
-    ASSERT_THROW(s_err.render(dict), std::out_of_range);
 }

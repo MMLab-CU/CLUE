@@ -17,21 +17,24 @@ TEST(STemplate, Basics) {
     stemplate s1("xyz");
     ASSERT_EQ("xyz", s1.with(dict).str());
 
-    stemplate s2("$a");
+    stemplate s2("{{a}}");
     ASSERT_EQ("Alice", s2.with(dict).str());
 
-    stemplate s3("call $a");
+    stemplate s2a("{{ a }}");
+    ASSERT_EQ("Alice", s2a.with(dict).str());
+
+    stemplate s3("call {{ a }}");
     ASSERT_EQ("call Alice", s3.with(dict).str());
 
-    stemplate s4("$a$b");
+    stemplate s4("{{a}}{{ b }}");
     ASSERT_EQ("AliceBob", s4.with(dict).str());
 
-    stemplate s5("[$a -> $b.$c]");
+    stemplate s5("[{{ a }} -> {{b}}.{{c}}]");
     ASSERT_EQ("[Alice -> Bob.Cavin]", s5.with(dict).str());
 
-    stemplate s6("$a $+ $b");
-    ASSERT_EQ("Alice $+ Bob", s6.with(dict).str());
+    stemplate s6("{{a}} {} {{b}}");
+    ASSERT_EQ("Alice {} Bob", s6.with(dict).str());
 
-    stemplate s_err("$a + $d.");
+    stemplate s_err("{{a}} + {{d}}.");
     ASSERT_THROW(s_err.with(dict).str(), std::out_of_range);
 }

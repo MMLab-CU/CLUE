@@ -2,7 +2,7 @@
 #define CLUE_STEMPLATE__
 
 #include <clue/common.hpp>
-#include <string>
+#include <clue/stringex.hpp>
 #include <sstream>
 #include <vector>
 
@@ -26,23 +26,41 @@ struct stemplate_wrap {
 
 class stemplate {
 private:
+    enum class PartType {
+        Text,
+        Term
+    };
+
     struct Part {
-        bool is_term;
+        PartType type;
         std::string s;
     };
 
     std::vector<Part> _parts;
 
 public:
-    stemplate(const char *templ) {
-        if (templ)
+    stemplate(string_view templ) {
+        if (!templ.empty()) {
             _build(templ);
+        }
+    }
+
+    stemplate(const char *templ) {
+        if (templ) {
+            _build(string_view(templ));
+        }
+    }
+
+    stemplate(const std::string& templ) {
+        if (!templ.empty()) {
+            _build(string_view(templ));
+        }
     }
 
     template<class Dict>
     void render(std::ostream& out, const Dict& dict) const {
         for (const Part& part: _parts) {
-            if (part.is_term) {
+            if (part.type == PartType::Term) {
                 out << dict.at(part.s);
             } else {
                 out << part.s;
@@ -56,33 +74,34 @@ public:
     }
 
 private:
-    void _build(const char* templ) {
-        const char *p = templ;
-        while (*p) {
-            const char *t = _find_next_term(p);
-            if (t > p) _add_part(false, p, t);
-            if (*t) {
-                p = ++t;
-                while (is_valid_name_char(*p)) p++;
-                _add_part(true, t, p);
+    void _build(string_view templ) {
+        string_view sv = templ;
+        for(;;) {
+            size_t i = sv.find("{{", 0, 2);
+            if (i > 0) {
+                _add_part(PartType::Text, sv.substr(0, i));
+            }
+            if (i < sv.size()) {
+                size_t j = i + 2;
+                size_t r = sv.find("}}", j, 2);
+                if (r == sv.npos) {
+                    throw std::invalid_argument(
+                        "stemplate: invalid template, closing brackets missing.");
+                }
+                if (r <= j) {
+                    throw std::invalid_argument(
+                        "stemplate: invalid template, empty term.");
+                }
+                _add_part(PartType::Term, clue::trim(sv.substr(j, r-j)));
+                sv = sv.substr(r+2);
             } else {
-                break;
+                return;
             }
         }
     }
 
-    const char* _find_next_term(const char *sz) {
-        while (*sz && !(sz[0] == '$' && is_valid_name_char(sz[1]))) sz++;
-        return sz;
-    }
-
-    bool is_valid_name_char(char c) {
-        return std::isalnum(c) || c == '_';
-    }
-
-    void _add_part(bool is_term, const char *begin, const char *end) {
-        size_t n = static_cast<size_t>(end - begin);
-        _parts.push_back(Part{is_term, std::string(begin, n)});
+    void _add_part(PartType pty, string_view sv) {
+        _parts.push_back(Part{pty, sv.to_string()});
     }
 }; // end class stemplate
 

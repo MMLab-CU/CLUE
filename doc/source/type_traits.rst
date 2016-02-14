@@ -51,6 +51,12 @@ In *CLUE++*, we define all these helpers in the header ``<clue/type_traits.hpp>`
     template<class T>
     using add_rvalue_reference_t = typename ::std::add_rvalue_reference<T>::type;
 
+    // for pointers
+    template<class T>
+    using remove_pointer_t = typename ::std::remove_pointer<T>::type;
+    template<class T>
+    using add_pointer_t = typename ::std::add_pointer<T>::type;
+
     // for sign modifiers
 
     template<class T>

@@ -51,6 +51,12 @@ template<class T>
 using remove_all_extents_t = typename ::std::remove_all_extents<T>::type;
 
 template<class T>
+using remove_pointer_t = typename ::std::remove_pointer<T>::type;
+
+template<class T>
+using add_pointer_t = typename ::std::add_pointer<T>::type;
+
+template<class T>
 using decay_t = typename ::std::decay<T>::type;
 
 template<bool B, class T = void>

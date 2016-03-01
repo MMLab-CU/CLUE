@@ -46,6 +46,7 @@ private:
     struct state_t {
         size_t n_pushed = 0;
         size_t n_completed = 0;
+        size_t sync_count = 0;
         bool closed = false;
         bool done = false;
         bool stopped = false;
@@ -139,6 +140,12 @@ public:
                 "thread_pool::schedule: "
                 "Cannot schedule while the thread_pool is closed.");
         }
+        if (st_.sync_count > 0) {
+            throw std::runtime_error(
+                "thread_pool::schedule: "
+                "Cannot schedule while other threads are synchronizing the pool.");
+        }
+        
         using pck_task_t = std::packaged_task<decltype(f((size_t)0))(size_t)>;
         auto sp = std::make_shared<pck_task_t>(std::forward<F>(f));
         {
@@ -158,9 +165,11 @@ public:
     void synchronize() {
         std::unique_lock<mutex_type> lk(mut_);
         if (st_.n_completed < st_.n_pushed) {
-            cv_c_.wait(lk, [this](){            
+            st_.sync_count ++;
+            cv_c_.wait(lk, [this](){
                 return st_.n_completed == st_.n_pushed;
             });
+            st_.sync_count --;
         }
     }
 
@@ -189,7 +198,7 @@ public:
             throw std::runtime_error(
                 "thread_pool::join: "
                 "The thread pool cannot be joined while it is not closed.");
-        }        
+        }
         for (auto& pe: entries_) {
             pe->join();
         }

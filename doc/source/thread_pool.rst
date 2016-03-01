@@ -70,6 +70,12 @@ The ``thread_pool`` class provides the following member functions:
 
         It is straightforward to push a function that accepts more arguments. One can just wrap it into a closure using C++11's lambda function.
 
+.. cpp:function:: void synchronize()
+
+    Block until all current tasks have been completed.
+
+    This function does not close the thread pool or stop any threads. After synchronization, one can continue to schedule new tasks.
+    
 .. cpp:function:: void close(bool stop_cmd=false)
 
     Close the queue, so that no new tasks can be scheduled.

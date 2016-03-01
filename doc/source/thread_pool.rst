@@ -75,7 +75,12 @@ The ``thread_pool`` class provides the following member functions:
     Block until all current tasks have been completed.
 
     This function does not close the thread pool or stop any threads. After synchronization, one can continue to schedule new tasks.
-    
+
+    .. note::
+
+        Multiple threads can synchronize a thread pool at the same time.
+        However, it is not allowed to schedule a task while some one is synchronizing.
+
 .. cpp:function:: void close(bool stop_cmd=false)
 
     Close the queue, so that no new tasks can be scheduled.

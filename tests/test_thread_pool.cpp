@@ -54,6 +54,42 @@ void test_schedule_and_wait() {
     assert(P.empty());
 }
 
+void test_synchronize() {
+    std::printf("TEST thread_pool: synchronize\n");
+    clue::thread_pool P(4);
+
+    assert(!P.empty());
+    assert(4 == P.size());
+
+    for (size_t i = 0; i < 20; ++i) {
+        P.schedule([](size_t tid){ task(tid, 10); });
+    }
+    P.synchronize();
+
+    assert(20 == P.num_completed_tasks());
+    assert(20 == P.num_scheduled_tasks());
+    assert(!P.closed());
+
+    for (size_t i = 0; i < 20; ++i) {
+        P.schedule([](size_t tid){ task(tid, 10); });
+    }
+    P.synchronize();
+
+    assert(40 == P.num_completed_tasks());
+    assert(40 == P.num_scheduled_tasks());
+    assert(!P.closed());
+
+    P.wait_done();
+
+    assert(40 == P.num_scheduled_tasks());
+    assert(40 == P.num_completed_tasks());
+    assert(P.closed());
+    assert(!P.stopped());
+    assert(P.done());
+    assert(P.empty());
+}
+
+
 void test_early_stop_and_revive() {
     std::printf("TEST thread_pool: early stop + revive\n");
     clue::thread_pool P(2);
@@ -90,6 +126,7 @@ void test_early_stop_and_revive() {
 int main() {
     test_construction_and_resize();
     test_schedule_and_wait();
+    test_synchronize();
     test_early_stop_and_revive();
     return 0;
 }

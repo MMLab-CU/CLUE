@@ -63,7 +63,8 @@ private:
     state_t st_;
 
     mutable mutex_type mut_;
-    std::condition_variable cv_;
+    std::condition_variable cv_; // general notification
+    std::condition_variable cv_c_; // notified upon completion of a task
 
 public:
     thread_pool() = default;
@@ -149,6 +150,18 @@ public:
         }
         cv_.notify_one();
         return sp->get_future();
+    }
+
+    // synchronize:
+    // block until all current tasks have been finished
+    // but it does not close the quque
+    void synchronize() {
+        std::unique_lock<mutex_type> lk(mut_);
+        if (st_.n_completed < st_.n_pushed) {
+            cv_c_.wait(lk, [this](){            
+                return st_.n_completed == st_.n_pushed;
+            });
+        }
     }
 
     // close the queue, so no new tasks can be added
@@ -254,6 +267,7 @@ private:
     void on_completed() {
         std::lock_guard<mutex_type> lk(mut_);
         st_.n_completed ++;
+        cv_c_.notify_all();
     }
 
     void resize_(size_t nthreads) {

@@ -324,6 +324,58 @@ public:
         return *this;
     }
 
+    // Modifiers
+
+    void swap(shared_lock& other) {
+        using std::swap;
+        swap(mut_, other.mut_);
+        swap(owns_, other.owns_);
+    }
+
+    void release() {
+        mut_ = nullptr;
+        owns_ = false;
+    }
+
+public:
+    // Observers
+
+    mutex_type* mutex() const {
+        return mut_;
+    }
+
+    bool owns_lock() const {
+        return owns_;
+    }
+
+    operator bool() const {
+        return owns_;
+    }
+
+    // Shared locking
+
+    void lock() {
+        mut_->lock_shared();
+    }
+
+    void try_lock() {
+        mut_->try_lock_shared();
+    }
+
+    template<class Rep, class Period>
+    bool try_lock_for(const ::std::chrono::duration<Rep,Period>& duration) {
+        return mut_->try_lock_shared_for(duration);
+    }
+
+    template<class Clock, class Duration>
+    bool try_lock_until(const ::std::chrono::time_point<Clock, Duration>& due_time) {
+        return mut_->try_lock_shared_until(due_time);
+    }
+
+    void unlock() {
+        mut_->unlock();
+    }
+
 }; // end class shared_lock
 
 } // end namespace clue

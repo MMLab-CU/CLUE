@@ -373,7 +373,7 @@ public:
     }
 
     void unlock() {
-        mut_->unlock();
+        mut_->unlock_shared();
     }
 
 }; // end class shared_lock

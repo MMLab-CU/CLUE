@@ -45,7 +45,7 @@ public:
     typedef const_reverse_iterator reverse_iterator;
     typedef ::std::size_t size_type;
     typedef ::std::ptrdiff_t difference_type;
-    static constexpr const size_type npos = -1; // size_type(-1);
+    static constexpr const size_type npos = static_cast<size_type>(-1); // size_type(-1);
 
 private:
     const value_type* data_;
@@ -166,10 +166,10 @@ public:
 
     // substr
 
-    constexpr basic_string_view substr(size_type pos = 0, size_type n = npos) const {
-        return pos > len_ ?
-            throw ::std::out_of_range("basic_string_view::substr") :
-            basic_string_view(data_ + pos, (::std::min)(n, len_ - pos));
+    basic_string_view substr(size_type pos = 0, size_type n = npos) const {
+        if (pos > len_)
+            throw ::std::out_of_range("basic_string_view::substr");
+        return basic_string_view(data_ + pos, (::std::min)(n, len_ - pos));
     }
 
 

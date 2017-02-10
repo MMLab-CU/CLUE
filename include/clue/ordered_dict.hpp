@@ -120,6 +120,14 @@ public:
         return vec_[map_.at(key)].second;
     }
 
+    value_type& at_pos(size_type pos) {
+        return vec_.at(pos);
+    }
+
+    const value_type& at_pos(size_type pos) const {
+        return vec_.at(pos);
+    }
+
     T& operator[](const Key& key) {
         return try_emplace(key).first->second;
     }

@@ -44,6 +44,14 @@ void verify_odict(odict& d) {
     ASSERT_EQ(1, d_c.count("c"));
     ASSERT_EQ(0, d_c.count("x"));
 
+    ASSERT_EQ((entry{"a", 1}), d.at_pos(0));
+    ASSERT_EQ((entry{"b", 3}), d.at_pos(1));
+    ASSERT_EQ((entry{"c", 2}), d.at_pos(2));
+
+    ASSERT_EQ((entry{"a", 1}), d_c.at_pos(0));
+    ASSERT_EQ((entry{"b", 3}), d_c.at_pos(1));
+    ASSERT_EQ((entry{"c", 2}), d_c.at_pos(2));
+
     ASSERT_EQ((entry{"a", 1}), *d.find("a"));
     ASSERT_EQ((entry{"b", 3}), *d.find("b"));
     ASSERT_EQ((entry{"c", 2}), *d.find("c"));

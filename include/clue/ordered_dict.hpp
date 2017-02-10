@@ -16,7 +16,7 @@ namespace clue {
 
 template<class Key,
          class T,
-         class Hash = std::hash<T>,
+         class Hash = std::hash<Key>,
          class KeyEqual = std::equal_to<Key>,
          class Allocator = std::allocator< std::pair<Key,T> >
         >
@@ -24,8 +24,8 @@ class ordered_dict {
 private:
     using vector_type = std::vector< std::pair<Key, T>, Allocator >;
 
-    using map_entry = std::pair<Key, size_t>;
-    using map_allocator = typename Allocator::template rebind<map_entry>::other;
+    using map_allocator = typename Allocator::template rebind<
+        std::pair<const Key, size_t> >::other;
     using map_type = std::unordered_map<Key, size_t, Hash, KeyEqual, map_allocator>;
 
 public:
@@ -51,6 +51,46 @@ private:
     map_type map_;
 
 public:
+    ordered_dict() = default;
+
+    template<class InputIter>
+    ordered_dict(InputIter first, InputIter last) {
+        insert(first, last);
+    }
+
+    ordered_dict(std::initializer_list<value_type> ilist) {
+        insert(ilist);
+    }
+
+    ordered_dict(const ordered_dict& other)
+        : vec_(other.vec_)
+        , map_(other.map_) {}
+
+    ordered_dict(ordered_dict&& other)
+        : vec_(std::move(other.vec_))
+        , map_(std::move(other.map_)) {}
+
+    ordered_dict& operator=(const ordered_dict& other) {
+        if (this != &other) {
+            vec_ = other.vec_;
+            map_ = other.map_;
+        }
+        return *this;
+    }
+
+    ordered_dict& operator=(ordered_dict&& other) {
+        if (this != &other) {
+            vec_ = std::move(other.vec_);
+            map_ = std::move(other.map_);
+        }
+        return *this;
+    }
+
+    ordered_dict& operator=(std::initializer_list<value_type> ilist) {
+        return operator=(ordered_dict(ilist));
+    }
+
+public:
     bool empty() const noexcept {
         return vec_.empty();
     }
@@ -73,19 +113,19 @@ public:
     const_iterator cend()   const { return vec_.cend(); }
 
     T& at(const Key& key) {
-        return map_.at(key).second;
+        return vec_[map_.at(key)].second;
     }
 
     const T& at(const Key& key) const {
-        return map_.at(key).second;
+        return vec_[map_.at(key)].second;
     }
 
     T& operator[](const Key& key) {
-        return try_emplace(key).first->second.second;
+        return try_emplace(key).first->second;
     }
 
     T& operator[](Key&& key) {
-        return try_emplace(std::move(key)).first->second.second;
+        return try_emplace(std::move(key)).first->second;
     }
 
     iterator find(const Key& key) {
@@ -105,9 +145,23 @@ public:
     }
 
 public:
+    bool operator==(const ordered_dict& other) const {
+        return vec_ == other.vec_;
+    }
+
+    bool operator!=(const ordered_dict& other) const {
+        return !(operator==(other));
+    }
+
+public:
     void clear() {
         map_.clear();
         vec_.clear();
+    }
+
+    void swap(ordered_dict& other) {
+        vec_.swap(other.vec_);
+        map_.swap(other.map_);
     }
 
     template<class... Args>
@@ -118,7 +172,7 @@ public:
             vec_.emplace_back(std::move(v));
             return _post_insert();
         } else {
-            return std::make_pair(it, false);
+            return std::make_pair(vec_.begin() + it->second, false);
         }
     }
 
@@ -131,7 +185,7 @@ public:
                               std::forward_as_tuple(std::forward<Args>(args)...));
             return _post_insert();
         } else {
-            return std::make_pair(it, false);
+            return std::make_pair(vec_.begin() + it->second, false);
         }
     }
 
@@ -141,7 +195,7 @@ public:
             vec_.emplace_back(v);
             return _post_insert();
         } else {
-            return std::make_pair(it, false);
+            return std::make_pair(vec_.begin() + it->second, false);
         }
     }
 
@@ -151,7 +205,7 @@ public:
             vec_.emplace_back(std::move(v));
             return _post_insert();
         } else {
-            return std::make_pair(it, false);
+            return std::make_pair(vec_.begin() + it->second, false);
         }
     }
 
@@ -172,12 +226,18 @@ public:
 private:
     std::pair<iterator, bool> _post_insert() {
         value_type& r = vec_.back();
-        map_.emplace_back(r.first, vec_.size() - 1);
+        map_.emplace(r.first, vec_.size() - 1);
         return std::make_pair(--vec_.end(), true);
     }
 
 }; // end class ordered_dict
 
+
+template<class Key, class T, class Hash, class KeyEqual, class Allocator>
+inline void swap(ordered_dict<Key, T, Hash, KeyEqual, Allocator>& lhs,
+                 ordered_dict<Key, T, Hash, KeyEqual, Allocator>& rhs) {
+    lhs.swap(rhs);
+}
 
 } // end namespace clue
 

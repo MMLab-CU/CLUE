@@ -47,7 +47,7 @@ In practice, it is not uncommon that you maintain a vector in your object and wo
 The ``array_view`` class template
 -----------------------------------
 
-.. cpp:class:: array_view<T>
+.. cpp:class:: template<T> array_view<T>
 
     :param T: The element type.
 

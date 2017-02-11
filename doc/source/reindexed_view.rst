@@ -1,7 +1,8 @@
 Reindexed View
 ===============
 
-In practice, people often want to work on a selected subset of elements of a sequence. A typical approach is to copy those elements to another container, as
+In practice, people often want to work on a selected subset of elements of a
+sequence. A typical approach is to copy those elements to another container, as
 
 .. code-block:: cpp
 
@@ -14,7 +15,10 @@ In practice, people often want to work on a selected subset of elements of a seq
         selected.push_back(source[i]);
     }
 
-This approach is cumbersome and inefficient. *CLUE++* introduces a class template ``reindexed_view`` to tackle this problem. An reindexed view is an object that *refers to* the selected elements while providing container-like API to work with them. Below is an example:
+This approach is cumbersome and inefficient. *CLUE++* introduces a class
+template ``reindexed_view`` to tackle this problem. An reindexed view is an
+object that *refers to* the selected elements while providing container-like API
+to work with them. Below is an example:
 
 .. code-block:: cpp
 
@@ -44,13 +48,15 @@ The ``reindexed_view`` class template
 
 .. note::
 
-    Here, the ``Container`` type can be a const type, *e.g.* ``const vector<int>``. Using a constant
-    container type as the template argument would lead to a read-only view, which are often very useful.
+    Here, the ``Container`` type can be a const type, *e.g.* ``const
+    vector<int>``. Using a constant container type as the template argument
+    would lead to a read-only view, which are often very useful.
 
 Member types
 -------------
 
-The class ``reindexed_view<Container, Indices>`` contains a series of member typedefs as follows:
+The class ``reindexed_view<Container, Indices>`` contains a series of member
+typedefs as follows:
 
 ============================= ============================================
  **types**                     **definitions**
@@ -65,20 +71,23 @@ The class ``reindexed_view<Container, Indices>`` contains a series of member typ
 ``const_iterator``             ``container_type::const_iterator``
 ============================= ============================================
 
-There are also other member typedefs, whose definitions depend on the *constness* of ``Container``.
+There are also other member typedefs, whose definitions depend on the
+*constness* of ``Container``.
 
 .. cpp:type:: reference
 
-    Defined as ``container_type::const_reference`` when ``Container`` is a const type,
-    or ``container_type::reference`` otherwise.
+    Defined as ``container_type::const_reference`` when ``Container`` is a const
+    type, or ``container_type::reference`` otherwise.
 
 .. cpp:type:: pointer
 
-    Defined as ``container_type::const_pointer`` when ``Container`` is a const type, or ``container_type::pointer`` otherwise.
+    Defined as ``container_type::const_pointer`` when ``Container`` is a const
+    type, or ``container_type::pointer`` otherwise.
 
 .. cpp:type:: iterator
 
-    Defined as ``container_type::const_iterator`` when ``Container`` is a const type, or ``container_type::iterator`` otherwise.
+    Defined as ``container_type::const_iterator`` when ``Container`` is a const
+    type, or ``container_type::iterator`` otherwise.
 
 
 Construction
@@ -90,15 +99,23 @@ Construction
 
 .. note::
 
-    A reindexed view only maintains references to ``container`` and ``indices``. It is the caller's responsibility to ensure that the ``container`` and ``indices`` remain valid while using the view. Otherwise, undefined behaviors may result.
+    A reindexed view only maintains references to ``container`` and ``indices``.
+    It is the caller's responsibility to ensure that the ``container`` and
+    ``indices`` remain valid while using the view. Otherwise, undefined
+    behaviors may result.
 
-A convenient function ``reindexed`` is provided for creating reindexed views, without requiring the user to explicitly specify the container type and the indices type:
+A convenient function ``reindexed`` is provided for creating reindexed views,
+without requiring the user to explicitly specify the container type and the
+indices type:
 
 .. cpp:function:: constexpr reindexed_view<Container, Indices> reindexed(Container& c, Indices& inds)
 
-    Construct a reindexed view, with the given source container and index sequence, where the types ``Container`` and ``Indices`` are deduced from arguments.
+    Construct a reindexed view, with the given source container and index
+    sequence, where the types ``Container`` and ``Indices`` are deduced from
+    arguments.
 
-    :note: If ``c`` is a const reference, then ``Container`` will be deduced to a const type. The same also applies to ``indices``.
+    :note: If ``c`` is a const reference, then ``Container`` will be deduced to
+    a const type. The same also applies to ``indices``.
 
 
 Basic properties and element access
@@ -106,7 +123,8 @@ Basic properties and element access
 
 .. cpp:function:: constexpr bool empty() const noexcept
 
-    Get whether the view is empty (*i.e.* contains no selected elements). It is equal to ``indices.empty()``.
+    Get whether the view is empty (*i.e.* contains no selected elements). It is
+    equal to ``indices.empty()``.
 
 .. cpp:function:: constexpr size_type size() const noexcept
 
@@ -134,7 +152,8 @@ Basic properties and element access
 
 .. cpp:function:: constexpr const_reference operator[](size_type pos) const
 
-    Get a const reference to the element at position ``pos``, without bounds checking.
+    Get a const reference to the element at position ``pos``, without bounds
+    checking.
 
 .. cpp:function:: reference operator[](size_type pos)
 
@@ -142,7 +161,8 @@ Basic properties and element access
 
 .. cpp:function:: constexpr const_reference at(size_type pos) const
 
-    Get a const reference to the element at position ``pos``, with bounds checking.
+    Get a const reference to the element at position ``pos``, with bounds
+    checking.
 
 .. cpp:function:: reference at(size_type pos)
 

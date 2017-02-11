@@ -1,9 +1,11 @@
 String Template
 ==================
 
-*CLUE* provides a light-weight string template engine, by the class ``stemplate``.
+*CLUE* provides a light-weight string template engine, by the class
+*``stemplate``.
 
-This template engine uses ``{{ name }}`` to indicate the terms to be interpolated, and accepts a dictionary-like object for interpolation.
+This template engine uses ``{{ name }}`` to indicate the terms to be
+interpolated, and accepts a dictionary-like object for interpolation.
 
 .. code-block:: cpp
 
@@ -19,6 +21,9 @@ This template engine uses ``{{ name }}`` to indicate the terms to be interpolate
 
 .. note::
 
-    Here, ``st.with(dct)`` returns a light-weight wrapper that maintains const references to both the template ``st`` and the value dictionary ``dct``.
-    When inserted to an output stream, the result is directly written to the output stream.
-    One may also call the ``str()`` member function of the wrapper, which would return the rendered string, an object of class ``std::string``.
+    Here, ``st.with(dct)`` returns a light-weight wrapper that maintains const
+    references to both the template ``st`` and the value dictionary ``dct``.
+    When inserted to an output stream, the result is directly written to the
+    output stream. One may also call the ``str()`` member function of the
+    wrapper, which would return the rendered string, an object of class
+    ``std::string``.

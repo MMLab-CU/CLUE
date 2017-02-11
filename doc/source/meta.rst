@@ -1,11 +1,18 @@
 Meta-types and Meta-functions
 ===============================
 
-Template meta-programming has become an indispensible part of modern C++. In C++11, new features such as *Variadic template* and *Template alias* makes meta-programming much more efficient and convenient than before. *CLUE++* provides a set of tools to facilitate meta programming, which take full advantage of these new C++ features.
+Template meta-programming has become an indispensible part of modern C++. In
+C++11, new features such as *Variadic template* and *Template alias* makes
+meta-programming much more efficient and convenient than before. *CLUE++*
+provides a set of tools to facilitate meta programming, which take full
+advantage of these new C++ features.
 
-For those who are not familiar with C++ meta-programming, Andrzej has a great `blog <https://akrzemi1.wordpress.com/2012/03/19/meta-functions-in-c11/>`_ that provides an excellent introduction of this topic.
+For those who are not familiar with C++ meta-programming, Andrzej has a great
+`blog <https://akrzemi1.wordpress.com/2012/03/19/meta-functions-in-c11/>`_ that
+provides an excellent introduction of this topic.
 
-**Important Note:** all meta-programming facilities in *CLUE++* are within the namespace ``clue::meta``.
+**Important Note:** all meta-programming facilities in *CLUE++* are within the
+**namespace ``clue::meta``.
 
 Basic types
 -------------
@@ -57,7 +64,9 @@ A set of types to support meta-programming:
     using value_type_of = typename A::value_type;
 
 
-Sometimes, it is useful to combine two types. For this purpose, we provide a ``pair_`` type to express a pair of types, as well as meta-functions ``first`` and ``second`` to retrieve them.
+Sometimes, it is useful to combine two types. For this purpose, we provide a
+``pair_`` type to express a pair of types, as well as meta-functions ``first``
+and ``second`` to retrieve them.
 
 .. code-block:: cpp
 
@@ -84,13 +93,15 @@ Sometimes, it is useful to combine two types. For this purpose, we provide a ``p
 
 .. note::
 
-    The meta-functions ``first`` and ``second`` are also specialized for other meta data structures, such as the *meta sequence*.
+    The meta-functions ``first`` and ``second`` are also specialized for other
+    meta data structures, such as the *meta sequence*.
 
 
 Static Index Sequence
 -----------------------
 
-The library provides useful facilities to construct static index sequence, which is useful for splatting elements of a tuples as arguments.
+The library provides useful facilities to construct static index sequence, which
+is useful for splatting elements of a tuples as arguments.
 
 .. code-block:: cpp
 
@@ -104,7 +115,8 @@ The library provides useful facilities to construct static index sequence, which
     make_index_seq<1>;  // -> index_seq<1>
     make_index_seq<4>;  // -> index_seq<0, 1, 2, 3>
 
-The following example shows how one can leverage ``make_index_seq`` to splat tuple arguments.
+The following example shows how one can leverage ``make_index_seq`` to splat
+tuple arguments.
 
 .. code-block:: cpp
 
@@ -130,7 +142,8 @@ The following example shows how one can leverage ``make_index_seq`` to splat tup
 Basic functions
 ----------------
 
-The library also has a series of meta-functions to work with types or static values.
+The library also has a series of meta-functions to work with types or static
+values.
 
 Arithmetic functions
 ~~~~~~~~~~~~~~~~~~~~~
@@ -207,13 +220,19 @@ Logical functions
 
 .. note::
 
-    The meta-functions ``and_<A, B>`` and ``or_<A, B>`` implement the *short-circuit behavior*. In particular, when ``A::value == false``, ``and_<A, B>::value`` is set to ``false``  without examining the internals of ``B``.
-    Likewise, when ``A::value == true``, ``or_<A, B>::value`` is set to ``true`` without examining the internals of ``B``.
+    The meta-functions ``and_<A, B>`` and ``or_<A, B>`` implement the
+    *short-circuit behavior*. In particular, when ``A::value == false``,
+    ``and_<A, B>::value`` is set to ``false``  without examining the internals
+    of ``B``. Likewise, when ``A::value == true``, ``or_<A, B>::value`` is set
+    to ``true`` without examining the internals of ``B``.
 
 Select
 -------
 
-C++11 provides ``std::conditional`` for static dispatch based on a condition. However, using this type in practice, especially in the cases with multiple branches, is very cumbersome. Below is an example that uses ``std::conditional`` to map a numeric value to a signed value type.
+C++11 provides ``std::conditional`` for static dispatch based on a condition.
+However, using this type in practice, especially in the cases with multiple
+branches, is very cumbersome. Below is an example that uses ``std::conditional``
+to map a numeric value to a signed value type.
 
 .. code-block:: cpp
 
@@ -233,7 +252,8 @@ C++11 provides ``std::conditional`` for static dispatch based on a condition. Ho
             >::type
         >::type;
 
-With the meta-function ``select`` and the helper alias ``select_t``, this can be expressed in a much more elegant and concise way:
+With the meta-function ``select`` and the helper alias ``select_t``, this can be
+expressed in a much more elegant and concise way:
 
 .. code-block:: cpp
 
@@ -251,8 +271,14 @@ With the meta-function ``select`` and the helper alias ``select_t``, this can be
 
 Specifically, ``meta::select`` is a variadic class template, described as follows:
 
-- ``select<C1, A1, R>`` has a member typedef ``type`` which is equal to ``A1::type`` when ``C1::value`` is true, or ``R::type`` otherwise. This meta-function can accept arbitrary odd number of arguments.
-- Generally, ``select<C1, A1, C2, A2, ..., Cm, Am, R>`` has a member typedef ``type`` which is equal to ``A1::type`` when ``C1::value`` is true, otherwise, it is equal to ``A2::type`` if ``C2::value`` is true, and so on. If no conditions are met, it is set to ``R::type``.
+- ``select<C1, A1, R>`` has a member typedef ``type`` which is equal to
+  ``A1::type`` when ``C1::value`` is true, or ``R::type`` otherwise.
+
+- This meta-function can accept arbitrary odd number of arguments. Generally,
+  ``select<C1, A1, C2, A2, ..., Cm, Am, R>`` has a member typedef ``type`` which
+  is equal to ``A1::type`` when ``C1::value`` is true, otherwise, it is equal to
+  ``A2::type`` if ``C2::value`` is true, and so on. If no conditions are met, it
+  is set to ``R::type``.
 
 A helper alias ``select_t`` is provided to further simplify the use:
 
@@ -263,53 +289,68 @@ A helper alias ``select_t`` is provided to further simplify the use:
 
 .. note::
 
-    The meta-function ``select`` implements a *short-circuit behavior*. It examines the conditions sequentially, and once it finds a condition that is ``true``, it extracts the next type, and will not continue to examine following conditions.
+    The meta-function ``select`` implements a *short-circuit behavior*. It
+    examines the conditions sequentially, and once it finds a condition that is
+    ``true``, it extracts the next type, and will not continue to examine
+    following conditions.
 
 Variadic Reduction
 -------------------
 
-A set of variadic meta-functions are provided to perform reduction over static values.
+A set of variadic meta-functions are provided to perform reduction over static
+values.
 
 .. cpp:class:: meta::sum<Args...>
 
-    With a member constant ``value`` that equals the sum of argument's member values.
+    With a member constant ``value`` that equals the sum of argument's member
+    values.
 
 .. cpp:class:: meta::prod<Args...>
 
-    With a member constant ``value`` that equals the product of argument's member values.
+    With a member constant ``value`` that equals the product of argument's
+    member values.
 
 .. cpp:class:: meta::maximum<Args...>
 
-    With a member constant ``value`` that equals the maximum of argument's member values.
+    With a member constant ``value`` that equals the maximum of argument's
+    member values.
 
 .. cpp:class:: meta::minimum<Args...>
 
-    With a member constant ``value`` that equals the minimum of argument's member values.
+    With a member constant ``value`` that equals the minimum of argument's
+    member values.
 
 .. cpp:class:: meta::all<Args...>
 
-    With a member constant ``value``, which equals ``true`` if all argument's member values are ``true``, or ``false`` otherwise.
+    With a member constant ``value``, which equals ``true`` if all argument's
+    member values are ``true``, or ``false`` otherwise.
 
     :note: ``all<>::value == true``.
 
 .. cpp:class:: meta::any<Args...>
 
-    With a member constant ``value``, which equals ``true`` if any of the argument's member value is ``true``, or ``false`` otherwise.
+    With a member constant ``value``, which equals ``true`` if any of the
+    argument's member value is ``true``, or ``false`` otherwise.
 
     :note: ``any<>::value == false``.
 
 .. cpp:class:: meta::count_true<Args...>
 
-    With a member constant ``value``, which equals the number of arguments whose member value is ``true``.
+    With a member constant ``value``, which equals the number of arguments whose
+    member value is ``true``.
 
 .. cpp:class:: meta::count_false<Args...>
 
-    With a member constant ``value``, which equals the number of arguments whose member value is ``false``.
+    With a member constant ``value``, which equals the number of arguments whose
+    member value is ``false``.
 
 .. cpp:class:: meta::all_same<Args...>
 
-    With a member constant ``value``, which indicates whether all argument types are the same.
+    With a member constant ``value``, which indicates whether all argument types
+    are the same.
 
 .. note::
 
-    The meta-functions ``all`` and ``any`` both implement the *short-circuit behaviors*. They won't look further once the resultant value can be determined.
+    The meta-functions ``all`` and ``any`` both implement the *short-circuit
+    behaviors*. They won't look further once the resultant value can be
+    determined.

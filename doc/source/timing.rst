@@ -1,7 +1,10 @@
 Timing
 =======
 
-*Timing*, namely to measure the run-time of a piece of code, is a common practice in development, especially in contexts where performance is critical (*e.g.* numerical computation). *CLUE++* provides timing facilities to facilitate this practice. All these facilities are in the namespace ``clue``.
+*Timing*, namely to measure the run-time of a piece of code, is a common
+*practice in development, especially in contexts where performance is critical
+*(*e.g.* numerical computation). *CLUE++* provides timing facilities to
+*facilitate this practice. All these facilities are in the namespace ``clue``.
 
 
 Representation of duration
@@ -11,9 +14,12 @@ A class ``duration`` is introduced to represent time durations.
 
 .. cpp:class:: duration
 
-    A wrapper of ``std::chrono::high_resolution_clock::duration`` that exposes more user friendly interface to work with duration.
+    A wrapper of ``std::chrono::high_resolution_clock::duration`` that exposes
+    more user friendly interface to work with duration.
 
-The ``stop_watch`` class use a ``duration`` object to represent the elapsed time. The ``duration`` class has several member functions to retrieve the duration in different units.
+The ``stop_watch`` class use a ``duration`` object to represent the elapsed
+time. The ``duration`` class has several member functions to retrieve the
+duration in different units.
 
 .. cpp:function:: constexpr explicit duration() noexcept
 
@@ -21,11 +27,13 @@ The ``stop_watch`` class use a ``duration`` object to represent the elapsed time
 
 .. cpp:function:: constexpr duration(const value_type& val) noexcept
 
-    Construct a duration with an object of class ``value_type``, namely ``std::chrono::high_resolution_clock::duration``.
+    Construct a duration with an object of class ``value_type``, namely
+    ``std::chrono::high_resolution_clock::duration``.
 
 .. cpp:function:: constexpr double get<U>() const noexcept
 
-    Get the duration in unit ``U``. Here, ``U`` should be an instantiation of the class template ``std::ratio``.
+    Get the duration in unit ``U``. Here, ``U`` should be an instantiation of
+    the class template ``std::ratio``.
 
     The following table lists the correspondence between ``U`` and physical time units.
 
@@ -75,13 +83,16 @@ A ``stop_watch`` class is introduced to measure running time.
 
     Stop watch class for measuring run-time, in wall-clock sense.
 
-    :note: Internally, it relies on the class ``std::chrono::high_resolution_clock`` introduced in C++11 for timing, and hence it is highly portable.
+    :note: Internally, it relies on the class
+           ``std::chrono::high_resolution_clock`` introduced in
+           C++11 for timing, and hence it is highly portable.
 
 The class ``stop_watch`` has the following members:
 
 .. cpp:function:: explicit stop_watch(bool st=false) noexcept
 
-    Construct a stop watch. By default, it is not started. One can set ``st`` to ``true`` to let the stop watch starts upon construction.
+    Construct a stop watch. By default, it is not started. One can set ``st`` to
+    ``true`` to let the stop watch starts upon construction.
 
 .. cpp:function:: void reset() noexcept
 
@@ -93,7 +104,8 @@ The class ``stop_watch`` has the following members:
 
 .. cpp:function:: void stop() noexcept
 
-    Stop the watch and accumulates the duration of last run to the total elapsed duration.
+    Stop the watch and accumulates the duration of last run to the total elapsed
+    duration.
 
 .. cpp:function:: duration elapsed() const noexcept
 
@@ -132,17 +144,24 @@ We also provide convenient functions to help people time a certain function.
 
 .. cpp:function:: duration simple_time(F&& f, size_t n, size_t n0 = 0)
 
-    Run the function ``f()`` for ``n`` times and return the total elapsed duration.
+    Run the function ``f()`` for ``n`` times and return the total elapsed
+    duration.
 
     :param f:  The function to be timed.
     :param n:  The number of times ``f`` is to be executed.
-    :param n0:  The number of pre-running times. If ``n0 > 0``, it will *pre-run* ``f`` for ``n0`` times to *warm up* the function (for certain functions, the first run or first several runs may take substantially longer time).
+    :param n0:  The number of pre-running times. If ``n0 > 0``, it will
+                *pre-run* ``f`` for ``n0`` times to *warm up* the function
+                (for certain functions, the first run or first several runs
+                may take substantially longer time).
 
 .. cpp:function:: calibrated_timing_result calibrated_time(F&& f, double measure_secs = 1.0, double calib_secs = 1.0e-4)
 
     Calibrated timing.
 
-    This function may spend a little bit time (around ``calib_secs`` seconds) to roughly measure the average running time of ``f()`` (*i.e.* calibaration), and then run ``f()`` for more times for actual measurement such that the entire duration of measurement is around ``measure_secs`` seconds.
+    This function may spend a little bit time (around ``calib_secs`` seconds) to
+    roughly measure the average running time of ``f()`` (*i.e.* calibaration),
+    and then run ``f()`` for more times for actual measurement such that the
+    entire duration of measurement is around ``measure_secs`` seconds.
 
     :param f:  The function to be timed.
     :param measure_secs: The time to be spent on actual measurement (in seconds).

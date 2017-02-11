@@ -1,28 +1,38 @@
 Extensions of Type Traits
 ==========================
 
-In C++11, a collection of type traits have been introduced into the standard library (in the header ``<type_traits>``). While they are very useful, using these type traits in practice is sometimes cumbersome. For example, to add a const qualifier to a type, one has to write
+In C++11, a collection of type traits have been introduced into the standard
+library (in the header ``<type_traits>``). While they are very useful, using
+these type traits in practice is sometimes cumbersome. For example, to add a
+const qualifier to a type, one has to write
 
 .. code-block:: cpp
 
     using const_type = typename std::add_const<my_type>::type;
 
-The need to use ``typename`` and ``::type`` introduces unnecessary noise to the code. In C++14, a set of helpers are introduced, such as
+The need to use ``typename`` and ``::type`` introduces unnecessary noise to the
+code. In C++14, a set of helpers are introduced, such as
 
 .. code-block:: cpp
 
     template<class T>
     using add_const_t = typename add_const<T>::type;
 
-This makes the codes that transform types more concise. In particular, with ``add_const_t``, one can write:
+This makes the codes that transform types more concise. In particular, with
+``add_const_t``, one can write:
 
 .. code-block:: cpp
 
     using const_type = add_const_t<my_type>;
 
-In *CLUE++*, we define all these helpers in the header ``<clue/type_traits.hpp>``, so that they can be used within C++11 environment. In particular, the following helpers are provided. All these *backported* helpers are within the namespace ``clue``.
+In *CLUE++*, we define all these helpers in the header
+``<clue/type_traits.hpp>``, so that they can be used within C++11 environment.
+In particular, the following helpers are provided. All these *backported*
+helpers are within the namespace ``clue``.
 
-**Note:** Below is just a list. For detailed descriptions of these type traits, please refer to the `standard documentation <http://en.cppreference.com/w/cpp/header/type_traits>`_.
+**Note:** Below is just a list. For detailed descriptions of these type traits,
+**please refer to the `standard documentation
+**<http://en.cppreference.com/w/cpp/header/type_traits>`_.
 
 .. code-block:: cpp
 

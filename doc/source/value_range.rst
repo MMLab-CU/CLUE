@@ -1,7 +1,8 @@
 Value Range
 ============
 
-It is a very common pattern in C/C++ programming to write loops that enumerate values within a certain range, such as
+It is a very common pattern in C/C++ programming to write loops that enumerate
+values within a certain range, such as
 
 .. code-block:: cpp
 
@@ -9,7 +10,11 @@ It is a very common pattern in C/C++ programming to write loops that enumerate v
         // do something
     }
 
-In C++11, the range for-loop syntax is introduced, which allow concise expression of the looping over elements in a container. However, one has to resort to the old pattern when enumerating values. Here, we provide a class template ``value_range`` that wraps a range of values to a light-weight *container-like* object. Below is an example:
+In C++11, the range for-loop syntax is introduced, which allow concise
+expression of the looping over elements in a container. However, one has to
+resort to the old pattern when enumerating values. Here, we provide a class
+template ``value_range`` that wraps a range of values to a light-weight
+*container-like* object. Below is an example:
 
 .. code-block:: cpp
 
@@ -51,16 +56,26 @@ Formally, the class template ``value_range`` is defined as:
     Classes to represent stepped ranges, such as ``1, 2, 3, 4, ...``.
 
     :param T: The value type.
-    :param D: The difference type. This can be omitted, and it will be, by default, set to ``default_difference<T>::type``.
-    :param Traits: A traits class that specifies the behavior of the value type ```T``. This class has to satisfy the *EnumerableValueTraits* concept, which will be explained in the section enumerable_value_traits_. In general, one may omit this, and it will be, by default, set to ``value_type_traits<T, D>``.
+    :param D: The difference type. This can be omitted, and it will be,
+              by default, set to ``default_difference<T>::type``.
+    :param Traits: A traits class that specifies the behavior of the
+                   value type ``T``. This class has to satisfy the
+                   *EnumerableValueTraits* concept, which will be explained
+                   in the section enumerable_value_traits_. In general, one
+                   may omit this, and it will be, by default, set to
+                   ``value_type_traits<T, D>``.
 
 .. cpp:class:: default_difference<T>
 
-    It provides a member typedef that indicates the *default* difference type for ``T``.
+    It provides a member typedef that indicates the *default* difference type
+    for ``T``.
 
-    In particular, if ``T`` is an unsigned integer type, ``default_difference<T>::type`` is ``std::make_signed<T>::type``. In other cases, ``default_difference<T>::type`` is identical to ``T``.
+    In particular, if ``T`` is an unsigned integer type,
+    ``default_difference<T>::type`` is ``std::make_signed<T>::type``. In other
+    cases, ``default_difference<T>::type`` is identical to ``T``.
 
-    To enumerate non-numerical types (*e.g.* dates), one should specialize ``default_difference<T>`` to provide a suitable difference type.
+    To enumerate non-numerical types (*e.g.* dates), one should specialize
+    ``default_difference<T>`` to provide a suitable difference type.
 
 .. cpp:class:: stepped_value_range<T, S, D, Traits>
 
@@ -73,13 +88,15 @@ Formally, the class template ``value_range`` is defined as:
 
 .. note::
 
-    For ``stepped_value_range<T, S>``, only unsigned integral types for ``T`` and ``S`` are supported at this point.
+    For ``stepped_value_range<T, S>``, only unsigned integral types for ``T``
+    and ``S`` are supported at this point.
 
 
 Member types
 -------------
 
-The class ``value_range<T>`` or ``stepped_value_range<T, S>`` contains a series of member typedefs as follows:
+The class ``value_range<T>`` or ``stepped_value_range<T, S>`` contains a series
+of member typedefs as follows:
 
 ============================= ============================================
  **types**                     **definitions**
@@ -105,7 +122,8 @@ The class ``value_range<T>`` or ``stepped_value_range<T, S>`` contains a series 
 Construction
 -------------
 
-The ``value_range<T>`` and ``stepped_value_range<T, S>`` classes have simple constructors.
+The ``value_range<T>`` and ``stepped_value_range<T, S>`` classes have simple
+constructors.
 
 .. cpp:function:: constexpr value_range(const T& vbegin, const T& vend)
 
@@ -120,19 +138,24 @@ The ``value_range<T>`` and ``stepped_value_range<T, S>`` classes have simple con
     :param vend:   The ending value (exclusive).
     :param step:   The incremental step.
 
-    For example, ``stepped_value_range(0, 2, 5)`` indicates the following sequence ``0, 2, 4``.
+    For example, ``stepped_value_range(0, 2, 5)`` indicates the following
+    sequence ``0, 2, 4``.
 
 .. note::
 
-    These classes also have a copy constructor, an assignment operator, a destructor and a ``swap`` member function, all with default behaviors.
+    These classes also have a copy constructor, an assignment operator, a
+    destructor and a ``swap`` member function, all with default behaviors.
 
 .. note::
 
-    For stepped ranges, the **step must be positive**. Zero or negative step would result in undefined behavior. The size of a stepped range is computed as
-    ``(e - b + (s - 1)) / s``.
+    For stepped ranges, the **step must be positive**. Zero or negative step
+    would result in undefined behavior. The size of a stepped range is computed
+    as ``(e - b + (s - 1)) / s``.
 
 
-In addition, convenient constructing functions are provided, with which the user does not need to explictly specify the value type (which would be infered from the arguments):
+In addition, convenient constructing functions are provided, with which the user
+does not need to explictly specify the value type (which would be infered from
+the arguments):
 
 .. cpp:function:: constexpr value_range<T> vrange(const T& u)
 
@@ -144,17 +167,21 @@ In addition, convenient constructing functions are provided, with which the user
 
 .. cpp:function:: value_range<Siz> indices(const Container& c)
 
-    Returns a value range that contains indices from ``0`` to ``c.size() - 1``. Here, the value type ``Siz`` is ``Container::size_type``.
+    Returns a value range that contains indices from ``0`` to ``c.size() - 1``.
+    Here, the value type ``Siz`` is ``Container::size_type``.
 
 
 Properties and element access
 -------------------------------
 
-The ``value_range<T>`` and ``stepped_value_range<T, S>`` classes provide a similar set of member functions that allow access of the basic properties and individual values in the range, as follows.
+The ``value_range<T>`` and ``stepped_value_range<T, S>`` classes provide a
+similar set of member functions that allow access of the basic properties and
+individual values in the range, as follows.
 
 .. cpp:function:: constexpr size_type size() const noexcept
 
-    Get the size of the range, *i.e.* the number of values contained in the range.
+    Get the size of the range, *i.e.* the number of values contained in the
+    range.
 
 .. cpp:function:: constexpr bool empty() const noexcept
 
@@ -180,7 +207,8 @@ The ``value_range<T>`` and ``stepped_value_range<T, S>`` classes provide a simil
 
 .. cpp:function:: constexpr T end_value() const noexcept
 
-    Get the value that specifies the end of the value, which is the value next to ``back()``.
+    Get the value that specifies the end of the value, which is the value next
+    to ``back()``.
 
 .. cpp:function:: constexpr T operator[](size_type pos) const
 
@@ -214,7 +242,11 @@ Iterators
 
 .. note::
 
-    A value range or stepped value range does not actually store the values in the range. Hence, the iterators are *proxies* that do not refer to an existing location in memory. Instead, ``*iter`` returns the value itself instead of a reference. In spite of this subtle difference from a typical iterator, we find that it works perfectly with most STL algorithms.
+    A value range or stepped value range does not actually store the values in
+    the range. Hence, the iterators are *proxies* that do not refer to an
+    existing location in memory. Instead, ``*iter`` returns the value itself
+    instead of a reference. In spite of this subtle difference from a typical
+    iterator, we find that it works perfectly with most STL algorithms.
 
 
 .. _enumerable_value_traits:
@@ -222,7 +254,8 @@ Iterators
 The *EnumerableValueTraits* concept
 ------------------------------------
 
-The class template ``value_range`` has a type parameter ``Traits``, which has to satisfy the following concept.
+The class template ``value_range`` has a type parameter ``Traits``, which has to
+satisfy the following concept.
 
 .. code-block:: cpp
 
@@ -244,4 +277,6 @@ The class template ``value_range`` has a type parameter ``Traits``, which has to
 
     Traits::difference(x, y); // the difference between x and y, i.e. x - y
 
-By default, the builtin ``value_range_traits<T, D>`` would be used and users don't have to specify the traits explicitly. However, one can specify a different trait class to provide special behaviors.
+By default, the builtin ``value_range_traits<T, D>`` would be used and users
+don't have to specify the traits explicitly. However, one can specify a
+different trait class to provide special behaviors.

@@ -1,11 +1,13 @@
 Miscellaneous Utilities
 ========================
 
-*CLUE* also provides some utilities that are handy in programming practice. These utilities are provided by the header ``<clue/misc.hpp>``.
+*CLUE* also provides some utilities that are handy in programming practice.
+*These utilities are provided by the header ``<clue/misc.hpp>``.
 
 .. cpp:function:: make_unique<T>(args...)
 
-    Constructs an object of type ``T`` and wraps it in a unique pointer of class ``std::unique_ptr<T>``.
+    Constructs an object of type ``T`` and wraps it in a unique pointer of class
+    ``std::unique_ptr<T>``.
 
     Here, ``args`` are the arguments to be forwarded to the constructor.
 
@@ -15,17 +17,20 @@ Miscellaneous Utilities
 
     Accepts arbitrary arguments and does nothing.
 
-    The purpose of this function is mainly to trigger the execution of all the argument expressions in a variadic context.
+    The purpose of this function is mainly to trigger the execution of all the
+    argument expressions in a variadic context.
 
 .. cpp:class:: temporary_buffer<T>
 
     Tempoary buffer.
 
-    An object of this class invokes ``std::get_temporary_buffer`` on construction, and ``std::return_temporary_buffer`` on destruction.
+    An object of this class invokes ``std::get_temporary_buffer`` on
+    construction, and ``std::return_temporary_buffer`` on destruction.
 
     .. note::
 
-        A temporary buffer is supposed to be used locally, and it is not copyable or movable.
+        A temporary buffer is supposed to be used locally, and it is not
+        copyable or movable.
 
     **Examples:**
 

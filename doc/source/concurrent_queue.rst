@@ -1,18 +1,21 @@
 Concurrent Queue
 =================
 
-Concurrent queue is very useful in concurrent programming. For example, task queue can be considered as a special kind of concurrent queue.
-*CLUE* implements a concurrent queue class, in header file ``<clue/concurrent_queue.hpp>``.
+Concurrent queue is very useful in concurrent programming. For example, task
+queue can be considered as a special kind of concurrent queue. *CLUE* implements
+a concurrent queue class, in header file ``<clue/concurrent_queue.hpp>``.
 
 .. cpp:class:: concurrent_queue<T>
 
     Concurrent queue class. ``T`` is the element type.
 
-This class has a default constructor, but it is not copyable or movable. The class provides the following member functions:
+This class has a default constructor, but it is not copyable or movable. The
+class provides the following member functions:
 
 .. cpp:function:: size_t size() const
 
-    Get the number of elements in the queue (at the point this method is being called).
+    Get the number of elements in the queue (at the point this method is being
+    called).
 
 .. cpp:function:: bool empty() const
 
@@ -36,27 +39,32 @@ This class has a default constructor, but it is not copyable or movable. The cla
 
 .. cpp:function:: void emplace(Args&&... args)
 
-    Construct an element using the given arguments and push it to the back of the queue.
+    Construct an element using the given arguments and push it to the back of
+    the queue.
 
 .. cpp:function:: bool try_pop(T& dst)
 
-    If the queue is not empty, pop the element at the front, store it to ``dst``, and return ``true``.
-    Otherwise, return ``false`` immediately.
+    If the queue is not empty, pop the element at the front, store it to
+    ``dst``, and return ``true``. Otherwise, return ``false`` immediately.
 
 .. cpp:function:: T wait_pop()
 
-    Wait until the queue is non-empty, and pop the element at the front and return it.
+    Wait until the queue is non-empty, and pop the element at the front and
+    return it.
 
-    If the queue is already non-empty, it pops the front element and returns it immediately.
+    If the queue is already non-empty, it pops the front element and returns it
+    immediately.
 
 .. note::
 
-    All updating methods, including ``push``, ``emplace``, ``try_pop``, and ``wait_pop``, are thread-safe.
-    It is safe to call these methods in concurrent threads.
+    All updating methods, including ``push``, ``emplace``, ``try_pop``, and
+    ``wait_pop``, are thread-safe. It is safe to call these methods in
+    concurrent threads.
 
-
-**Example:** The following example shows how to use ``concurrent_queue`` to implement a task queue.
-In this example, multiple concurrent producers generate items to be processed, and a consumer fetches them from a queue and process.
+**Example:** The following example shows how to use ``concurrent_queue`` to
+**implement a task queue. In this example, multiple concurrent producers
+**generate items to be processed, and a consumer fetches them from a queue and
+**process.
 
 .. code-block:: cpp
 
@@ -102,4 +110,5 @@ In this example, multiple concurrent producers generate items to be processed, a
 
 .. note::
 
-    To emulate a typical task queue, one may also push functions as elements, and let the consumer invokes each function that it acquires from the queue.
+    To emulate a typical task queue, one may also push functions as elements,
+    and let the consumer invokes each function that it acquires from the queue.

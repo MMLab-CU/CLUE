@@ -3,13 +3,30 @@
 String View
 ============
 
-In the `C++ Extensions for Library Fundamentals (N4480) <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html>`_, a class template ``basic_string_view`` is introduced. Each instance of such a class refers to a constant contiguous sequence of characters (or *char-like objects*). This class provides a light-weight representation (with only a pointer and a size) of a *sub-string* that implements many of the methods available for ``std::string``.
+In the `C++ Extensions for Library Fundamentals (N4480)
+<http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html>`_, a class
+template ``basic_string_view`` is introduced. Each instance of such a class
+refers to a constant contiguous sequence of characters (or *char-like objects*).
+This class provides a light-weight representation (with only a pointer and a
+size) of a *sub-string* that implements many of the methods available for
+``std::string``.
 
-The string views are very useful in practice, especially for those applications that heavily rely on sub-string operations (but don't need to modify the string content). For such applications, string views can be a drop-in replacement of standard strings (*i.e.* instances of ``std::string``) as they provide a similar set of interface, but are generally much more efficient (they don't make copies).
+The string views are very useful in practice, especially for those applications
+that heavily rely on sub-string operations (but don't need to modify the string
+content). For such applications, string views can be a drop-in replacement of
+standard strings (*i.e.* instances of ``std::string``) as they provide a similar
+set of interface, but are generally much more efficient (they don't make
+copies).
 
-This library provides string view classes, where our implementation strictly follows the `Technical Specification (N4480) <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html>`_, except that all the classes and functions are within the namespace ``clue`` (instead of ``std::experimental``). The standard document for this class is available `here <http://en.cppreference.com/w/cpp/experimental/basic_string_view>`_.
+This library provides string view classes, where our implementation strictly
+follows the `Technical Specification (N4480)
+<http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4480.html>`_, except
+that all the classes and functions are within the namespace ``clue`` (instead of
+``std::experimental``). The standard document for this class is available `here
+<http://en.cppreference.com/w/cpp/experimental/basic_string_view>`_.
 
-Below is brief description of the types, their members, and other relevant functions.
+Below is brief description of the types, their members, and other relevant
+functions.
 
 
 The ``basic_string_view`` class template
@@ -20,8 +37,9 @@ The signature of the class template is as follows:
 .. cpp:class:: basic_string_view<charT, Traits>
 
     :param charT: The character type.
-    :param Traits: The traits class that specify basic operations on the character type.
-                   Here, ``Traits`` can be omitted, which is, by default, set to ``std::char_traits<charT>``.
+    :param Traits: The traits class that specify basic operations on the
+                   character type. Here, ``Traits`` can be omitted, which is,
+                   by default, set to ``std::char_traits<charT>``.
 
 Four typedefs are defined:
 
@@ -55,14 +73,19 @@ The class ``basic_string_view<charT, Traits>`` contains a series of member typed
 ``difference_type``            ``std::difference_type``
 ============================= ============================================
 
-It also has a member constant ``npos``, defined as ``size_t(-1)``, to indicate a certain kind of characters or sub-strings are not found in a finding process. (This is the same as ``std::string``).
+It also has a member constant ``npos``, defined as ``size_t(-1)``, to indicate a
+certain kind of characters or sub-strings are not found in a finding process.
+(This is the same as ``std::string``).
 
 
 Constructors
 -------------
 
-The class ``basic_string_view<charT, Traits>`` provides multiple ways to construct a string view.
-Below is a brief documentation of the member functions. For conciseness, we take ``string_view`` for example in the following documentation. The same set of constructors and member functions apply to other instantations of the class template similarly.
+The class ``basic_string_view<charT, Traits>`` provides multiple ways to
+construct a string view. Below is a brief documentation of the member functions.
+For conciseness, we take ``string_view`` for example in the following
+documentation. The same set of constructors and member functions apply to other
+instantations of the class template similarly.
 
 .. cpp:function:: constexpr string_view() noexcept
 
@@ -72,8 +95,8 @@ Below is a brief documentation of the member functions. For conciseness, we take
 
     Copy construct a string view from ``r`` (default behavior)
 
-    :note: The copy constructor only sets the size and the base pointer, without copying
-           the characters that it refers to.
+    :note: The copy constructor only sets the size and the base pointer,
+           without copying the characters that it refers to.
 
 .. cpp:function:: string_view(const std::string& s) noexcept
 
@@ -87,7 +110,8 @@ Below is a brief documentation of the member functions. For conciseness, we take
 
     Construct a view of a null-terminated C-string.
 
-The ``string_view`` class also has destructor and assignment operators, with default behaviors.
+The ``string_view`` class also has destructor and assignment operators, with
+default behaviors.
 
 
 Basic Properties
@@ -139,7 +163,8 @@ Element Access
 
     Get a const pointer to the base address (*i.e.* to the first character).
 
-    :note: For views constructed with default constructor, this returns a null pointer.
+    :note: For views constructed with default constructor, this returns a null
+           pointer.
 
 
 Iterators
@@ -171,7 +196,8 @@ Iterators
 
 .. cpp:function:: constexpr iterator rbegin() const noexcept
 
-    Get a const reverse iterator to the reversed beginning, equivalent to ``crbegin()``.
+    Get a const reverse iterator to the reversed beginning, equivalent to
+    ``crbegin()``.
 
 .. cpp:function:: constexpr iterator rend() const noexcept
 
@@ -183,7 +209,8 @@ Modifiers
 
 .. cpp:function:: void clear() noexcept
 
-    Clear the view, resetting the data pointer and the size to ``nullptr`` and ``0`` respectively.
+    Clear the view, resetting the data pointer and the size to ``nullptr`` and
+    ``0`` respectively.
 
 .. cpp:function:: void remove_prefix(size_type n) noexcept
 
@@ -199,7 +226,8 @@ Modifiers
 
 .. note::
 
-    An external ``swap`` function are provided for string views, which invokes the member function ``basic_string_view::swap`` to perform the swapping.
+    An external ``swap`` function are provided for string views, which invokes
+    the member function ``basic_string_view::swap`` to perform the swapping.
 
 
 Conversion, Copy, and Sub-string
@@ -223,7 +251,8 @@ Conversion, Copy, and Sub-string
 
     Get a view of a sub-string (with length bounded by ``n``) that begins at ``pos``.
 
-    :return: With ``pos < size()``, it returns a view of a sub-string, whose length is equal to ``min(n, size() - pos)``.
+    :return: With ``pos < size()``, it returns a view of a sub-string, whose
+             length is equal to ``min(n, size() - pos)``.
 
     :throw: an exception of class ``std::out_of_range`` if ``pos >= size()``.
 
@@ -234,7 +263,9 @@ Comparison
 
     Compare with another string view ``sv``.
 
-    :return: ``0`` when it is equal to ``sv``, a negative integer when it is less than ``sv`` (in lexicographical order), or a positive integer when it is greater than ``sv``.
+    :return: ``0`` when it is equal to ``sv``, a negative integer when it is
+             less than ``sv`` (in lexicographical order), or a positive integer
+             when it is greater than ``sv``.
 
 .. cpp:function:: int compare(size_type pos1, size_type n1, string_view sv) const
 
@@ -258,15 +289,21 @@ Comparison
 
 .. note::
 
-    These many ``compare`` methods may seem redundant. They are there mainly to be consistent with the interface of ``std::string``.
+    These many ``compare`` methods may seem redundant. They are there mainly to
+    be consistent with the interface of ``std::string``.
 
-    In addition to the ``compare`` methods, all comparison operators (including ``==, !=, <, >, <=, >=``) are provided for comparing string views. These operators return values of type ``bool``.
+    In addition to the ``compare`` methods, all comparison operators (including ``==, !=, <, >, <=, >=``)
+    are provided for comparing string views. These operators return values of
+    type ``bool``.
 
 
 Find Characters
 ----------------
 
-Similar to ``std::string``, string view classes provide a series of member functions to locate characters or sub-strings. These member functions return the index of the found occurrence or ``string_view::npos`` when the specified character or sub-string is not found within the view (or part of the view).
+Similar to ``std::string``, string view classes provide a series of member
+functions to locate characters or sub-strings. These member functions return the
+index of the found occurrence or ``string_view::npos`` when the specified
+character or sub-string is not found within the view (or part of the view).
 
 
 .. cpp:function:: size_type find(charT c, size_type pos = 0) const noexcept
@@ -275,7 +312,8 @@ Similar to ``std::string``, string view classes provide a series of member funct
 
 .. cpp:function:: size_type rfind(charT c, size_type pos = npos) const noexcept
 
-    Find the last occurrence of a character ``c``, in a reverse order, starting from ``pos``, or the end of the string view, if ``pos >= size()``.
+    Find the last occurrence of a character ``c``, in a reverse order, starting
+    from ``pos``, or the end of the string view, if ``pos >= size()``.
 
 .. cpp:function:: size_type find_first_of(charT c, size_type pos = 0) const noexcept
 
@@ -295,11 +333,15 @@ Similar to ``std::string``, string view classes provide a series of member funct
 
 .. cpp:function:: size_type find_last_of(charT c, size_type pos = npos) const noexcept
 
-    Find the last occurrence of a character ``c``, in a reverse order, starting from ``pos``, or the end of the string view, if ``pos >= size()`` (same as ``rfind(c, pos)``).
+    Find the last occurrence of a character ``c``, in a reverse order, starting
+    from ``pos``, or the end of the string view, if ``pos >= size()`` (same as
+    ``rfind(c, pos)``).
 
 .. cpp:function:: size_type find_last_of(string_view s, size_type pos = npos) const noexcept
 
-    Find the last occurrence of a character that is in ``s``, in a reverse order, starting from ``pos`` (or the end of the string view, if ``pos >= size()``).
+    Find the last occurrence of a character that is in ``s``, in a reverse
+    order, starting from ``pos`` (or the end of the string view, if ``pos >=
+    size()``).
 
 .. cpp:function:: size_type find_last_of(const charT* s, size_type pos, size_type n) const noexcept
 
@@ -311,11 +353,13 @@ Similar to ``std::string``, string view classes provide a series of member funct
 
 .. cpp:function:: size_type find_first_not_of(charT c, size_type pos = 0) const noexcept
 
-    Find the first occurrence of a character that is not ``c``, starting from ``pos``.
+    Find the first occurrence of a character that is not ``c``,
+    starting from ``pos``.
 
 .. cpp:function:: size_type find_first_not_of(string_view s, size_type pos = 0) const noexcept
 
-    Find the first occurrence of a character that is not in ``s``, starting from ``pos``.
+    Find the first occurrence of a character that is not in ``s``,
+    starting from ``pos``.
 
 .. cpp:function:: size_type find_first_not_of(const charT* s, size_type pos, size_type n) const noexcept
 
@@ -327,11 +371,13 @@ Similar to ``std::string``, string view classes provide a series of member funct
 
 .. cpp:function:: size_type find_last_not_of(charT c, size_type pos = npos) const noexcept
 
-    Find the last occurrence of a character that is not ``c``, in a reverse order, starting from ``pos``.
+    Find the last occurrence of a character that is not ``c``, in a reverse
+    order, starting from ``pos``.
 
 .. cpp:function:: size_type find_last_not_of(string_view s, size_type pos = npos) const noexcept
 
-    Find the first occurrence of a character that is not in ``s``, in a reverse order, starting from ``pos``.
+    Find the first occurrence of a character that is not in ``s``, in a reverse
+    order, starting from ``pos``.
 
 .. cpp:function:: size_type find_last_not_of(const charT* s, size_type pos, size_type n) const noexcept
 
@@ -359,9 +405,11 @@ Find Substrings
 
 .. cpp:function:: size_type rfind(string_view s, size_type pos = npos) const noexcept
 
-    Find a substring ``s``, in a reverse order, starting from ``pos``, or the end of the string view if ``pos >= size()``.
+    Find a substring ``s``, in a reverse order, starting from ``pos``, or the
+    end of the string view if ``pos >= size()``.
 
-    :note: A matched substring is considered as *found* if its starting position precedes ``pos``.
+    :note: A matched substring is considered as *found* if its starting position
+           precedes ``pos``.
 
 .. cpp:function:: size_type rfind(const charT* s, size_type pos, size_type n) const noexcept
 
@@ -374,4 +422,6 @@ Find Substrings
 
 .. note::
 
-    The reason that there are so many ``find_*`` methods in slightly different forms is that string views need to be consistent with ``std::string`` in the interface, so it can serve as a drop-in replacement.
+    The reason that there are so many ``find_*`` methods in slightly different
+    forms is that string views need to be consistent with ``std::string`` in the
+    interface, so it can serve as a drop-in replacement.

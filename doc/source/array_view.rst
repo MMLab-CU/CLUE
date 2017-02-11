@@ -1,7 +1,11 @@
 Array View
 ===========
 
-An array view is a light-weight *container-like* wrapper of a pointer and a size. It provides a convenient way to turn a contiguous memory region into a container-like object. In practice, such an object maintains the efficiency of a raw pointer while providing richer API to work with memory regions. Below is an example to illustrate this.
+An array view is a light-weight *container-like* wrapper of a pointer and a
+size. It provides a convenient way to turn a contiguous memory region into a
+container-like object. In practice, such an object maintains the efficiency of
+a raw pointer while providing richer API to work with memory regions. Below is
+an example to illustrate this.
 
 .. code-block:: cpp
 
@@ -16,7 +20,10 @@ An array view is a light-weight *container-like* wrapper of a pointer and a size
         v += 1;
     }
 
-In practice, it is not uncommon that you maintain a vector in your object and would like to expose the elements to the users (without allowing the users to refer to the vector directly). In such cases, it would be a good idea to return an array view.
+In practice, it is not uncommon that you maintain a vector in your object and
+would like to expose the elements to the users (without allowing the users to
+refer to the vector directly). In such cases, it would be a good idea to return
+an array view.
 
 .. code-block:: cpp
 
@@ -47,13 +54,15 @@ In practice, it is not uncommon that you maintain a vector in your object and wo
 The ``array_view`` class template
 -----------------------------------
 
-.. cpp:class:: template<T> array_view<T>
+.. cpp:class:: array_view<T>
 
     :param T: The element type.
 
 .. note::
 
-    In general, ``array_view<T>`` allows modification of the elements, *e.g* ``a[i] = x``. To provide a readonly view, one can use ``array_view<const T>``.
+    In general, ``array_view<T>`` allows modification of the elements, *e.g*
+    ``a[i] = x``. To provide a readonly view, one can use ``array_view<const
+    T>``.
 
 
 Member types
@@ -91,15 +100,22 @@ Construction
 
 .. note::
 
-    It also has a copy constructor, an assignment operator, a destructor and a ``swap`` member function, all with default behaviors. It is worth noting that the copy construction/assignment of a view is *shallow*, meaning that only the pointer and the size value are copied, the underlying content remains there.
+    It also has a copy constructor, an assignment operator, a destructor and a
+    ``swap`` member function, all with default behaviors. It is worth noting
+    that the copy construction/assignment of a view is *shallow*, meaning that
+    only the pointer and the size value are copied, the underlying content
+    remains there.
 
-A convenient function ``aview`` is provided for constructing array views without the need of explicitly articulating the value type.
+A convenient function ``aview`` is provided for constructing array views
+without the need of explicitly articulating the value type.
 
 .. cpp:function:: constexpr array_view<T> aview(T* p, size_t n) noexcept
 
     Construct an array view, with data pointer ``p`` and size ``n``.
 
-    :note: If ``p`` is of type ``T*``, it returns a view of class ``array_view<T>``, and if ``p`` is a const pointer of type ``const T*``, it returns a view of class ``array_view<const T>``, which is a read-only view.
+    :note: If ``p`` is of type ``T*``, it returns a view of class
+    ``array_view<T>``, and if ``p`` is a const pointer of type ``const T*``, it
+    returns a view of class ``array_view<const T>``, which is a read-only view.
 
 
 Basic properties and element access
@@ -107,7 +123,8 @@ Basic properties and element access
 
 .. cpp:function:: constexpr size_type size() const noexcept
 
-    Get the size of the range, *i.e.* the number of elements referred to by the view.
+    Get the size of the range, *i.e.* the number of elements referred to by the
+    view.
 
 .. cpp:function:: constexpr bool empty() const noexcept
 
@@ -139,7 +156,8 @@ Basic properties and element access
 
 .. cpp:function:: constexpr const_reference operator[](size_type pos) const
 
-    Get a const reference to the element at position ``pos``, without bounds checking.
+    Get a const reference to the element at position ``pos``, without bounds
+    checking.
 
 .. cpp:function:: reference operator[](size_type pos)
 
@@ -147,7 +165,8 @@ Basic properties and element access
 
 .. cpp:function:: constexpr const_reference at(size_type pos) const
 
-    Get a const reference to the element at position ``pos``, with bounds checking.
+    Get a const reference to the element at position ``pos``, with bounds
+    checking.
 
     :throw: an exception of class ``std::out_of_range`` if ``pos >= size()``.
 
@@ -195,11 +214,13 @@ Iterators
 
 .. cpp:function:: constexpr iterator rbegin() const
 
-    Get a const reverse iterator to the reversed beginning, equivalent to ``crbegin()``.
+    Get a const reverse iterator to the reversed beginning, equivalent to
+    ``crbegin()``.
 
 .. cpp:function:: constexpr iterator rend() const
 
-    Get a const reverse iterator to the reversed end, equivalent to ``crend()``.
+    Get a const reverse iterator to the reversed end, equivalent to
+    ``crend()``.
 
 .. cpp:function:: iterator rbegin()
 

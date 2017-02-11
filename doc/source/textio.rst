@@ -1,7 +1,8 @@
 Text IO
 ========
 
-The library provides some convenient utilties to read/write text files. These functionalities are implemented in ``<clue/textio.hpp>``.
+The library provides some convenient utilties to read/write text files. These
+functionalities are implemented in ``<clue/textio.hpp>``.
 
 .. cpp:function:: std::string read_file_content(filename)
 
@@ -11,13 +12,18 @@ The library provides some convenient utilties to read/write text files. These fu
 
 .. cpp:class:: line_stream
 
-    Line stream class. It wraps a text string into a stream of lines. So one can iterate the lines using STL-style iterators.
+    Line stream class. It wraps a text string into a stream of lines. So one can
+    iterate the lines using STL-style iterators.
 
-    The iterated values are of type ``clue::string_view`` that provides a view into the part of the text corresponding to the current line. **Note:** The string view includes the line-delimiter ``'\n'``.
+    The iterated values are of type ``clue::string_view`` that provides a view
+    into the part of the text corresponding to the current line. **Note:** The
+    string view includes the line-delimiter ``'\n'``.
 
-    The class has three constructors, respectively accepting a C-string toegther with a length, a C-string, or a standard C++ string.
+    The class has three constructors, respectively accepting a C-string toegther
+    with a length, a C-string, or a standard C++ string.
 
-**Example:** The following example reads text from a file, and print its lines with line number prefixes.
+**Example:** The following example reads text from a file, and print its lines
+**with line number prefixes.
 
 .. code-block:: cpp
 

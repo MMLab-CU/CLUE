@@ -1,8 +1,9 @@
 (Demangled) Type Names
 =======================
 
-*CLUE* provides facilities to obtain (demangled) names of C++ types.
-All following functions are in the header ``<clue/type_name.hpp>``, and they are in the namespace ``clue``.
+*CLUE* provides facilities to obtain (demangled) names of C++ types. All
+*following functions are in the header ``<clue/type_name.hpp>``, and they are in
+*the namespace ``clue``.
 
 .. cpp:function:: bool has_demangle()
 
@@ -18,8 +19,8 @@ All following functions are in the header ``<clue/type_name.hpp>``, and they are
 
     .. note::
 
-        It returns the demangled name when ``has_demangle()``, otherwise it returns the name
-        as given by ``typeid(T).name()``.
+        It returns the demangled name when ``has_demangle()``, otherwise it
+        returns the name as given by ``typeid(T).name()``.
 
 .. cpp:function:: std::string type_name(x)
 
@@ -31,6 +32,6 @@ All following functions are in the header ``<clue/type_name.hpp>``, and they are
 
     .. note::
 
-        When ``has_demangle()`` is true, namely, CLUE has demangling support, this
-        returns the demangled name, otherwise it returns a string capturing the
-        intput name.
+        When ``has_demangle()`` is true, namely, CLUE has demangling support,
+        this returns the demangled name, otherwise it returns a string capturing
+        the intput name.

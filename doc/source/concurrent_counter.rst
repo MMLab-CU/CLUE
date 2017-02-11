@@ -1,8 +1,10 @@
 Concurrent Counter
 ====================
 
-In concurrent programming, it is not uncommon that some function is triggered by a certain condition (*e.g.* a number grow beyond certain threshold).
-*CLUE* provides a class ``concurrent_counter`` to implement this. This class in the header file ``<clue/concurrent_counter.hpp>``.
+In concurrent programming, it is not uncommon that some function is triggered
+by a certain condition (*e.g.* a number grow beyond certain threshold).  *CLUE*
+provides a class ``concurrent_counter`` to implement this. This class in the
+header file ``<clue/concurrent_counter.hpp>``.
 
 .. cpp:class:: concurrent_counter
 
@@ -26,11 +28,13 @@ This class has the following member functions:
 
 .. cpp:function:: void inc(long x = 1)
 
-    Increment the count by ``x`` (default is ``1``), and notify all waiting threads.
+    Increment the count by ``x`` (default is ``1``), and notify all waiting
+    threads.
 
 .. cpp:function:: void dec(long x = 1)
 
-    Decrement the count by ``x`` (default is ``1``), and notify all waiting threads.
+    Decrement the count by ``x`` (default is ``1``), and notify all waiting
+    threads.
 
 .. cpp:function:: void reset()
 
@@ -39,13 +43,16 @@ This class has the following member functions:
 
 .. cpp:function:: void wait(Pred&& pred)
 
-    Waits until the count meets the specified condition (``pred(count)`` returns ``true``).
+    Waits until the count meets the specified condition (``pred(count)``
+    returns ``true``).
 
     .. note::
 
-        *CLUE* has provided a series of predicates that can be useful here. (Refer to :ref:`predicates` for details).
-        For example, if you want to wait until when the count value goes above a certain threshold ``m``, then
-        you may write ``wait( clue::ge(m) )`` (or ``wait( ge(m) )`` when the namespace ``clue`` is being used).
+        *CLUE* has provided a series of predicates that can be useful here.
+        (Refer to :ref:`predicates` for details).  For example, if you want to
+        wait until when the count value goes above a certain threshold ``m``,
+        then you may write ``wait( clue::ge(m) )`` (or ``wait( ge(m) )`` when
+        the namespace ``clue`` is being used).
 
 .. cpp:function:: void wait(v)
 
@@ -54,8 +61,8 @@ This class has the following member functions:
 
 .. cpp:function:: bool wait_for(Pred&& pred, const std::chrono::duration& dur)
 
-    Waits until the count meets the specified condition or the duration ``dur`` elapses,
-    whichever comes first.
+    Waits until the count meets the specified condition or the duration ``dur``
+    elapses, whichever comes first.
 
     It returns whether the count meets the condition upon returning.
 
@@ -75,7 +82,9 @@ This class has the following member functions:
     Equivalent to ``wait_until(clue::eq(v), t)``.
 
 
-**Examples:** The following example shows how a concurrent counter can be used in practice. In this example, a message will be printed when the accumulated value exceeds *100*.
+**Examples:** The following example shows how a concurrent counter can be used
+in practice. In this example, a message will be printed when the accumulated
+value exceeds *100*.
 
 .. code-block:: cpp
 

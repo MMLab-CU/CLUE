@@ -127,7 +127,8 @@ public:
     const_reverse_iterator crend()   const { return vec_.crend(); }
 
     bool operator==(const keyed_vector& other) const {
-        return vec_ == other.vec_;
+        return vec_ == other.vec_ &&
+               imap_ == other.imap_;
     }
 
     bool operator!=(const keyed_vector& other) const {

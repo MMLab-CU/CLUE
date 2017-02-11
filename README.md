@@ -4,6 +4,8 @@
 
 **Test status:** [![Build Status](https://travis-ci.org/lindahua/CLUE.svg?branch=master)](https://travis-ci.org/lindahua/CLUE)
 
+**Documentation:** [![Documentation Status](http://readthedocs.org/projects/cppstdx/badge/?version=latest)](http://cppstdx.readthedocs.io/en/latest/?badge=latest)
+
 This library requires C++11-compliant compiler. Particularly, it is tested on the following platforms:
 
 - Clang (Apple LLVM version 7.0.0) @ Mac OS X 10.10.5 (Locally)

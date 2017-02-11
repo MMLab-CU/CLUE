@@ -54,7 +54,14 @@ an array view.
 The ``array_view`` class template
 -----------------------------------
 
-.. cpp:class:: template<typename T> array_view
+.. cpp:class:: array_view
+
+    :formal:
+
+    .. code-block:: cpp
+
+        template<typename T>
+        class array_view;
 
     :param T: The element type.
 

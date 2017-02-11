@@ -2,12 +2,12 @@ Miscellaneous Utilities
 ========================
 
 *CLUE* also provides some utilities that are handy in programming practice.
-*These utilities are provided by the header ``<clue/misc.hpp>``.
+These utilities are provided by the header ``<clue/misc.hpp>``.
 
-.. cpp:function:: make_unique<T>(args...)
+.. cpp:function:: make_unique(args...)
 
-    Constructs an object of type ``T`` and wraps it in a unique pointer of class
-    ``std::unique_ptr<T>``.
+    ``make_unique<T>(args...)`` constructs an object of type ``T`` and wraps it
+    in a unique pointer of class ``std::unique_ptr<T>``.
 
     Here, ``args`` are the arguments to be forwarded to the constructor.
 
@@ -20,7 +20,14 @@ Miscellaneous Utilities
     The purpose of this function is mainly to trigger the execution of all the
     argument expressions in a variadic context.
 
-.. cpp:class:: temporary_buffer<T>
+.. cpp:class:: temporary_buffer
+
+    :formal:
+
+    .. code-block:: cpp
+
+        template<typename T>
+        class temporary_buffer
 
     Tempoary buffer.
 

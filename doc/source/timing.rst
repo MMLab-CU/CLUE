@@ -2,9 +2,9 @@ Timing
 =======
 
 *Timing*, namely to measure the run-time of a piece of code, is a common
-*practice in development, especially in contexts where performance is critical
-*(*e.g.* numerical computation). *CLUE++* provides timing facilities to
-*facilitate this practice. All these facilities are in the namespace ``clue``.
+practice in development, especially in contexts where performance is critical
+(*e.g.* numerical computation). *CLUE++* provides timing facilities to
+facilitate this practice. All these facilities are in the namespace ``clue``.
 
 
 Representation of duration
@@ -30,10 +30,10 @@ duration in different units.
     Construct a duration with an object of class ``value_type``, namely
     ``std::chrono::high_resolution_clock::duration``.
 
-.. cpp:function:: constexpr double get<U>() const noexcept
+.. cpp:function:: constexpr double get() const noexcept
 
-    Get the duration in unit ``U``. Here, ``U`` should be an instantiation of
-    the class template ``std::ratio``.
+    ``dur.get<U>()`` gets the duration in unit ``U``. Here, ``U`` should be an
+    instantiation of the class template ``std::ratio``.
 
     The following table lists the correspondence between ``U`` and physical time units.
 

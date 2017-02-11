@@ -70,7 +70,7 @@ Class ``shared_mutex``
     the same time, or a thread to maintain exclusive ownership.
 
     :note: It is a default constructor and a destructor, while the copy
-    constructor and assignment operator are deleted.
+           constructor and assignment operator are deleted.
 
     :note: This class is accepted to the C++17 standard.
 
@@ -93,7 +93,7 @@ The table below lists its member functions:
     Unlocks the mutex.
 
     :note: The mutex must be locked by the current thread of execution,
-    otherwise, the behavior is undefined.
+           otherwise, the behavior is undefined.
 
 .. cpp:function:: void lock_shared()
 
@@ -112,7 +112,7 @@ The table below lists its member functions:
     Releases the mutex from shared ownership by the calling thread.
 
     :note: The mutex must be locked by the current thread of execution in shared
-    mode, otherwise, the behavior is undefined.
+           mode, otherwise, the behavior is undefined.
 
 
 Class ``shared_timed_mutex``
@@ -165,7 +165,14 @@ The class ``shared_timed_mutex`` provides all the member funtions as in
 Class ``shared_lock``
 -----------------------
 
-.. cpp:class:: shared_lock<Mutex>
+.. cpp:class:: shared_lock
+
+    :formal:
+
+    .. code-block:: cpp
+
+        template <class Mutex>
+        class shared_lock;
 
     The class shared_lock is a general-purpose shared mutex ownership wrapper
     allowing deferred locking, timed locking and transfer of lock ownership.

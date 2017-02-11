@@ -46,13 +46,19 @@ Types
 
 The class template ``optional`` is declared as:
 
-.. cpp:class:: optional<T>
+.. cpp:class:: optional
+
+    :formal:
+
+    .. code-block:: cpp
+
+        template <typename T>
+        class optional;
 
     :param T: The type of the (possibly) contained value.
 
-.. cpp:class:: optional<T>::value_type
-
-    The ``optional<T>`` has a member typedef ``value_type`` defined as ``T``.
+    The class ``optional<T>`` has a member typedef ``value_type``
+    defined as ``T``.
 
 In addition, several helper types are provided:
 
@@ -141,14 +147,14 @@ Observers
     Get a const reference to the contained value.
 
     :throw: an exception of class ``bad_optional_access`` when the object is
-    empty.
+            empty.
 
 .. cpp:function:: value_type& value()
 
     Get a reference to the contained value.
 
     :throw: an exception of class ``bad_optional_access`` when the object is
-    empty.
+            empty.
 
 .. cpp:function:: constexpr value_type value_or(U&& v) const&
 
@@ -173,7 +179,7 @@ Non-member Functions
     Make an optional object that encapsulates a value ``v``.
 
     :return: An optional object of class ``optional<R>``, where the template
-    parameter ``R`` is defined as ``typename std::decay<T>::type``.
+             parameter ``R`` is defined as ``typename std::decay<T>::type``.
 
 
 Comparison

@@ -2,7 +2,7 @@ String Template
 ==================
 
 *CLUE* provides a light-weight string template engine, by the class
-*``stemplate``.
+``stemplate``.
 
 This template engine uses ``{{ name }}`` to indicate the terms to be
 interpolated, and accepts a dictionary-like object for interpolation.

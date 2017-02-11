@@ -146,7 +146,7 @@ The ``thread_pool`` class provides the following member functions:
 
 
 **Example:** The following example shows how to schedule tasks and wait until
-**when they are all done.
+when they are all done.
 
 .. code-block:: cpp
 

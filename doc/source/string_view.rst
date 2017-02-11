@@ -34,7 +34,14 @@ The ``basic_string_view`` class template
 
 The signature of the class template is as follows:
 
-.. cpp:class:: basic_string_view<charT, Traits>
+.. cpp:class:: basic_string_view
+
+    :formal:
+
+    .. code-block:: cpp
+
+        template<class charT, class Traits>
+        class basic_string_view;
 
     :param charT: The character type.
     :param Traits: The traits class that specify basic operations on the

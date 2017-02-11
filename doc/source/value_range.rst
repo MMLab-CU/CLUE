@@ -51,9 +51,18 @@ The ``value_range`` and ``stepped_value_range`` class templates
 
 Formally, the class template ``value_range`` is defined as:
 
-.. cpp:class:: value_range<T, D, Traits>
+.. cpp:class:: value_range
 
-    Classes to represent stepped ranges, such as ``1, 2, 3, 4, ...``.
+    :formal:
+
+    .. code-block:: cpp
+
+        template<typename T,
+                 typename D=typename default_difference<T>::type,
+                 typename Traits=value_range_traits<T, D>>
+        class value_range;
+
+    Classes to represent continuous value ranges, such as ``1, 2, 3, 4, ...``.
 
     :param T: The value type.
     :param D: The difference type. This can be omitted, and it will be,
@@ -65,10 +74,10 @@ Formally, the class template ``value_range`` is defined as:
                    may omit this, and it will be, by default, set to
                    ``value_type_traits<T, D>``.
 
-.. cpp:class:: default_difference<T>
+.. cpp:class:: default_difference
 
-    It provides a member typedef that indicates the *default* difference type
-    for ``T``.
+    ``default_difference<T>`` provides a member typedef that indicates the
+    *default* difference type for ``T``.
 
     In particular, if ``T`` is an unsigned integer type,
     ``default_difference<T>::type`` is ``std::make_signed<T>::type``. In other
@@ -77,7 +86,17 @@ Formally, the class template ``value_range`` is defined as:
     To enumerate non-numerical types (*e.g.* dates), one should specialize
     ``default_difference<T>`` to provide a suitable difference type.
 
-.. cpp:class:: stepped_value_range<T, S, D, Traits>
+.. cpp:class:: stepped_value_range
+
+    :formal:
+
+    .. code-block:: cpp
+
+        template<typename T,
+                 typename S,
+                 typename D=typename default_difference<T>::type,
+                 typename Traits=value_range_traits<T, D>>
+        class stepped_value_range;
 
     Classes to represent stepped ranges, such as ``1, 3, 5, 7, ...``.
 

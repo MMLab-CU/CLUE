@@ -39,7 +39,14 @@ Below is the documentation of this class template and relevant functions.
 The ``reindexed_view`` class template
 --------------------------------------
 
-.. cpp:class:: reindexed_view<Container, Indices>
+.. cpp:class:: reindexed_view
+
+    :formal:
+
+    .. code-block:: cpp
+
+        template<class Container, class Indices>
+        class reindexed_view;
 
     :param Container: The type of the element container.
     :param Indices:   The type of the indices container.
@@ -115,7 +122,7 @@ indices type:
     arguments.
 
     :note: If ``c`` is a const reference, then ``Container`` will be deduced to
-    a const type. The same also applies to ``indices``.
+           a const type. The same also applies to ``indices``.
 
 
 Basic properties and element access

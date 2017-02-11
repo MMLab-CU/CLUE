@@ -66,41 +66,45 @@ of ``seq_`` and some of the meta-functions working with it.
 Basic properties
 -----------------
 
-.. cpp:class:: meta::size<seq_<Elems...>>
+.. cpp:class:: meta::size
 
-    With a member constant ``value`` that equals to the number of element types.
+    ``meta::size< seq_<elems...> >`` has a member constant ``value`` that equals
+    to the number of element types.
 
-.. cpp:class:: meta::empty<seq_<Elems...>>
+.. cpp:class:: meta::empty
 
-    With a member constant ``value`` that is ``true`` when the number of element
-    types is zero, or ``false`` otherwise.
+    ``meta::empty< seq_<elems...> >`` has a member constant ``value`` that is
+    ``true`` when the number of element types is zero, or ``false`` otherwise.
 
 
 Element type access
 ---------------------
 
-.. cpp:class:: meta::front<seq_<Elems...>>
+.. cpp:class:: meta::front
 
-    With a member typedef ``type`` corresponding to the first element type.
+    ``meta::front< seq_<elems...> >`` has a member typedef ``type`` corresponding
+    to the first element type.
 
-.. cpp:class:: meta::back<seq_<Elems...>>
+.. cpp:class:: meta::back
 
-    With a member typedef ``type`` corresponding to the last element type in the
-    sequence.
+    ``meta::back< seq_<elems...> >`` has a member typedef ``type`` corresponding
+    to the last element type in the sequence.
 
-.. cpp:class:: meta::at<seq_<Elems...>, N>
+.. cpp:class:: meta::at
 
-    With a member typedef ``type`` corresponding to the ```N``-th element type
-    of the sequence.
+    ``meta::at< seq_<elems...>, I >`` has a member typedef ``type`` corresponding
+    to the ``I``-th element type of the sequence.
 
-.. cpp:class:: meta::first<seq_<Elems...>>
+.. cpp:class:: meta::first
 
-    With a member typedef ``type`` corresponding to the first element type.
-    (Equivalent to using ``meta::front``).
+    ``meta::first< seq_<elems...> >`` has a member typedef ``type``
+    corresponding to the first element type. (Equivalent to using
+    ``meta::front``).
 
-.. cpp:class:: meta::second<seq_<Elems...>>
+.. cpp:class:: meta::second
 
-    With a member typedef ``type`` corresponding to the second element type.
+    ``meta::second< seq_<elems...> >`` has a member typedef ``type``
+    corresponding to the second element type.
 
 Helper aliases are provided for all these meta functions:
 
@@ -119,29 +123,30 @@ Helper aliases are provided for all these meta functions:
 Modifiers
 ----------
 
-.. cpp:class:: meta::clear<seq_<Elems...>>
+.. cpp:class:: meta::clear
 
-    With a member typedef ``type = meta::seq_<>``.
+    ``meta::clear< seq_<elems...> >`` has a member typedef
+    ``type = meta::seq_<>``.
 
-.. cpp:class:: meta::pop_front<seq_<Elems...>>
+.. cpp:class:: meta::pop_front
 
-    With a member typedef ``type`` which is a meta sequence with the first
-    element type excluded.
+    ``meta::pop_front< seq_<elems...> >`` has a member typedef ``type`` which is
+    a meta sequence with the first element type excluded.
 
-.. cpp:class:: meta::pop_back<seq_<Elems...>>
+.. cpp:class:: meta::pop_back
 
-    With a member typedef ``type`` which is a meta sequence with the last
-    element type excluded.
+    ``meta::pop_back< seq_<elems...> >`` has a member typedef ``type`` which is
+    a meta sequence with the last element type excluded.
 
-.. cpp:class:: meta::push_front<seq_<Elems...>, X>
+.. cpp:class:: meta::push_front
 
-    With a member typedef ``type`` which prepends a type ``X`` to the front of
-    the input meta sequence.
+    ``meta::push_front< seq_<elems...>, X >`` has a member typedef ``type``
+    which prepends a type ``X`` to the front of the input meta sequence.
 
-.. cpp:class:: meta::push_back<seq_<Elems...>, X>
+.. cpp:class:: meta::push_back
 
-    With a member typedef ``type`` which appends a type ``X`` to the back of the
-    input meta sequence.
+    ``meta::push_back< seq_<elems...>, X >`` has a member typedef ``type`` which
+    appends a type ``X`` to the back of the input meta sequence.
 
 Helper aliases are provided for all these meta functions:
 
@@ -198,51 +203,56 @@ Algorithms
 
 We also implement a collection of algorithms to work with meta sequences.
 
-.. cpp:class:: meta::cat<S1, S2>
+.. cpp:class:: meta::cat
 
-    With a member typedef ``type`` that is a concatenation of two meta sequences ``S1`` and ``S2``.
+    ``meta::cat<S1, S2>`` has a member typedef ``type`` that is a concatenation
+    of two meta sequences ``S1`` and ``S2``.
 
-.. cpp:class:: meta::zip<S1, S2>
+.. cpp:class:: meta::zip
 
-    With a member typedef ``type`` that zips two meta sequences ``S1`` and ``S2`` of the same length.
+    ``meta::zip<S1, S2>`` has a member typedef ``type`` that zips two meta
+    sequences ``S1`` and ``S2`` of the same length.
 
-**Example:**
+    **Example:**
 
-.. code-block:: cpp
+    .. code-block:: cpp
 
-    using namespace clue;
-    using S1 = meta::seq_<char, int>;
-    using S2 = meta::seq_<float, double>;
+        using namespace clue;
+        using S1 = meta::seq_<char, int>;
+        using S2 = meta::seq_<float, double>;
 
-    using R = typename zip<S1, S2>::type;
-    // meta::seq_<
-    //   meta::pair_<char, float>,
-    //   meta::pair_<int,  double>
-    // >
+        using R = typename zip<S1, S2>::type;
+        // meta::seq_<
+        //   meta::pair_<char, float>,
+        //   meta::pair_<int,  double>
+        // >
 
-.. cpp:class:: meta::repeat<X, N>
+.. cpp:class:: meta::repeat
 
-    With a member typedef ``type`` which is a meta sequence that repeats the
-    type ``X`` for ``N`` times.
+    ``meta::repeat<X, N>`` has a member typedef ``type`` which is a meta
+    sequence that repeats the type ``X`` for ``N`` times.
 
     :example: ``meta::repeat<int, 3>::type`` is ``meta::seq_<int, int, int>``.
 
-.. cpp:class:: meta::reverse<S>
+.. cpp:class:: meta::reverse
 
-    With a member typedef ``type`` which is a reversed meta sequence.
+    ``meta::reverse<S>`` has a member typedef ``type`` which is a reversed meta
+    sequence.
 
-    :example: ``meta::reverse<meta::seq_<char, short, int>>::type`` is ``meta::seq_<int, short, char>``.
+    :example: ``meta::reverse<meta::seq_<char, short, int>>::type``
+              is ``meta::seq_<int, short, char>``.
 
-.. cpp:class:: meta::transform<F, S>
+.. cpp:class:: meta::transform
 
-    With a member typedef ``type`` which is the transformed sequence obtained by
-    applying a meta-function ``F`` to each element type of ``S``.
+    ``meta::transform<F, S>`` has a member typedef ``type`` which is the
+    transformed sequence obtained by applying a meta-function ``F`` to each
+    element type of ``S``.
 
-.. cpp:class:: meta::transform2<F, S1, S2>
+.. cpp:class:: meta::transform2
 
-    With a member typedef ``type`` which is the transformed sequence obtained by
-    applying a meta-function ``F`` to each element type of ``S1`` and that of
-    ``S2``.
+    ``meta::transform2<F, S1, S2>`` has a member typedef ``type`` which is the
+    transformed sequence obtained by applying a meta-function ``F`` to each
+    element type of ``S1`` and that of ``S2``.
 
 **Examples:**
 
@@ -261,7 +271,7 @@ We also implement a collection of algorithms to work with meta sequences.
     using V = typename meta::transform2<meta::plus, S1, S2>::type;
     // V is seq_<int_<5>, int_<7>, int_<9>>
 
-.. cpp:class:: meta::filter<Pred, S>
+.. cpp:class:: meta::filter
 
     With a member typedef ``type`` which is the filtered sequence by retaining
     the element types ``X`` in ``S`` for which ``Pred<X>::value`` is ``true``.
@@ -282,26 +292,27 @@ We also implement a collection of algorithms to work with meta sequences.
     using R = typename meta::filter<is_odd, S>::type;
     // R is seq_<int_<1>, int_<3>>;
 
-.. cpp:class:: exists<X, S>
+.. cpp:class:: exists
 
-    With a member constant ``value`` that indicates whether the type ``X``
-    exists as an element type of ``S``.
+    ``exists<X, S>`` has a member constant ``value`` that indicates whether the
+    type ``X`` exists as an element type of ``S``.
 
-.. cpp:class:: exists_if<Pred, S>
+.. cpp:class:: exists_if
 
-    With a member constant ``value`` which is ``true`` if there exist element
-    types ``X`` of ``S`` such that ``Pred<X>::value`` is ``true``.
-
-.. cpp:class:: count<X, S>
-
-    With a member constant ``value`` which is equal to the number of occurrences
-    of a type ``X`` in the sequence ``S``.
-
-.. cpp:class:: count_if<X, S>
-
-    With a member constant ``value`` which is equal to the number of element
-    types ``X`` in ``S`` that satisfy the condition ``Pred<X>::value`` is
+    ``exists_if<Pred, S>`` has a member constant ``value`` which is ``true`` if
+    there exist element types ``X`` of ``S`` such that ``Pred<X>::value`` is
     ``true``.
+
+.. cpp:class:: count
+
+    ``count<X, S>`` has a member constant ``value`` which is equal to the number
+    of occurrences of a type ``X`` in the sequence ``S``.
+
+.. cpp:class:: count_if
+
+    ``count_if<X, S>`` has a member constant ``value`` which is equal to the
+    number of element types ``X`` in ``S`` that satisfy the condition
+    ``Pred<X>::value`` is ``true``.
 
 
 Helper aliases are provided for all algorithms that transform types:

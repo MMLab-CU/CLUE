@@ -12,7 +12,7 @@ For those who are not familiar with C++ meta-programming, Andrzej has a great
 provides an excellent introduction of this topic.
 
 **Important Note:** all meta-programming facilities in *CLUE++* are within the
-**namespace ``clue::meta``.
+namespace ``clue::meta``.
 
 Basic types
 -------------
@@ -206,17 +206,19 @@ Comparison functions
 Logical functions
 ~~~~~~~~~~~~~~~~~~
 
-.. cpp:class:: not_<A>
+.. cpp:class:: not_
 
     The member constant ``not_<A>::value`` is equal to ``!A::value``.
 
-.. cpp:class:: and_<A, B>
+.. cpp:class:: and_
 
-    The member constant ``and_<A, B>::value`` is ``true`` iff both ``A::value`` and ``B::value`` is true.
+    The member constant ``and_<A, B>::value`` is ``true`` iff both ``A::value``
+    and ``B::value`` is true.
 
-.. cpp:class:: or_<A, B>
+.. cpp:class:: or_
 
-    The member constant ``or_<A, B>::value`` is ``true`` iff either ``A::value`` or ``B::value`` is true.
+    The member constant ``or_<A, B>::value`` is ``true`` iff either ``A::value``
+    or ``B::value`` is true.
 
 .. note::
 
@@ -300,57 +302,59 @@ Variadic Reduction
 A set of variadic meta-functions are provided to perform reduction over static
 values.
 
-.. cpp:class:: meta::sum<Args...>
+.. cpp:class:: meta::sum
 
-    With a member constant ``value`` that equals the sum of argument's member
-    values.
+    ``meta::sum<args...>`` has a member constant ``value`` that equals the sum
+    of argument's member values.
 
-.. cpp:class:: meta::prod<Args...>
+.. cpp:class:: meta::prod
 
-    With a member constant ``value`` that equals the product of argument's
-    member values.
+    ``meta::prod<args...>`` has a member constant ``value`` that equals the
+    product of argument's member values.
 
-.. cpp:class:: meta::maximum<Args...>
+.. cpp:class:: meta::maximum
 
-    With a member constant ``value`` that equals the maximum of argument's
-    member values.
+    ``meta::maximum<args...>`` has a member constant ``value`` that equals the
+    maximum of argument's member values.
 
-.. cpp:class:: meta::minimum<Args...>
+.. cpp:class:: meta::minimum
 
-    With a member constant ``value`` that equals the minimum of argument's
-    member values.
+    ``meta::minimum<args...>`` has a member constant ``value`` that equals the
+    minimum of argument's member values.
 
-.. cpp:class:: meta::all<Args...>
+.. cpp:class:: meta::all
 
-    With a member constant ``value``, which equals ``true`` if all argument's
-    member values are ``true``, or ``false`` otherwise.
+    ``meta::all<args...>`` has a member constant ``value``, which equals
+    ``true`` if all argument's member values are ``true``, or ``false``
+    otherwise.
 
     :note: ``all<>::value == true``.
 
-.. cpp:class:: meta::any<Args...>
+.. cpp:class:: meta::any
 
-    With a member constant ``value``, which equals ``true`` if any of the
-    argument's member value is ``true``, or ``false`` otherwise.
+    ``meta::any<args...>`` has a member constant ``value``, which equals
+    ``true`` if any of the argument's member value is ``true``, or ``false``
+    otherwise.
 
     :note: ``any<>::value == false``.
 
-.. cpp:class:: meta::count_true<Args...>
+.. cpp:class:: meta::count_true
 
-    With a member constant ``value``, which equals the number of arguments whose
-    member value is ``true``.
+    ``meta::count_true<args...>`` has a member constant ``value``, which equals
+    the number of arguments whose member value is ``true``.
 
-.. cpp:class:: meta::count_false<Args...>
+.. cpp:class:: meta::count_false
 
-    With a member constant ``value``, which equals the number of arguments whose
-    member value is ``false``.
+    ``meta::count_false<args...>`` has a member constant ``value``, which equals
+    the number of arguments whose member value is ``false``.
 
-.. cpp:class:: meta::all_same<Args...>
+.. cpp:class:: meta::all_same
 
-    With a member constant ``value``, which indicates whether all argument types
-    are the same.
+    ``meta::all_same<args...>`` has a member constant ``value``, which indicates
+    whether all argument types are the same.
 
 .. note::
 
-    The meta-functions ``all`` and ``any`` both implement the *short-circuit
-    behaviors*. They won't look further once the resultant value can be
-    determined.
+    The meta-functions ``all`` and ``any`` both implement the
+    *short-circuit behaviors*. They won't look further once the
+    resultant value can be determined.

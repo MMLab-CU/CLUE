@@ -2,10 +2,10 @@ Welcome to CLUE++'s documentation!
 ===================================
 
 *CLUE++* is a light-weight extensions to the C++ standard library. It provides a
-*collection of components that are widely useful in practical development. These
-*components include a subset of functions and classes introduced in C++14 or
-*later technical specifications (but are also useful for C++11), and some new
-*facilities that we feel are useful in practice.
+collection of components that are widely useful in practical development. These
+components include a subset of functions and classes introduced in C++14 or
+later technical specifications (but are also useful for C++11), and some new
+facilities that we feel are useful in practice.
 
 All components provided by this library are implemented in a way that closely
 follow the convention of the standard library. In particular, for those
@@ -25,11 +25,19 @@ Basic utilites
    optional.rst
    timing.rst
    value_range.rst
-   array_view.rst
-   reindexed_view.rst
    predicates.rst
    type_name.rst
    misc.rst
+
+Containers and Views
+~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 1
+
+   array_view.rst
+   reindexed_view.rst
+   ordered_dict.rst
 
 String and text processing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

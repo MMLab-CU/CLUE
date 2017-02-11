@@ -31,8 +31,8 @@ In particular, the following helpers are provided. All these *backported*
 helpers are within the namespace ``clue``.
 
 **Note:** Below is just a list. For detailed descriptions of these type traits,
-**please refer to the `standard documentation
-**<http://en.cppreference.com/w/cpp/header/type_traits>`_.
+please refer to the
+`standard documentation <http://en.cppreference.com/w/cpp/header/type_traits>`_.
 
 .. code-block:: cpp
 

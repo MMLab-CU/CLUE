@@ -23,7 +23,7 @@ functionalities are implemented in ``<clue/textio.hpp>``.
     with a length, a C-string, or a standard C++ string.
 
 **Example:** The following example reads text from a file, and print its lines
-**with line number prefixes.
+with line number prefixes.
 
 .. code-block:: cpp
 

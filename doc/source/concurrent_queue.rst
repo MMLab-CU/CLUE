@@ -5,7 +5,7 @@ Concurrent queue is very useful in concurrent programming. For example, task
 queue can be considered as a special kind of concurrent queue. *CLUE* implements
 a concurrent queue class, in header file ``<clue/concurrent_queue.hpp>``.
 
-.. cpp:class:: template<T> concurrent_queue<T>
+.. cpp:class:: template<T> concurrent_queue
 
     Concurrent queue class. ``T`` is the element type.
 

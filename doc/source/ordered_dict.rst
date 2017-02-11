@@ -36,7 +36,19 @@ being inserted to the dict.
 The ``ordered_dict`` class template
 ------------------------------------
 
-.. cpp:class:: ordered_dict<Key, T, Hash, KeyEqual, Allocator>
+.. cpp:class:: ordered_dict
+
+    :formal:
+
+    .. code-block:: cpp
+
+        template<class Key,
+                 class T,
+                 class Hash = std::hash<Key>,
+                 class KeyEqual = std::equal_to<Key>,
+                 class Allocator = std::allocator< std::pair<Key,T> >
+                >
+        class ordered_dict;
 
     :param Key:  The Key type.
     :param T:    The mapped type.

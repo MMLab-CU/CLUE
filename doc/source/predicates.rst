@@ -4,9 +4,9 @@ Predicates
 ============
 
 *CLUE++* provides a series of higher-order functions for generating predicates
-*(functors that returns ``bool``), in the header ``<clue/predicates.hpp>``.
-*These predicates can be very useful in programming for expressing certain
-*conditions.
+(functors that returns ``bool``), in the header ``<clue/predicates.hpp>``.
+These predicates can be very useful in programming for expressing certain
+conditions.
 
 Take a look of the following example, where we want to determine whether all
 elements are positive. With C++11, this can be accomplished as:
@@ -56,23 +56,25 @@ namespace ``clue``.
     Return a predicate, which returns ``true`` for an argument ``x`` when
     ``p1(x) && p2(x) && ...``.
 
-    **Example:** to express the condition like ``a < x < b``, one can write
-    **``and_(gt(a), lt(b))``, or if it is a closed interval as ``a <= x <= b``,
-    **then one can write ``and_(ge(a), le(b))``.
+    **Example:**
+    To express the condition like ``a < x < b``, one can write
+    ``and_(gt(a), lt(b))``, or if it is a closed interval as
+    ``a <= x <= b``, then one can write ``and_(ge(a), le(b))``.
 
 .. cpp:function:: or_(p1, p2, ...)
 
     Return a predicate, which returns ``true`` for an argument ``x`` when ``p1(x) || p2(x) || ...``.
 
-    **Example:** ``or_(eq(a), eq(b), eq(c))`` expresses the condition that ``x``
-    **is equal to either ``a``, ``b``, or ``c``.
+    **Example:**
+    ``or_(eq(a), eq(b), eq(c))`` expresses the condition that ``x``
+    is equal to either ``a``, ``b``, or ``c``.
 
 Char predicates
 -----------------
 
 *CLUE* provides several predicates for testing characters (of type ``char`` or
-*``wchar_t``) within the namespace ``clue::chars``, as follows. These functors
-*can be very useful in text parsing.
+``wchar_t``) within the namespace ``clue::chars``, as follows. These functors
+can be very useful in text parsing.
 
 ===================== ========================
  functors               conditions
@@ -101,7 +103,7 @@ Float predicates
 -----------------
 
 *CLUE* also provides predicates for testing floating point numbers, within the
-*namespace ``clue::floats``.
+namespace ``clue::floats``.
 
 ===================== ========================
  functors               conditions

@@ -2,9 +2,9 @@ Formatting
 ===========
 
 *CLUE* provides several convenience functions to facilitate string formatting.
-*These functions are light-weight wrappers based on ``snprintf`` and C++'s
-*``stringstream``. These functions are provided by the header
-*``<clue/sformat.hpp>``.
+These functions are light-weight wrappers based on ``snprintf`` and C++'s
+``stringstream``. These functions are provided by the header
+``<clue/sformat.hpp>``.
 
 .. cpp:function::  sstr(args...)
 

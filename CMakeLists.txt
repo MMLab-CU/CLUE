@@ -72,6 +72,7 @@ set(UNIT_TESTS
     test_array_view
     test_reindexed_view
     test_ordered_dict
+    test_keyed_vector
     test_meta
     test_meta_seq
     test_textio

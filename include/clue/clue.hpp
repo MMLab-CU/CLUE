@@ -20,6 +20,7 @@
 #include <clue/array_view.hpp>
 #include <clue/reindexed_view.hpp>
 #include <clue/ordered_dict.hpp>
+#include <clue/keyed_vector.hpp>
 
 // other facilities
 #include <clue/optional.hpp>

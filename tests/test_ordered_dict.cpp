@@ -13,7 +13,7 @@ TEST(OrderedDict, Empty) {
 
     ASSERT_TRUE(d.empty());
     ASSERT_EQ(0, d.size());
-    ASSERT_TRUE(d.max_size() > 0);
+    ASSERT_TRUE(d.max_size() > 10000000);
     ASSERT_TRUE(d.begin() == d.end());
     ASSERT_TRUE(d.cbegin() == d.end());
 

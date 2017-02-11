@@ -1,9 +1,10 @@
 Ordered Dict
 =============
 
-An *ordered dict* is an associative container (like a hash table) that preserves the input order of the entries,
-namely, the order of pairs that one visits when traversing from ``begin()`` to ``end()`` is the same as
-the order of those pairs being inserted to the dict.
+An *ordered dict* is an associative container (like a hash table) that preserves
+the input order of the entries, namely, the order of pairs that one visits when
+traversing from ``begin()`` to ``end()`` is the same as the order of those pairs
+being inserted to the dict.
 
 .. note::
 

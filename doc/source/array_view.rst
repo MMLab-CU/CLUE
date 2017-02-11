@@ -54,7 +54,7 @@ an array view.
 The ``array_view`` class template
 -----------------------------------
 
-.. cpp:class:: array_view<T>
+.. cpp:class:: template<typename T> array_view
 
     :param T: The element type.
 
@@ -114,8 +114,9 @@ without the need of explicitly articulating the value type.
     Construct an array view, with data pointer ``p`` and size ``n``.
 
     :note: If ``p`` is of type ``T*``, it returns a view of class
-    ``array_view<T>``, and if ``p`` is a const pointer of type ``const T*``, it
-    returns a view of class ``array_view<const T>``, which is a read-only view.
+           ``array_view<T>``, and if ``p`` is a const pointer of type
+           ``const T*``, it returns a view of class ``array_view<const T>``,
+           which is a read-only view.
 
 
 Basic properties and element access

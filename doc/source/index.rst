@@ -38,6 +38,7 @@ Containers and Views
    array_view.rst
    reindexed_view.rst
    ordered_dict.rst
+   keyed_vector.rst
 
 String and text processing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

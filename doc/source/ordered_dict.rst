@@ -32,6 +32,43 @@ being inserted to the dict.
     // b -- 2
     // c -- 3
 
+    // The dict can also be constructed in other ways,
+    // e.g. initializer list.
+
+    ordered_dict<string, int> d2{{"a", 1}, {"b", 3}, {"c", 2}};
+
+    // key/values can be accessed via several methods:
+
+    d.at("b");   // -> 3
+    d.at("x");   // throws std::out_of_range
+
+    d.find("b");  // returns a iterator pointing to {"b", 2}
+    d.find("x");  // returns d.end()
+
+    // entries can be added in several different ways:
+
+    ordered_dict<string, int> d3;
+    d3.insert({"a", 1});
+    d3.emplace("b", 2);      // construct a pair then
+                             // decide whether to insert
+    d3.try_emplace("c", 3);  // when "c" is not found,
+                             // it then construct a pair and insert.
+
+    // Note: the subtle differences between the behaviors of emplace
+    // and try_emplace follows that of std::unordered_map.
+
+    d3.emplace("a", 5);     // no insertion happens as "a" already existed.
+    d3.update("a", 5);      // updates the value of d3["a"] to 5
+    d3["a"] = 5;            // updates the value of d3["a"] to 5
+
+    d.insert({{"a", 10}, {"b", 20}}); // insert a series of pairs,
+                                      // entries with repeated keys will be
+                                      // ignored.
+
+    d.update({{"a", 10}, {"b", 20}}); // update from a series of pairs,
+                                      // entries with repeated keys will be
+                                      // used to overwrite current values.
+    
 
 The ``ordered_dict`` class template
 ------------------------------------
@@ -60,8 +97,10 @@ The ``ordered_dict`` class template
 
         The implementation of ``ordered_dict`` contains a vector of key-value
         pairs (of class ``std::pair<Key, T>``), and a map from key to index.
-        Also, it is a grow-only container, namely, one can insert new entries
-        but cannot remove existing ones.
+
+        The API design of ``ordered_dict`` emulates that of
+        ``std::unordered_map``, except that it is a grow-only container, namely,
+        one can insert new entries but cannot remove existing ones.
 
 
 Member types
@@ -101,7 +140,7 @@ Construction
     Constructs a dict from a range of key-value pairs, given by
     ``[first, last)``.
 
-.. cpp:function:: ordered_dict(ilist)
+.. cpp:function:: ordered_dict(std::initializer_list<value_type> ilist)
 
     Constructs a dict from an initializer_list that contains
     a series of key-value pairs.

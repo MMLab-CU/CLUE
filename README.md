@@ -27,6 +27,7 @@ Below is a list of components available in the library.
 - Class template ``array_view``: wrap a memory block into an STL-like view.
 - Class template ``reindexed_view``: STL-like view of a subset of elements.
 - Class template ``ordered_dict``: associative container that preserves input order.
+- Class template ``keyed_vector``: sequential container that allows key-based indexing.
 - ``type_name`` for getting demangled type names with supported compilers.
 - A collection of predicate-generating functions to express conditions.
 

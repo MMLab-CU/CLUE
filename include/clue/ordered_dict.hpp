@@ -103,11 +103,11 @@ public:
         return vec_.empty();
     }
 
-    size_t size() const noexcept {
+    size_type size() const noexcept {
         return vec_.size();
     }
 
-    size_t max_size() const noexcept {
+    size_type max_size() const noexcept {
         return vec_.max_size();
     }
 
@@ -164,6 +164,11 @@ public:
     void clear() {
         map_.clear();
         vec_.clear();
+    }
+
+    void reserve(size_t c) {
+        map_.reserve(c);
+        vec_.reserve(c);
     }
 
     void swap(ordered_dict& other) {

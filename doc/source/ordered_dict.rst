@@ -202,6 +202,10 @@ Modification
 
     Clear all contained entries.
 
+.. cpp:function:: void reserve(size_type c)
+
+    Reserve the internal storage to accomodate at least ``c`` entries.
+
 .. cpp:function:: std::pair<iterator, bool> emplace(Args&&... args)
 
     Construct a new key-value pair from ``args`` and insert it

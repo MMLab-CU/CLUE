@@ -15,10 +15,11 @@
 #include <clue/stringex.hpp>
 #include <clue/sformat.hpp>
 
-// arrays
+// containers
 #include <clue/value_range.hpp>
 #include <clue/array_view.hpp>
 #include <clue/reindexed_view.hpp>
+#include <clue/ordered_dict.hpp>
 
 // other facilities
 #include <clue/optional.hpp>

@@ -90,6 +90,14 @@ public:
         return operator=(ordered_dict(ilist));
     }
 
+    bool operator==(const ordered_dict& other) const {
+        return vec_ == other.vec_;
+    }
+
+    bool operator!=(const ordered_dict& other) const {
+        return !(operator==(other));
+    }
+
 public:
     bool empty() const noexcept {
         return vec_.empty();
@@ -150,15 +158,6 @@ public:
 
     size_type count(const Key& key) const {
         return map_.count(key);
-    }
-
-public:
-    bool operator==(const ordered_dict& other) const {
-        return vec_ == other.vec_;
-    }
-
-    bool operator!=(const ordered_dict& other) const {
-        return !(operator==(other));
     }
 
 public:
@@ -229,6 +228,19 @@ public:
 
     void insert(std::initializer_list<value_type> ilist) {
         for (const value_type& v: ilist) insert(v);
+    }
+
+    void update(const value_type& v) {
+        operator[](v.first) = v.second;
+    }
+
+    template<class InputIter>
+    void update(InputIter first, InputIter last) {
+        for(; first != last; ++first) update(*first);
+    }
+
+    void update(std::initializer_list<value_type> ilist) {
+        for (const value_type& v: ilist) update(v);
     }
 
 private:

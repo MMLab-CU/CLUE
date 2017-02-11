@@ -42,6 +42,9 @@ using clue::reindexed_view;
 // string_view
 using clue::string_view;
 
+// ordered_dict
+using clue::ordered_dict;
+
 // stringex
 using clue::trim;
 using clue::foreach_token_of;

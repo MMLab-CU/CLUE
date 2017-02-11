@@ -156,6 +156,28 @@ TEST(OrderedDict, InsertInitList) {
     verify_odict(d);
 }
 
+TEST(OrderedDict, Update) {
+    odict d;
+    d.update({"a", 10});
+    d.update({"b", 3});
+    d.update({"c", 2});
+    d.update({"a", 1});
+    verify_odict(d);
+}
+
+TEST(OrderedDict, UpdateRange) {
+    odict d;
+    std::vector<entry> src{{"a", 10}, {"b", 3}, {"c", 2}, {"a", 1}};
+    d.update(src.begin(), src.end());
+    verify_odict(d);
+}
+
+TEST(OrderedDict, UpdateInitList) {
+    odict d;
+    d.update({{"a", 10}, {"b", 3}, {"c", 2}, {"a", 1}});
+    verify_odict(d);
+}
+
 TEST(OrderedDict, ConstructFromRange) {
     std::vector<entry> src{{"a", 1}, {"b", 3}, {"c", 2}, {"a", 5}};
     odict d(src.begin(), src.end());

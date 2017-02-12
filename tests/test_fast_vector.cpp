@@ -58,9 +58,6 @@ public:
     }
 };
 
-// memory leak detection
-
-
 // wrap It into an only InputIterator
 template<class It>
 class InIter {
@@ -150,14 +147,13 @@ void verify_fvec(FVec& a) {
     size_t n = a.size();
 
     ASSERT_GT(a.max_size(), 100000);
+    ASSERT_GE(a.capacity(), n);
+    ASSERT_EQ((n == 0), a.empty());
 
-    if (n > sc) {
+    if (a.capacity() > sc) {
         ASSERT_TRUE(a.use_dynamic());
-        ASSERT_FALSE(a.empty());
-        ASSERT_GE(a.capacity(), sc);
     } else {
         ASSERT_FALSE(a.use_dynamic());
-        ASSERT_EQ((n == 0), a.empty());
         ASSERT_EQ(sc, a.capacity());
     }
 
@@ -469,6 +465,141 @@ TYPED_TEST(FastVectorsTest, MoveConstruct) {
             verify_fvec(a);
             verify_fvec(c);
             ASSERT_VEC_EQ(c, ra);
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+
+TYPED_TEST(FastVectorsTest, CopyAssign) {
+    DECL_FV_T
+
+    size_t n0s[3] = {0, 3, 8};
+
+    for (long n = 0; n < 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            vector<T> ra;
+            for (long i = 0; i < n; ++i) ra.emplace_back(i+1);
+            fvec a( inIter(ra.begin()), inIter(ra.end()) );
+
+            for (size_t j = 0; j < 3; ++j) {
+                fvec d(n0s[j], T(12));
+                d = a;
+                ASSERT_EQ(n, a.size());
+                ASSERT_EQ(n, d.size());
+                ASSERT_CAP(size_t(n), d);
+                verify_fvec(a);
+                verify_fvec(d);
+                ASSERT_VEC_EQ(d, ra);
+            }
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+TYPED_TEST(FastVectorsTest, MoveAssign) {
+    DECL_FV_T
+
+    size_t n0s[3] = {0, 3, 8};
+
+    for (long n = 0; n < 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            vector<T> ra;
+            for (long i = 0; i < n; ++i) ra.emplace_back(i+1);
+            fvec a( inIter(ra.begin()), inIter(ra.end()) );
+            bool dyn = a.use_dynamic();
+            T* expect_p = nullptr;
+
+            for (size_t j = 0; j < 3; ++j) {
+                fvec d(n0s[j], T(12));
+                fvec ac(a);
+                expect_p = dyn ? ac.data() : d.data();
+                d = std::move(ac);
+                ASSERT_EQ(0, ac.size());
+                ASSERT_EQ(n, d.size());
+                ASSERT_CAP(size_t(n), d);
+                verify_fvec(ac);
+                verify_fvec(d);
+                ASSERT_VEC_EQ(d, ra);
+                if (dyn) ASSERT_EQ(expect_p, d.data());
+            }
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+TYPED_TEST(FastVectorsTest, AssignValues) {
+    DECL_FV_T
+
+    size_t n0s[3] = {0, 3, 8};
+
+    for (long n = 0; n < 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            T val(n);
+            vector<T> rv(size_t(n), val);
+
+            for (size_t j = 0; j < 3; ++j) {
+                fvec d(n0s[j], T(12));
+                d.assign(size_t(n), val);
+                ASSERT_EQ(n, d.size());
+                verify_fvec(d);
+                ASSERT_VEC_EQ(d, rv);
+            }
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+TYPED_TEST(FastVectorsTest, AssignIter) {
+    DECL_FV_T
+
+    size_t n0s[3] = {0, 3, 8};
+
+    for (long n = 0; n < 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            std::vector<T> rv;
+            for (long i = 0; i < n; ++i) rv.emplace_back(i+1);
+
+            for (size_t j = 0; j < 3; ++j) {
+                fvec d(n0s[j], T(12));
+                d.assign(rv.begin(), rv.end());
+                ASSERT_EQ(n, d.size());
+                verify_fvec(d);
+                ASSERT_VEC_EQ(d, rv);
+            }
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+TYPED_TEST(FastVectorsTest, AssignInitList) {
+    DECL_FV_T
+
+    size_t n0s[3] = {0, 3, 8};
+
+    for (size_t j = 0; j < 3; ++j) {
+        RESET_OBJCOUNT
+        {
+            fvec _d(n0s[j], T(12));
+
+            fvec d1(_d);
+            d1.assign({});
+            ASSERT_EQ(0, d1.size());
+            verify_fvec(d1);
+
+            fvec d2(_d);
+            d2.assign({T(3), T(4), T(5)});
+            ASSERT_EQ(3, d2.size());
+            verify_fvec(d2);
+
+            fvec d3(_d);
+            d3.assign({T(3), T(4), T(5), T(6), T(7), T(8), T(9)});
+            ASSERT_EQ(7, d3.size());
+            verify_fvec(d3);
         }
         ENSURE_CLEANUP;
     }

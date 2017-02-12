@@ -173,7 +173,7 @@ private:
         return pb_;
     }
 
-    void _destroy() {
+    void destroy() {
         clear();
         if (use_dynamic()) {
             alloc_.deallocate(pb_, capacity());
@@ -182,7 +182,7 @@ private:
 
 public:
     ~fast_vector() {
-        _destroy();
+        destroy();
     }
 
     fast_vector()
@@ -206,14 +206,16 @@ public:
                 const Allocator& alloc = Allocator())
         : alloc_(alloc) {
         initmem(n);
-        insert(end(), n, v);
+        std::uninitialized_fill_n(pb_, n, v);
+        pn_ = pb_ + n;
     }
 
     fast_vector(std::initializer_list<T> ilist,
                 const Allocator& alloc = Allocator())
         : alloc_(alloc) {
         initmem(ilist.size());
-        insert(end(), ilist.begin(), ilist.end());
+        std::uninitialized_copy(ilist.begin(), ilist.end(), pb_);
+        pn_ = pb_ + ilist.size();
     }
 
     template<class InputIter,
@@ -222,7 +224,7 @@ public:
                 const Allocator& alloc = Allocator())
         : alloc_(alloc) {
         initmem(details::iter_init_cap(first, last, Cate{}));
-        insert(end(), first, last);
+        assign_(first, last, Cate{});
     }
 
     fast_vector(const fast_vector& other)
@@ -260,23 +262,77 @@ public:
     // (*this) allocator is used to deallocate the memory, then other's allocator
     // is used to allocate it before copying the elements.
 
-    // fast_vector& operator=(const fast_vector& other) {
-    //     if (this != &other) {
-    //         // clear original elements
-    //         clear();
+    fast_vector& operator=(const fast_vector& other) {
+        if (this != &other) {
+            // destroy original
+            destroy();
+            reset();
+
+            // prepare allocator (according to C++ std)
+            if (std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value) {
+                alloc_ = details::copy_allocator(other.alloc_);
+            }
+
+            // get memory
+            size_t n = other.size();
+            initmem(n);
+
+            // copy elements
+            std::uninitialized_copy(other.begin(), other.end(), pb_);
+            pn_ = pb_ + n;
+        }
+        return *this;
+    }
+
+    // C++11 standard for std::vector
     //
-    //         // prepare memory
-    //         size_t n = other.size();
-    //         if (n <= SL) {
-    //
-    //         }
-    //
-    //         if (std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment()) {
-    //             alloc_ =
-    //         }
-    //     }
-    //     return *this;
-    // }
+    // Move assignment operator. Replaces the contents with those of other using
+    // move semantics (i.e. the data in other is moved from other into this
+    // container). other is in a valid but unspecified state afterwards. If
+    // std::allocator_traits<allocator_type>::propagate_on_container_move_assignment()
+    // is true, the target allocator is replaced by a copy of the source allocator.
+    // If it is false and the source and the target allocators do not compare
+    // equal, the target cannot take ownership of the source memory and must
+    // move-assign each element individually, allocating additional memory using
+    // its own allocator as needed. In any case, all element originally present in
+    // *this are either destroyed or replaced by elementwise move-assignment.
+
+    fast_vector& operator=(fast_vector&& other) {
+        if (this != &other) {
+            // destroy original
+            destroy();
+            reset();
+
+            // prepare allocator (according to C++ standard)
+            bool can_take_over = true;
+            if (std::allocator_traits<allocator_type>::propagate_on_container_move_assignment::value) {
+                alloc_ = std::move(other.alloc_);
+            } else {
+                if (alloc_ != other.alloc_) can_take_over = false;
+            }
+
+            if (can_take_over && other.use_dynamic()) {
+                // directly take over by transfering pointers
+                pb_ = other.pb_;
+                pe_ = other.pe_;
+                pn_ = other.pn_;
+                other.reset();
+            } else {
+                if (!other.empty()) {
+                    size_t n = other.size();
+                    // allocate memory
+                    initmem(n);
+
+                    // move elements
+                    move_policy::fwd(pb_, other.begin(), other.end());
+                    pn_ = pb_ + n;
+                }
+                other.destroy();
+                other.reset();
+            }
+        }
+        return *this;
+    }
 
 public:
     bool empty() const noexcept {
@@ -380,6 +436,27 @@ public:
         iterator p = move_back(pos, 1);
         new(p) T(std::forward<Args>(args)...);
         return p;
+    }
+
+    void assign(size_type n, const T& v) {
+        clear();
+        reserve(n);
+        std::uninitialized_fill_n(pb_, n, v);
+        pn_ = pb_ + n;
+    }
+
+    template<class InputIter,
+             class Cate=typename std::iterator_traits<InputIter>::iterator_category>
+    void assign(InputIter first, InputIter last) {
+        clear();
+        assign_(first, last, Cate{});
+    }
+
+    void assign(std::initializer_list<T> ilist) {
+        clear();
+        reserve(ilist.size());
+        std::uninitialized_copy(ilist.begin(), ilist.end(), pb_);
+        pn_ = pb_ + ilist.size();
     }
 
     iterator insert(const_iterator pos, const T& v) {
@@ -513,6 +590,19 @@ private:
         pe_ = tmp.pe_;
         pn_ = tmp.pb_ + n;
         tmp.reset();
+    }
+
+    template<class InputIter>
+    void assign_(InputIter first, InputIter last, std::forward_iterator_tag) {
+        size_t n = std::distance(first, last);
+        reserve(n);
+        std::uninitialized_copy(first, last, pb_);
+        pn_ = pb_ + n;
+    }
+
+    template<class InputIter>
+    void assign_(InputIter first, InputIter last, std::input_iterator_tag) {
+        for(;first != last; ++first) push_back(*first);
     }
 
     // 1. reserve enough memory to cover n more

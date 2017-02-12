@@ -175,9 +175,9 @@ private:
 
     void _destroy() {
         clear();
-        // if (use_dynamic()) {
-        //     alloc_.deallocate(pb_, capacity());
-        // }
+        if (use_dynamic()) {
+            alloc_.deallocate(pb_, capacity());
+        }
     }
 
 public:

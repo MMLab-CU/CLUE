@@ -423,6 +423,15 @@ public:
     const_iterator cbegin() noexcept { return pb_; }
     const_iterator cend()   noexcept { return pn_; }
 
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(pb_); }
+    const_reverse_iterator rend()   const noexcept { return const_reverse_iterator(pn_); }
+
+    reverse_iterator rbegin() noexcept { return reverse_iterator(pb_); }
+    reverse_iterator rend()   noexcept { return reverse_iterator(pn_); }
+
+    const_reverse_iterator crbegin() noexcept { return const_reverse_iterator(pb_); }
+    const_reverse_iterator crend()   noexcept { return const_reverse_iterator(pn_); }
+
 public:
     void push_back(const T& v) {
         if (CLUE_UNLIKELY(pn_ == pe_)) reserve(size() + 1);
@@ -500,20 +509,25 @@ public:
 
     void pop_back() {
         --pn_;
+        pn_->~T();
     }
 
     iterator erase(const_iterator pos) {
         iterator p = const_cast<iterator>(pos);
         p->~T();
-        move_policy::fwd(p, p+1, pe_);
-        pe_--;
+        move_policy::fwd(p, p+1, pn_);
+        pn_--;
         return p;
     }
 
     iterator erase(const_iterator first, const_iterator last) {
         iterator p = const_cast<iterator>(first);
-        iterator q = const_cast<iterator>(last);
-        details::destruct_range(p, q);
+        if (first != last) {
+            iterator q = const_cast<iterator>(last);
+            details::destruct_range(p, q);
+            move_policy::fwd(p, q, pn_);
+            pn_ -= static_cast<size_t>(q - p);
+        }
         return p;
     }
 
@@ -528,12 +542,12 @@ public:
     void resize(size_type n) {
         size_t cn = size();
         if (cn > n) {
-            T* old_pe = pe_; pe_ = pb_ + n;
-            details::destruct_range(pe_, old_pe);
+            T* old_pn = pn_; pn_ = pb_ + n;
+            details::destruct_range(pn_, old_pn);
         } else if (cn < n) {
             reserve(n);
-            T* new_pe = pb_ + n;
-            while (pe_ != new_pe) new(pe_++) T();
+            T* new_pn = pb_ + n;
+            while (pn_ != new_pn) new(pn_++) T();
         }
     }
 
@@ -562,7 +576,10 @@ public:
 
                 // release memory
                 alloc_.deallocate(pb_, n);
+
+                // set pointers on static array
                 reset();
+                pn_ = pb_ + n;
             }
         }
     }

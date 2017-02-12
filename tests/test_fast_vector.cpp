@@ -164,15 +164,23 @@ void verify_fvec(FVec& a) {
     ASSERT_TRUE(a.end() == a_c.end());
     ASSERT_TRUE(a.end() == a.cend());
 
+    ASSERT_TRUE(a.rbegin() == a_c.rbegin());
+    ASSERT_TRUE(a.rbegin() == a.crbegin());
+    ASSERT_TRUE(a.rend() == a_c.rend());
+    ASSERT_TRUE(a.rend() == a.crend());
+
     ASSERT_EQ(n, size_t(a.end() - a.begin()));
+    // ASSERT_EQ(n, size_t(a.rend() - a.rbegin()));
 
     if (n > 0) {
         auto p = a.begin();
+        // auto q = a.rbegin();
         for (size_t i = 0; i < n; ++i) {
-            ASSERT_EQ(p[0], a[0]);
-            ASSERT_EQ(p[0], a.at(0));
-            ASSERT_EQ(p[0], a_c[0]);
-            ASSERT_EQ(p[0], a_c.at(0));
+            ASSERT_EQ(p[i], a[i]);
+            ASSERT_EQ(p[i], a.at(i));
+            ASSERT_EQ(p[i], a_c[i]);
+            ASSERT_EQ(p[i], a_c.at(i));
+            // ASSERT_EQ(p[n-i-1], q[i]);
         }
         ASSERT_EQ(p[0], a.front());
         ASSERT_EQ(p[0], a_c.front());
@@ -838,4 +846,243 @@ TYPED_TEST(FastVectorsTest, InsertInitList) {
         ASSERT_VEC_EQ(a, make_vec<T>({T(31), T(32), T(21), T(22), T(23), T(33), T(34), T(51), T(52)}));
 
     } ENSURE_CLEANUP;
+}
+
+
+TYPED_TEST(FastVectorsTest, PopBack) {
+    DECL_FV
+
+    for (long n = 1; n <= 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            fvec a;
+            for (long i = 0; i < n; ++i) a.emplace_back(i + 1);
+            size_t cap = a.capacity();
+
+            size_t m = size_t(n);
+            while (m > 0) {
+                ASSERT_EQ(m, a.size());
+                ASSERT_CAP(cap, a);
+                verify_fvec(a);
+                a.pop_back(); --m;
+            }
+            ASSERT_EQ(0, a.size());
+            ASSERT_CAP(cap, a);
+            verify_fvec(a);
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+TYPED_TEST(FastVectorsTest, Erase) {
+    DECL_FV_T
+
+    for (long n = 3; n <= 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            fvec a;
+            vector<long> _rv;
+            for (long i = 0; i < n; ++i) {
+                a.emplace_back(i + 1);
+                _rv.emplace_back(i + 1);
+            }
+            size_t cap = a.capacity();
+
+            a.erase(a.begin() + (n/2));
+            a.erase(a.begin());
+            a.erase(a.end() - 1);
+
+            _rv.erase(_rv.begin() + (n/2));
+            _rv.erase(_rv.begin());
+            _rv.erase(_rv.end() - 1);
+
+            vector<T> rv;
+            for (const auto& e: _rv) rv.emplace_back(e);
+
+            ASSERT_EQ(size_t(n) - 3, a.size());
+            ASSERT_CAP(cap, a);
+            verify_fvec(a);
+            ASSERT_VEC_EQ(a, rv);
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+TYPED_TEST(FastVectorsTest, EraseRange_mid) {
+    DECL_FV_T
+
+    for (long n = 3; n <= 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            fvec a;
+            vector<long> _rv;
+            for (long i = 0; i < n; ++i) {
+                a.emplace_back(i + 1);
+                _rv.emplace_back(i + 1);
+            }
+            size_t cap = a.capacity();
+
+            size_t lb = n/3;
+            size_t rb = 2*n/3;
+
+            a.erase(a.begin() + lb, a.begin() + rb);
+            _rv.erase(_rv.begin() + lb, _rv.begin() + rb);
+
+            vector<T> rv;
+            for (const auto& e: _rv) rv.emplace_back(e);
+
+            ASSERT_EQ(size_t(n) - (rb - lb), a.size());
+            ASSERT_CAP(cap, a);
+            verify_fvec(a);
+            ASSERT_VEC_EQ(a, rv);
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+TYPED_TEST(FastVectorsTest, EraseRange_front) {
+    DECL_FV_T
+
+    for (long n = 3; n <= 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            fvec a;
+            vector<long> _rv;
+            for (long i = 0; i < n; ++i) {
+                a.emplace_back(i + 1);
+                _rv.emplace_back(i + 1);
+            }
+            size_t cap = a.capacity();
+
+            size_t lb = 0;
+            size_t rb = n/2;
+
+            a.erase(a.begin() + lb, a.begin() + rb);
+            _rv.erase(_rv.begin() + lb, _rv.begin() + rb);
+
+            vector<T> rv;
+            for (const auto& e: _rv) rv.emplace_back(e);
+
+            ASSERT_EQ(size_t(n) - (rb - lb), a.size());
+            ASSERT_CAP(cap, a);
+            verify_fvec(a);
+            ASSERT_VEC_EQ(a, rv);
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+TYPED_TEST(FastVectorsTest, EraseRange_back) {
+    DECL_FV_T
+
+    for (long n = 3; n <= 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            fvec a;
+            vector<long> _rv;
+            for (long i = 0; i < n; ++i) {
+                a.emplace_back(i + 1);
+                _rv.emplace_back(i + 1);
+            }
+            size_t cap = a.capacity();
+
+            size_t lb = n/2;
+            size_t rb = n;
+
+            a.erase(a.begin() + lb, a.begin() + rb);
+            _rv.erase(_rv.begin() + lb, _rv.begin() + rb);
+
+            vector<T> rv;
+            for (const auto& e: _rv) rv.emplace_back(e);
+
+            ASSERT_EQ(size_t(n) - (rb - lb), a.size());
+            ASSERT_CAP(cap, a);
+            verify_fvec(a);
+            ASSERT_VEC_EQ(a, rv);
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+
+TYPED_TEST(FastVectorsTest, Clear) {
+    DECL_FV_T
+
+    for (long n = 3; n <= 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            fvec a;
+            for (long i = 0; i < n; ++i) {
+                a.emplace_back(i + 1);
+            }
+            size_t cap = a.capacity();
+            T* p0 = a.data();
+
+            a.clear();
+
+            ASSERT_EQ(0, a.size());
+            ASSERT_TRUE(a.empty());
+            ASSERT_EQ(p0, a.data());
+            ASSERT_CAP(cap, a);
+            verify_fvec(a);
+        }
+        ENSURE_CLEANUP;
+    }
+}
+
+TYPED_TEST(FastVectorsTest, Resize_and_Shrink) {
+    DECL_FV_T
+
+    for (long n = 2; n <= 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            fvec a;
+            vector<long> _rv;
+            for (long i = 0; i < n; ++i) {
+                a.emplace_back(i + 1);
+                _rv.emplace_back(i + 1);
+            }
+            ASSERT_EQ(size_t(n), a.size());
+
+            // bigger
+
+            size_t s1 = size_t(n + n / 2);
+            a.resize(s1);
+            _rv.resize(s1);
+
+            vector<T> rv1;
+            for (const auto& e: _rv) rv1.emplace_back(e);
+
+            ASSERT_EQ(s1, a.size());
+            verify_fvec(a);
+            ASSERT_VEC_EQ(a, rv1);
+
+            // smaller
+
+            T* p1 = a.data();
+            size_t c1 = a.capacity();
+            size_t s2 = s1 * 2 / 5;
+            a.resize(s2);
+            _rv.resize(s2);
+            ASSERT_EQ(p1, a.data());
+            ASSERT_EQ(c1, a.capacity());
+
+            vector<T> rv2;
+            for (const auto& e: _rv) rv2.emplace_back(e);
+
+            ASSERT_EQ(s2, a.size());
+            verify_fvec(a);
+            ASSERT_VEC_EQ(a, rv2);
+
+            // shrink to fit
+
+            a.shrink_to_fit();
+
+            ASSERT_EQ(s2, a.size());
+            ASSERT_CAP(s2, a);
+            verify_fvec(a);
+            ASSERT_VEC_EQ(a, rv2);
+        }
+        ENSURE_CLEANUP;
+    }
 }

@@ -37,6 +37,7 @@ Containers and Views
 
    array_view.rst
    reindexed_view.rst
+   fast_vector.rst
    ordered_dict.rst
    keyed_vector.rst
 

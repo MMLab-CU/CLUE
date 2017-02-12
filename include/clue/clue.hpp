@@ -19,6 +19,7 @@
 #include <clue/value_range.hpp>
 #include <clue/array_view.hpp>
 #include <clue/reindexed_view.hpp>
+#include <clue/fast_vector.hpp>
 #include <clue/ordered_dict.hpp>
 #include <clue/keyed_vector.hpp>
 

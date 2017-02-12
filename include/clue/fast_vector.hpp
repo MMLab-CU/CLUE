@@ -25,18 +25,28 @@ inline Allocator copy_allocator(const Allocator& a) {
 }
 
 template<typename T, bool R>
-struct element_move_policy;
+struct relocate_policy;
 
 template<typename T>
-struct element_move_policy<T, true> {
-    static void fwd(T* dst, T* src, T* src_end) noexcept {
+struct relocate_policy<T, true> {
+    // move to a disjoint region
+    static void move_disjoint(T* dst, T* src, T* src_end) noexcept {
+        if (src != src_end) {
+            size_t len = static_cast<size_t>(src_end - src) * sizeof(T);
+            std::memcpy(dst, src, len);
+        }
+    }
+
+    // move towards front (e.g. in erase)
+    static void move_fwd(T* dst, T* src, T* src_end) noexcept {
         if (src != src_end) {
             size_t len = static_cast<size_t>(src_end - src) * sizeof(T);
             std::memmove(dst, src, len);
         }
     }
 
-    static void bwd(T* dst, T* src, T* src_end) noexcept {
+    // move towards back (e.g. in insert)
+    static void move_bwd(T* dst, T* src, T* src_end) noexcept {
         if (src != src_end) {
             size_t len = static_cast<size_t>(src_end - src) * sizeof(T);
             std::memmove(dst, src, len);
@@ -45,14 +55,20 @@ struct element_move_policy<T, true> {
 };
 
 template<typename T>
-struct element_move_policy<T, false> {
-    static void fwd(T* dst, T* src, T* src_end) {
+struct relocate_policy<T, false> {
+    static void move_disjoint(T* dst, T* src, T* src_end) {
         while (src != src_end) {
             new(dst++) T( std::move(*src++) );
         }
     }
 
-    static void bwd(T* dst, T* src, T* src_end) {
+    static void move_fwd(T* dst, T* src, T* src_end) {
+        while (src != src_end) {
+            new(dst++) T( std::move(*src++) );
+        }
+    }
+
+    static void move_bwd(T* dst, T* src, T* src_end) {
         if (src != src_end) {
             size_t n = static_cast<size_t>(src_end - src);
             T* src_rend = src - 1;
@@ -73,13 +89,13 @@ inline void destruct_range(T* first, T* last) {
 }
 
 
-template<class T, size_t SL>
+template<class T, size_t SCap>
 class static_storage final {
-    static_assert(SL > 0,
-        "static_storage: this specialized implementation requires SL > 0.");
+    static_assert(SCap > 0,
+        "static_storage: this specialized implementation requires SCap > 0.");
 
     using uninit_t = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
-    uninit_t a_[SL];
+    uninit_t a_[SCap];
 
 public:
     T* begin() const noexcept {
@@ -87,7 +103,7 @@ public:
     }
 
     T* end() const noexcept {
-        return begin() + SL;
+        return begin() + SCap;
     }
 };
 
@@ -123,16 +139,16 @@ inline size_t iter_init_cap(Iter first, Iter last, std::input_iterator_tag) {
 
 
 template<class T,
-         size_t SL=0,
+         size_t SCap=0,
          bool Reloc=is_relocatable<T>::value,
          class Allocator=std::allocator<T> >
 class fast_vector final {
 private:
-    using move_policy = details::element_move_policy<T, Reloc>;
+    using relocater = details::relocate_policy<T, Reloc>;
 
 public:
-    static constexpr size_t static_capacity = SL;
-    static constexpr size_t static_cap() { return SL; }
+    static constexpr size_t static_capacity = SCap;
+    static constexpr size_t static_cap() { return SCap; }
 
     using value_type = T;
     using size_type = size_t;
@@ -149,7 +165,7 @@ public:
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 private:
-    details::static_storage<T, SL> ss_;
+    details::static_storage<T, SCap> ss_;
     Allocator alloc_;
     T* pb_;  // begin()
     T* pe_;  // begin() + capacity()
@@ -162,12 +178,12 @@ private:
     }
 
     T* initmem(size_type c0) {
-        if (c0 > SL) {
+        if (c0 > SCap) {
             pb_ = alloc_.allocate(c0);
             pe_ = pb_ + c0;
         } else {
             pb_ = ss_.begin();
-            pe_ = pb_ + SL;
+            pe_ = pb_ + SCap;
         }
         pn_ = pb_;
         return pb_;
@@ -256,7 +272,7 @@ public:
         } else {
             reset();
             pn_ = pb_ + other.size();
-            move_policy::fwd(pb_, other.begin(), other.end());
+            relocater::move_disjoint(pb_, other.begin(), other.end());
         }
         other.reset();
     }
@@ -333,7 +349,7 @@ public:
                     initmem(n);
 
                     // move elements
-                    move_policy::fwd(pb_, other.begin(), other.end());
+                    relocater::move_disjoint(pb_, other.begin(), other.end());
                     pn_ = pb_ + n;
                 }
                 other.destroy();
@@ -515,7 +531,7 @@ public:
     iterator erase(const_iterator pos) {
         iterator p = const_cast<iterator>(pos);
         p->~T();
-        move_policy::fwd(p, p+1, pn_);
+        relocater::move_fwd(p, p+1, pn_);
         pn_--;
         return p;
     }
@@ -525,7 +541,7 @@ public:
         if (first != last) {
             iterator q = const_cast<iterator>(last);
             details::destruct_range(p, q);
-            move_policy::fwd(p, q, pn_);
+            relocater::move_fwd(p, q, pn_);
             pn_ -= static_cast<size_t>(q - p);
         }
         return p;
@@ -554,7 +570,7 @@ public:
     void reserve(size_t cap) {
         size_t cur_cap = capacity();
         if (cap > cur_cap) {
-            // since cur_cap >= SL, cap must be greater than SL,
+            // since cur_cap >= SCap, cap must be greater than SCap,
             // hence, dynamic memory is always needed under such conditions
             size_t new_cap = details::calc_new_capacity(cur_cap, cap);
             CLUE_ASSERT(new_cap >= cap);
@@ -568,11 +584,11 @@ public:
         size_t cur_cap = capacity();
         size_t n = size();
         if (cur_cap > n) {
-            if (n > SL) {
+            if (n > SCap) {
                 use_new_dynamic_mem(n);
             } else {
                 // move elements to static storage
-                move_policy::fwd(ss_.begin(), pb_, pn_);
+                relocater::move_disjoint(ss_.begin(), pb_, pn_);
 
                 // release memory
                 alloc_.deallocate(pb_, n);
@@ -601,7 +617,7 @@ private:
         size_type n = size();
         if (n > 0) {
             pe_ = pb_;
-            move_policy::fwd(tmp.begin(), pb_, pb_ + n);
+            relocater::move_disjoint(tmp.begin(), pb_, pb_ + n);
             tmp.pn_ = tmp.pb_ + n;
         }
 
@@ -641,7 +657,7 @@ private:
             size_t i = static_cast<size_type>(p - pb_);
             reserve(size() + n);
             p = pb_ + i;
-            if (p != pn_) move_policy::bwd(p + n, p, pn_);
+            if (p != pn_) relocater::move_bwd(p + n, p, pn_);
             pn_ += n;
         }
         return p;

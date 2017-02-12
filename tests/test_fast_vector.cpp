@@ -604,3 +604,238 @@ TYPED_TEST(FastVectorsTest, AssignInitList) {
         ENSURE_CLEANUP;
     }
 }
+
+
+TYPED_TEST(FastVectorsTest, Emplace) {
+    DECL_FV_T
+
+    RESET_OBJCOUNT {
+        T* p = nullptr;
+
+        fvec a;
+        p = a.emplace(a.end(), 3);
+        ASSERT_EQ(T(3), *p);
+        ASSERT_EQ(1, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(3)}));
+
+        p = a.emplace(a.begin(), 5);
+        ASSERT_EQ(T(5), *p);
+        ASSERT_EQ(2, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(3)}));
+
+        p = a.emplace(a.end(), 7);
+        ASSERT_EQ(T(7), *p);
+        ASSERT_EQ(3, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(3), T(7)}));
+
+        p = a.emplace(a.begin() + 1, 2);
+        ASSERT_EQ(T(2), *p);
+        ASSERT_EQ(4, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(2), T(3), T(7)}));
+
+        p = a.emplace(a.begin() + 3, 4);
+        ASSERT_EQ(T(4), *p);
+        ASSERT_EQ(5, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(2), T(3), T(4), T(7)}));
+
+        p = a.emplace(a.begin(), 1);
+        ASSERT_EQ(T(1), *p);
+        ASSERT_EQ(6, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(1), T(5), T(2), T(3), T(4), T(7)}));
+    }
+    ENSURE_CLEANUP;
+}
+
+
+TYPED_TEST(FastVectorsTest, InsertCopy) {
+    DECL_FV_T
+
+    RESET_OBJCOUNT {
+        T* p = nullptr;
+
+        fvec a;
+        T v1(3);
+        p = a.insert(a.end(), v1);
+        ASSERT_EQ(T(3), *p);
+        ASSERT_EQ(1, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(3)}));
+
+        T v2(5);
+        p = a.insert(a.begin(), v2);
+        ASSERT_EQ(T(5), *p);
+        ASSERT_EQ(2, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(3)}));
+
+        T v3(7);
+        p = a.insert(a.end(), v3);
+        ASSERT_EQ(T(7), *p);
+        ASSERT_EQ(3, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(3), T(7)}));
+
+        T v4(2);
+        p = a.insert(a.begin() + 1, v4);
+        ASSERT_EQ(T(2), *p);
+        ASSERT_EQ(4, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(2), T(3), T(7)}));
+
+        T v5(4);
+        p = a.insert(a.begin() + 3, v5);
+        ASSERT_EQ(T(4), *p);
+        ASSERT_EQ(5, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(2), T(3), T(4), T(7)}));
+
+        T v6(1);
+        p = a.insert(a.begin(), v6);
+        ASSERT_EQ(T(1), *p);
+        ASSERT_EQ(6, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(1), T(5), T(2), T(3), T(4), T(7)}));
+    }
+    ENSURE_CLEANUP;
+}
+
+
+TYPED_TEST(FastVectorsTest, InsertMove) {
+    DECL_FV_T
+
+    RESET_OBJCOUNT {
+        T* p = nullptr;
+
+        fvec a;
+        p = a.insert(a.end(), T(3));
+        ASSERT_EQ(T(3), *p);
+        ASSERT_EQ(1, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(3)}));
+
+        p = a.insert(a.begin(), T(5));
+        ASSERT_EQ(T(5), *p);
+        ASSERT_EQ(2, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(3)}));
+
+        p = a.insert(a.end(), T(7));
+        ASSERT_EQ(T(7), *p);
+        ASSERT_EQ(3, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(3), T(7)}));
+
+        p = a.insert(a.begin() + 1, T(2));
+        ASSERT_EQ(T(2), *p);
+        ASSERT_EQ(4, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(2), T(3), T(7)}));
+
+        p = a.insert(a.begin() + 3, T(4));
+        ASSERT_EQ(T(4), *p);
+        ASSERT_EQ(5, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(2), T(3), T(4), T(7)}));
+
+        p = a.insert(a.begin(), T(1));
+        ASSERT_EQ(T(1), *p);
+        ASSERT_EQ(6, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(1), T(5), T(2), T(3), T(4), T(7)}));
+    }
+    ENSURE_CLEANUP;
+}
+
+
+TYPED_TEST(FastVectorsTest, InsertMultiValues) {
+    DECL_FV_T
+
+    RESET_OBJCOUNT {
+        T* p = nullptr;
+
+        fvec a;
+        p = a.insert(a.end(), 2, T(5));
+        ASSERT_EQ(a.begin(), p);
+        ASSERT_EQ(2, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(5), T(5)}));
+
+        p = a.insert(a.begin(), 4, T(3));
+        ASSERT_EQ(a.begin(), p);
+        ASSERT_EQ(6, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(3), T(3), T(3), T(3), T(5), T(5)}));
+
+        p = a.insert(a.begin() + 2, 3, T(2));
+        ASSERT_EQ(a.begin() + 2, p);
+        ASSERT_EQ(9, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(3), T(3), T(2), T(2), T(2), T(3), T(3), T(5), T(5)}));
+
+    } ENSURE_CLEANUP;
+}
+
+TYPED_TEST(FastVectorsTest, InsertIterRange) {
+    DECL_FV_T
+
+    RESET_OBJCOUNT {
+        T* p = nullptr;
+
+        vector<T> v1{T(51), T(52)};
+        fvec a;
+        p = a.insert(a.end(), v1.begin(), v1.end());
+        ASSERT_EQ(a.begin(), p);
+        ASSERT_EQ(2, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(51), T(52)}));
+
+        vector<T> v2{T(31), T(32), T(33), T(34)};
+        p = a.insert(a.begin(), v2.begin(), v2.end());
+        ASSERT_EQ(a.begin(), p);
+        ASSERT_EQ(6, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(31), T(32), T(33), T(34), T(51), T(52)}));
+
+        vector<T> v3{T(21), T(22), T(23)};
+        p = a.insert(a.begin() + 2, v3.begin(), v3.end());
+        ASSERT_EQ(a.begin() + 2, p);
+        ASSERT_EQ(9, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(31), T(32), T(21), T(22), T(23), T(33), T(34), T(51), T(52)}));
+
+    } ENSURE_CLEANUP;
+}
+
+TYPED_TEST(FastVectorsTest, InsertInitList) {
+    DECL_FV_T
+
+    RESET_OBJCOUNT {
+        T* p = nullptr;
+
+        fvec a;
+        p = a.insert(a.end(), {T(51), T(52)});
+        ASSERT_EQ(a.begin(), p);
+        ASSERT_EQ(2, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(51), T(52)}));
+
+        p = a.insert(a.begin(), {T(31), T(32), T(33), T(34)});
+        ASSERT_EQ(a.begin(), p);
+        ASSERT_EQ(6, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(31), T(32), T(33), T(34), T(51), T(52)}));
+
+        p = a.insert(a.begin() + 2, {T(21), T(22), T(23)});
+        ASSERT_EQ(a.begin() + 2, p);
+        ASSERT_EQ(9, a.size());
+        verify_fvec(a);
+        ASSERT_VEC_EQ(a, make_vec<T>({T(31), T(32), T(21), T(22), T(23), T(33), T(34), T(51), T(52)}));
+
+    } ENSURE_CLEANUP;
+}

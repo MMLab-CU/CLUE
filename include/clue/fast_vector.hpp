@@ -229,13 +229,22 @@ public:
 
     fast_vector(const fast_vector& other)
         : alloc_(details::copy_allocator(other.alloc_)) {
-        initmem(other.size());
-        insert(end(), other.begin(), other.end());
+        size_t n = other.size();
+        initmem(n);
+        if (n > 0) {
+            std::uninitialized_copy(other.begin(), other.end(), pb_);
+            pn_ = pb_ + n;
+        }
     }
 
     fast_vector(const fast_vector& other, const Allocator& alloc)
         : alloc_(alloc) {
-        insert(end(), other.begin(), other.end());
+        size_t n = other.size();
+        initmem(n);
+        if (n > 0) {
+            std::uninitialized_copy(other.begin(), other.end(), pb_);
+            pn_ = pb_ + n;
+        }
     }
 
     fast_vector(fast_vector&& other)
@@ -612,8 +621,10 @@ private:
     iterator move_back(const_iterator pos, size_type n) {
         iterator p = const_cast<iterator>(pos);
         if (n > 0) {
+            size_t i = static_cast<size_type>(p - pb_);
             reserve(size() + n);
-            if (p != pn_) move_policy::bwd(p + n, p, pe_);
+            p = pb_ + i;
+            if (p != pn_) move_policy::bwd(p + n, p, pn_);
             pn_ += n;
         }
         return p;

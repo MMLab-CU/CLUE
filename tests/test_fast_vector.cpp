@@ -170,17 +170,17 @@ void verify_fvec(FVec& a) {
     ASSERT_TRUE(a.rend() == a.crend());
 
     ASSERT_EQ(n, size_t(a.end() - a.begin()));
-    // ASSERT_EQ(n, size_t(a.rend() - a.rbegin()));
+    ASSERT_EQ(n, size_t(a.rend() - a.rbegin()));
 
     if (n > 0) {
         auto p = a.begin();
-        // auto q = a.rbegin();
+        auto q = a.rbegin();
         for (size_t i = 0; i < n; ++i) {
             ASSERT_EQ(p[i], a[i]);
             ASSERT_EQ(p[i], a.at(i));
             ASSERT_EQ(p[i], a_c[i]);
             ASSERT_EQ(p[i], a_c.at(i));
-            // ASSERT_EQ(p[n-i-1], q[i]);
+            ASSERT_EQ(p[n-i-1], q[i]);
         }
         ASSERT_EQ(p[0], a.front());
         ASSERT_EQ(p[0], a_c.front());

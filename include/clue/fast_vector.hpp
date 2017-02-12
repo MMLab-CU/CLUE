@@ -423,14 +423,14 @@ public:
     const_iterator cbegin() noexcept { return pb_; }
     const_iterator cend()   noexcept { return pn_; }
 
-    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(pb_); }
-    const_reverse_iterator rend()   const noexcept { return const_reverse_iterator(pn_); }
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(pn_); }
+    const_reverse_iterator rend()   const noexcept { return const_reverse_iterator(pb_); }
 
-    reverse_iterator rbegin() noexcept { return reverse_iterator(pb_); }
-    reverse_iterator rend()   noexcept { return reverse_iterator(pn_); }
+    reverse_iterator rbegin() noexcept { return reverse_iterator(pn_); }
+    reverse_iterator rend()   noexcept { return reverse_iterator(pb_); }
 
-    const_reverse_iterator crbegin() noexcept { return const_reverse_iterator(pb_); }
-    const_reverse_iterator crend()   noexcept { return const_reverse_iterator(pn_); }
+    const_reverse_iterator crbegin() noexcept { return const_reverse_iterator(pn_); }
+    const_reverse_iterator crend()   noexcept { return const_reverse_iterator(pb_); }
 
 public:
     void push_back(const T& v) {

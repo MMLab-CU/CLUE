@@ -42,6 +42,9 @@ using clue::reindexed_view;
 // string_view
 using clue::string_view;
 
+// fast_vector
+using clue::fast_vector;
+
 // ordered_dict
 using clue::ordered_dict;
 

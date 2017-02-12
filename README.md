@@ -25,6 +25,8 @@ Below is a list of components available in the library.
 - Timing tools: ``stop_watch`` class and timing functions.
 - Class template ``value_range``: so you can write ``for (auto x: vrange(1, 10)) { ... }``.
 - Class template ``array_view``: wrap a memory block into an STL-like view.
+- Class template ``fast_vector``: an optimized implementation of ``vector``, especially fast for
+  large number of small vectors or vectors with relocatable elements.
 - Class template ``reindexed_view``: STL-like view of a subset of elements.
 - Class template ``ordered_dict``: associative container that preserves input order.
 - Class template ``keyed_vector``: sequential container that allows key-based indexing.

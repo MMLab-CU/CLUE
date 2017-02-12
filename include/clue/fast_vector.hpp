@@ -32,7 +32,7 @@ struct element_move_policy<T, true> {
     static void fwd(T* dst, T* src, T* src_end) noexcept {
         if (src != src_end) {
             size_t len = static_cast<size_t>(src_end - src) * sizeof(T);
-            std::memcpy(dst, src, len);
+            std::memmove(dst, src, len);
         }
     }
 

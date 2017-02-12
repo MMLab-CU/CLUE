@@ -9,7 +9,7 @@
 
 #include <clue/container_common.hpp>
 #include <vector>
-
+#include <cstring>
 
 namespace clue {
 

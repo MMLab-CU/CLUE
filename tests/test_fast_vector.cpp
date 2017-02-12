@@ -400,7 +400,7 @@ TYPED_TEST(FastVectorsTest, Construct_withInputIter) {
         RESET_OBJCOUNT
         {
             vector<T> ra;
-            for (size_t i = 0; i < n; ++i) ra.emplace_back(i+1);
+            for (long i = 0; i < n; ++i) ra.emplace_back(i+1);
             ASSERT_EQ( ra, vector<T>( inIter(ra.begin()), inIter(ra.end()) ) );
 
             fvec a( inIter(ra.begin()), inIter(ra.end()) );
@@ -424,7 +424,7 @@ TYPED_TEST(FastVectorsTest, CopyConstruct) {
         RESET_OBJCOUNT
         {
             vector<T> ra;
-            for (size_t i = 0; i < n; ++i) ra.emplace_back(i+1);
+            for (long i = 0; i < n; ++i) ra.emplace_back(i+1);
             fvec a( inIter(ra.begin()), inIter(ra.end()) );
             ASSERT_CAP(caps[n], a);
 
@@ -456,7 +456,7 @@ TYPED_TEST(FastVectorsTest, MoveConstruct) {
         RESET_OBJCOUNT
         {
             vector<T> ra;
-            for (size_t i = 0; i < n; ++i) ra.emplace_back(i+1);
+            for (long i = 0; i < n; ++i) ra.emplace_back(i+1);
             fvec a( inIter(ra.begin()), inIter(ra.end()) );
             ASSERT_CAP(caps[n], a);
 

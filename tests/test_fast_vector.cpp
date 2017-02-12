@@ -58,6 +58,8 @@ public:
     }
 };
 
+// memory leak detection
+
 
 // wrap It into an only InputIterator
 template<class It>
@@ -87,6 +89,19 @@ public:
 
 template<class It>
 inline InIter<It> inIter(const It& it) { return InIter<It>(it); }
+
+
+template<class FVec>
+inline FVec make_fvec(size_t n, bool tight) {
+    vector<long> src(n);
+    for (size_t i = 0; i < n; ++i) src.emplace_back(i+1);
+
+    if (tight) {
+        return FVec(src.begin(), src.end());
+    } else {
+        return FVec(inIter(src.begin()), inIter(src.end()));
+    }
+}
 
 
 size_t Val::count_object = 0;
@@ -376,39 +391,85 @@ TYPED_TEST(FastVectorsTest, Construct_withFwdIter) {
 TYPED_TEST(FastVectorsTest, Construct_withInputIter) {
     DECL_FV_T
 
-    RESET_OBJCOUNT
-    {
-        vector<T> ra;
-        ASSERT_EQ( ra, vector<T>( inIter(ra.begin()), inIter(ra.end()) ) );
+    size_t caps[20] = {
+           0,  2,  2,  3,  4,  6,  6,  9,  9,  9,
+          14, 14, 14, 14, 14, 22, 22, 22, 22, 22
+    };
 
-        fvec a( inIter(ra.begin()), inIter(ra.end()) );
-        ASSERT_TRUE(a.empty());
-        verify_fvec(a);
-        ASSERT_CAP(0, a);
+    for (long n = 0; n < 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            vector<T> ra;
+            for (size_t i = 0; i < n; ++i) ra.emplace_back(i+1);
+            ASSERT_EQ( ra, vector<T>( inIter(ra.begin()), inIter(ra.end()) ) );
+
+            fvec a( inIter(ra.begin()), inIter(ra.end()) );
+            ASSERT_EQ(size_t(n), a.size());
+            verify_fvec(a);
+            ASSERT_CAP(caps[n], a);
+        }
+        ENSURE_CLEANUP;
     }
-    ENSURE_CLEANUP;
+}
 
-    RESET_OBJCOUNT
-    {
-        vector<T> rb{T(12), T(23), T(34)};
-        ASSERT_EQ( rb, vector<T>( inIter(rb.begin()), inIter(rb.end()) ) );
+TYPED_TEST(FastVectorsTest, CopyConstruct) {
+    DECL_FV_T
 
-        fvec b( inIter(rb.begin()), inIter(rb.end()) );
-        verify_fvec(b);
-        ASSERT_VEC_EQ(b, rb);
-        ASSERT_CAP(3, b);
+    size_t caps[20] = {
+           0,  2,  2,  3,  4,  6,  6,  9,  9,  9,
+          14, 14, 14, 14, 14, 22, 22, 22, 22, 22
+    };
+
+    for (long n = 0; n < 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            vector<T> ra;
+            for (size_t i = 0; i < n; ++i) ra.emplace_back(i+1);
+            fvec a( inIter(ra.begin()), inIter(ra.end()) );
+            ASSERT_CAP(caps[n], a);
+
+            fvec c(a);
+
+            ASSERT_EQ(n, a.size());
+            ASSERT_EQ(n, c.size());
+            ASSERT_CAP(n, c);
+            if (n > 0) ASSERT_TRUE(a.data() != c.data());
+
+            verify_fvec(a);
+            verify_fvec(c);
+            ASSERT_VEC_EQ(a, ra);
+            ASSERT_VEC_EQ(c, ra);
+        }
+        ENSURE_CLEANUP;
     }
-    ENSURE_CLEANUP;
+}
 
-    RESET_OBJCOUNT
-    {
-        vector<T> rc({T(3), T(4), T(5), T(6), T(7), T(8)});
-        ASSERT_EQ( rc, vector<T>( inIter(rc.begin()), inIter(rc.end()) ) );
+TYPED_TEST(FastVectorsTest, MoveConstruct) {
+    DECL_FV_T
 
-        fvec c( inIter(rc.begin()), inIter(rc.end()) );
-        verify_fvec(c);
-        ASSERT_VEC_EQ(c, rc);
-        ASSERT_CAP(6, c);
+    size_t caps[20] = {
+           0,  2,  2,  3,  4,  6,  6,  9,  9,  9,
+          14, 14, 14, 14, 14, 22, 22, 22, 22, 22
+    };
+
+    for (long n = 0; n < 20; ++n) {
+        RESET_OBJCOUNT
+        {
+            vector<T> ra;
+            for (size_t i = 0; i < n; ++i) ra.emplace_back(i+1);
+            fvec a( inIter(ra.begin()), inIter(ra.end()) );
+            ASSERT_CAP(caps[n], a);
+
+            fvec c(std::move(a));
+
+            ASSERT_EQ(0, a.size());
+            ASSERT_EQ(n, c.size());
+            ASSERT_CAP(caps[n], c);
+
+            verify_fvec(a);
+            verify_fvec(c);
+            ASSERT_VEC_EQ(c, ra);
+        }
+        ENSURE_CLEANUP;
     }
-    ENSURE_CLEANUP;
 }

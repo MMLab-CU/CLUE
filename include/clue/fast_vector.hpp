@@ -10,6 +10,7 @@
 #include <clue/container_common.hpp>
 #include <vector>
 
+
 namespace clue {
 
 template<typename T>
@@ -172,9 +173,16 @@ private:
         return pb_;
     }
 
+    void _destroy() {
+        clear();
+        // if (use_dynamic()) {
+        //     alloc_.deallocate(pb_, capacity());
+        // }
+    }
+
 public:
     ~fast_vector() {
-        clear();
+        _destroy();
     }
 
     fast_vector()
@@ -223,8 +231,7 @@ public:
         insert(end(), other.begin(), other.end());
     }
 
-    fast_vector(const fast_vector& other,
-                const Allocator& alloc = Allocator())
+    fast_vector(const fast_vector& other, const Allocator& alloc)
         : alloc_(alloc) {
         insert(end(), other.begin(), other.end());
     }
@@ -243,6 +250,33 @@ public:
         other.reset();
     }
 
+    // C++11 standard for std::vector.
+    //
+    // Copy assignment operator.
+    // Replaces the contents with a copy of the contents of other. If
+    // std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment()
+    // is true, the target allocator is replaced by a copy of the source allocator.
+    // If the target and the source allocators do not compare equal, the target
+    // (*this) allocator is used to deallocate the memory, then other's allocator
+    // is used to allocate it before copying the elements.
+
+    // fast_vector& operator=(const fast_vector& other) {
+    //     if (this != &other) {
+    //         // clear original elements
+    //         clear();
+    //
+    //         // prepare memory
+    //         size_t n = other.size();
+    //         if (n <= SL) {
+    //
+    //         }
+    //
+    //         if (std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment()) {
+    //             alloc_ =
+    //         }
+    //     }
+    //     return *this;
+    // }
 
 public:
     bool empty() const noexcept {
@@ -263,6 +297,10 @@ public:
 
     bool use_dynamic() const noexcept {
         return pb_ != ss_.begin();
+    }
+
+    allocator_type get_allocator() const {
+        return alloc_;
     }
 
 public:

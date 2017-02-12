@@ -8,6 +8,7 @@
 #define CLUE_FAST_VECTOR__
 
 #include <clue/container_common.hpp>
+#include <vector>
 
 namespace clue {
 
@@ -108,12 +109,6 @@ inline size_t calc_new_capacity(size_t cur, size_t req) {
 }
 
 template<class Iter>
-inline size_t iter_init_cap(Iter first, Iter last) {
-    using tag_t = typename std::iterator_traits<Iter>::iterator_category;
-    return iter_init_cap(first, last, tag_t());
-}
-
-template<class Iter>
 inline size_t iter_init_cap(Iter first, Iter last, std::forward_iterator_tag) {
     return std::distance(first, last);
 }
@@ -136,6 +131,8 @@ private:
 
 public:
     static constexpr size_t static_capacity = SL;
+    static constexpr size_t static_cap() { return SL; }
+
     using value_type = T;
     using size_type = size_t;
     using difference_type = ptrdiff_t;
@@ -211,11 +208,12 @@ public:
         insert(end(), ilist.begin(), ilist.end());
     }
 
-    template<class InputIter>
+    template<class InputIter,
+             class Cate = typename std::iterator_traits<InputIter>::iterator_category>
     fast_vector(InputIter first, InputIter last,
                 const Allocator& alloc = Allocator())
         : alloc_(alloc) {
-        initmem(details::iter_init_cap(first, last));
+        initmem(details::iter_init_cap(first, last, Cate{}));
         insert(end(), first, last);
     }
 
@@ -301,11 +299,15 @@ public:
     }
 
     const_reference back() const {
-        return *(pe_ - 1);
+        return *(pn_ - 1);
     }
 
     reference back() {
-        return *(pe_ - 1);
+        return *(pn_ - 1);
+    }
+
+    std::vector<T, Allocator> to_stdvector() const {
+        return std::vector<T, Allocator>(begin(), end());
     }
 
 public:
@@ -360,10 +362,10 @@ public:
         return p;
     }
 
-    template<class InputIter>
+    template<class InputIter,
+             class Cate = typename std::iterator_traits<InputIter>::iterator_category>
     iterator insert(const_iterator pos, InputIter first, InputIter last) {
-        using tag_t = typename std::iterator_traits<InputIter>::iterator_category;
-        return insert_(pos, first, last, tag_t{});
+        return insert_(pos, first, last, Cate{});
     }
 
     iterator insert(const_iterator pos, std::initializer_list<T> ilist) {
@@ -451,7 +453,8 @@ private:
     // Use a new dynamic storage of given capacity
     // to store the current elements
     void use_new_dynamic_mem(size_type new_cap) {
-        fast_vector tmp(new_cap, details::copy_allocator(alloc_));
+        fast_vector tmp(details::copy_allocator(alloc_));
+        tmp.initmem(new_cap);
 
         // move elements to tmp
         size_type n = size();
@@ -482,8 +485,8 @@ private:
         iterator p = const_cast<iterator>(pos);
         if (n > 0) {
             reserve(size() + n);
-            if (p != pe_) move_policy::bwd(p + n, p, pe_);
-            pe_ += n;
+            if (p != pn_) move_policy::bwd(p + n, p, pe_);
+            pn_ += n;
         }
         return p;
     }
@@ -504,9 +507,15 @@ private:
     template<class InputIter>
     iterator insert_(const_iterator pos, InputIter first, InputIter last,
                      std::input_iterator_tag) {
-        fast_vector tmp(details::copy_allocator(alloc_));
-        for (;first != last; ++first) tmp.push_back(*first);
-        insert_(pos, tmp.begin(), tmp.end(), tmp.size());
+        if (pos == cend()) {
+            size_t n0 = size();
+            for(;first != last; ++first) push_back(*first);
+            return end() - (size() - n0);
+        } else {
+            fast_vector tmp(details::copy_allocator(alloc_));
+            for (;first != last; ++first) tmp.push_back(*first);
+            return insert_(pos, tmp.begin(), tmp.end(), tmp.size());
+        }
     }
 
 }; // end class fast_vector

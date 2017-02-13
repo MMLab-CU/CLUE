@@ -115,7 +115,7 @@ struct calibrated_timing_result {
 
 template<typename F>
 inline calibrated_timing_result calibrated_time(F&& f,
-	                                            double measure_secs = 1.0,
+												double measure_secs = 1.0,
 												double calib_secs = 1.0e-4) {
 	// warming stage
 	stop_watch sw0(true);

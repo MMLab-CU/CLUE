@@ -1,10 +1,10 @@
 # CLUE++
 
-**C**++ **L**ightweight **U**tility **E**xtensions.
+**C**++ **L**ightweight **U**tility **E**xtensions
 
-**Test status:** [![Build Status](https://travis-ci.org/lindahua/CLUE.svg?branch=master)](https://travis-ci.org/lindahua/CLUE)
-
-**Documentation:** [![Documentation Status](http://readthedocs.org/projects/cppstdx/badge/?version=latest)](http://cppstdx.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/lindahua/CLUE.svg?branch=master)](https://travis-ci.org/lindahua/CLUE)
+[![Documentation Status](http://readthedocs.org/projects/cppstdx/badge/?version=latest)](http://cppstdx.readthedocs.io/en/latest/?badge=latest)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 This library requires C++11-compliant compiler. Particularly, it is tested on the following platforms:
 

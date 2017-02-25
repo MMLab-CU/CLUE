@@ -560,7 +560,7 @@ void foreach_token_of_(basic_string_view<charT, Traits> sv, Pred is_delim, F&& f
 
 
 template<typename charT, typename F>
-inline void foreach_token_of(const charT *str,  charT delim, F&& f) {
+inline void foreach_token_of(const charT *str, charT delim, F&& f) {
     details::foreach_token_of_(str,
         details::is_eq_char_<charT>{delim}, ::std::forward<F>(f));
 }

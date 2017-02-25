@@ -65,6 +65,16 @@ TEST(GenericPreds, CharsIn) {
     ASSERT_EQ(false, f('a'));
 }
 
+TEST(GenericPreds, InRange) {
+    auto f = in_range(1, 9);
+    ASSERT_EQ(false, f(0));
+    ASSERT_EQ(true,  f(1));
+    ASSERT_EQ(true,  f(5));
+    ASSERT_EQ(true,  f(9));
+    ASSERT_EQ(false, f(10));
+}
+
+
 struct mod_ {
     int b;
     bool operator()(int x) const noexcept {

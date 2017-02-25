@@ -76,6 +76,24 @@ inline in_t<const char*> in(const char* chs) {
     return in_t<const char*>{chs};
 }
 
+template<typename T>
+struct in_range_t {
+    const T left;
+    const T right;
+
+    in_range_t(const T& l, const T& r)
+        : left(l), right(r) {}
+
+    bool operator()(const T& x) const {
+        return x >= left && x <= right;
+    }
+};
+
+template<typename T>
+inline in_range_t<T> in_range(const T& l, const T& r) {
+    return in_range_t<T>(l, r);
+}
+
 
 // Compound predicates
 

@@ -94,7 +94,7 @@ public:
     }
 
     bool starts_with(view_t sv) const noexcept {
-        return size() >= sv.size() && view_t(l_, l_ + sv.size()) == sv;
+        return size() >= sv.size() && view_t(l_, sv.size()) == sv;
     }
 
     bool starts_with(const CharT* s) const noexcept {
@@ -251,7 +251,7 @@ either_of(const R0& r0, const R1& r1) {
 template<typename CharT, class R0, class R1, class... Rest>
 inline std::function<const CharT*(const CharT*, const CharT*)>
 either_of(const R0& r0, const R1& r1, const Rest&... rest) {
-    return either_of(r0, either_of(r1, rest...));
+    return either_of<CharT>(r0, either_of<CharT>(r1, rest...));
 }
 
 } // end namespace srules

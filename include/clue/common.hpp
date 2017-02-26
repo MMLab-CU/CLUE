@@ -28,6 +28,8 @@
 #define CLUE_UNLIKELY(x) (x)
 #endif
 
+#define CLUE_REQUIRE(...) typename std::enable_if<(__VA_ARGS__), int>::type = 0
+
 namespace clue {
 
 using ::std::size_t;

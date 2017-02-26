@@ -65,7 +65,7 @@ set(UNIT_TESTS
     test_optional
     test_string_view
     test_stringex
-    test_string_range
+    test_mparser
     test_sformat
     test_stemplate
     test_type_name
@@ -112,7 +112,7 @@ set(EXAMPLES
     ex_stopwatch
     ex_timing
     ex_strings
-    ex_lex
+    ex_mparser
 )
 
 set(THREAD_EXAMPLES

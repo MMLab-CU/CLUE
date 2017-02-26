@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 #include <clue/mparser.hpp>
+#include <vector>
 
 using namespace clue;
 using std::string;
+using std::vector;
 
 void verify_mparser(const mparser& m, const char* a, size_t bn, size_t en, bool failed) {
     ASSERT_EQ(failed, m.failed());
@@ -320,4 +322,49 @@ TEST(MParRules, RealNum) {
 
     const char* x3 = "1.e+3*";
     verify_mparser(mparser(x3) >> realnum(), x3, 5, 6, false);
+}
+
+
+TEST(MParser, ForeachTerm) {
+    vector<string> vs;
+
+    auto term = mpar::digits();
+    auto sep = mpar::ch(',');
+    auto act = [&](string_view sv) {
+        vs.push_back(sv.to_string());
+    };
+
+    auto proc = [&](mparser m) {
+        return foreach_term(m, term, sep, act);
+    };
+
+    const char* s1 = "123, 45, 6";
+    vs.clear();
+    auto m1 = proc(mparser(s1));
+    ASSERT_EQ((vector<string>{"123", "45", "6"}), vs);
+    verify_mparser(m1, s1, 10, 10, false);
+
+    const char* s2 = "123, 45, x";
+    vs.clear();
+    auto m2 = proc(mparser(s2));
+    ASSERT_EQ((vector<string>{"123", "45"}), vs);
+    verify_mparser(m2, s2, 7, 10, false);
+
+    const char* s3 = "123, 45 ,x";
+    vs.clear();
+    auto m3 = proc(mparser(s3));
+    ASSERT_EQ((vector<string>{"123", "45"}), vs);
+    verify_mparser(m3, s3, 8, 10, false);
+
+    const char* s4 = "123, 45; x";
+    vs.clear();
+    auto m4 = proc(mparser(s4));
+    ASSERT_EQ((vector<string>{"123", "45"}), vs);
+    verify_mparser(m4, s4, 7, 10, false);
+
+    const char* s5 = "123, 45  x";
+    vs.clear();
+    auto m5 = proc(mparser(s5));
+    ASSERT_EQ((vector<string>{"123", "45"}), vs);
+    verify_mparser(m5, s5, 9, 10, false);
 }

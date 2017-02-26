@@ -37,9 +37,6 @@ void parse_call(const char* ex) {
 
     using namespace mpar;
 
-    // define the rule for each term
-    auto term = either_of(identifier(), realnum());
-
     // the variables to store the views of extracted parts
     string_view fname, arg;
     std::vector<string_view> args;
@@ -56,19 +53,11 @@ void parse_call(const char* ex) {
     assert(!mp.failed());
 
     // loop to extract arguments
-    bool first = true;
-    while (!mp.next_is(')')) {
-        if (!first) mp = mp >> ch(',');
-        assert(!mp.failed());
-
-        // extract the next argument
-        mp = mp.skip_spaces().pop() >> term >> pop_to(arg);
-        assert(!mp.failed());
-        args.push_back(arg);
-
-        first = false;
-        mp = mp.skip_spaces();
-    }
+    auto term = either_of(identifier(), realnum());
+    mp = foreach_term(mp, term, ch(','), [&](string_view e){
+        args.push_back(e);
+    });
+    assert(!mp.failed() && mp.next_is(')'));
 
     std::cout << "Call: " << ex << "\n"
               << "fun:  " << fname << std::endl;

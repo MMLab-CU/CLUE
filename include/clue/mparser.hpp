@@ -199,7 +199,6 @@ public:
 using mparser = basic_mparser<char>;
 using wmparser = basic_mparser<wchar_t>;
 
-
 namespace mpar {
 
 struct pop {
@@ -566,8 +565,41 @@ struct realnum {
     }
 };
 
-
 } // end namespace mpar
+
+
+template<typename CharT, class Term, class Sep, class F>
+basic_mparser<CharT> foreach_term(basic_mparser<CharT> m,
+                                  const Term& term, const Sep& sep, F&& f) {
+
+    using namespace mpar;
+    if (m.failed()) return m;
+
+    basic_string_view<CharT> e;
+
+    auto mt = m.skip_spaces();
+    mt = mt.pop() >> term >> pop_to(e) >> skip_spaces();
+    if (mt) {
+        f(e);
+    } else {
+        return m.skip_to(mt.begin());
+    }
+
+    for(;;) {
+        auto m2 = mt >> sep >> skip_spaces();
+        if (m2.failed()) break;
+
+        m2 = m2.pop() >> term >> pop_to(e) >> skip_spaces();
+        if (m2) {
+            f(e);
+            mt = m2;
+        } else {
+            break;
+        }
+    }
+    return m.skip_to(mt.begin());
+}
+
 
 } // end namespace clue
 

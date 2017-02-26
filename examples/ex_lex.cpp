@@ -11,13 +11,13 @@ void parse_assign(const char* ex) {
     string_range sr(ex);
     sr.skip_spaces();
 
-    auto lhs = sr.accept(srules::identifier);
+    auto lhs = sr.accept(srules::identifier());
 
     sr.skip_spaces();
     assert(sr.accept('='));
     sr.skip_spaces();
 
-    auto rhs = sr.accept(srules::digits);
+    auto rhs = sr.accept(srules::digits());
 
     std::cout << "Assign: " << ex << "\n"
               << "name:   " << lhs.to_view() << "\n"
@@ -30,10 +30,10 @@ void parse_call(const char* ex) {
 
     string_range sr(ex);
 
-    auto id = srules::identifier;
+    auto id = srules::identifier();
     auto term = srules::either_of<char>(
-        srules::identifier,
-        srules::realnum);
+        srules::identifier(),
+        srules::realnum());
 
     sr.skip_spaces();
     auto fname = sr.accept(id);

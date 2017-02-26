@@ -65,7 +65,7 @@ TEST(StringRange, Accepts) {
     ASSERT_EQ("let", r1.to_string());
 
     s.skip_spaces();
-    auto r2 = s.accept(srules::identifier);
+    auto r2 = s.accept(srules::identifier());
     ASSERT_EQ(p0 + 4, r2.begin());
     ASSERT_EQ(2, r2.size());
     ASSERT_EQ("ab", r2.to_string());
@@ -75,7 +75,7 @@ TEST(StringRange, Accepts) {
     ASSERT_EQ(1, r3.size());
     ASSERT_EQ("=", r3.to_string());
 
-    auto r4 = s.accept(srules::digits);
+    auto r4 = s.accept(srules::digits());
     ASSERT_EQ(p0 + 7, r4.begin());
     ASSERT_EQ(3, r4.size());
     ASSERT_EQ("123", r4.to_string());
@@ -90,67 +90,67 @@ TEST(SRules, StrEq) {
 
 TEST(SRules, Identifier) {
     const char* s1 = "ab1*";
-    ASSERT_EQ(s1 + 2, srules::identifier(s1, s1 + 2));
-    ASSERT_EQ(s1 + 3, srules::identifier(s1, s1 + 3));
-    ASSERT_EQ(s1 + 3, srules::identifier(s1, s1 + 4));
+    ASSERT_EQ(s1 + 2, srules::identifier()(s1, s1 + 2));
+    ASSERT_EQ(s1 + 3, srules::identifier()(s1, s1 + 3));
+    ASSERT_EQ(s1 + 3, srules::identifier()(s1, s1 + 4));
 
     const char* s2 = "_X1*";
-    ASSERT_EQ(s2 + 2, srules::identifier(s2, s2 + 2));
-    ASSERT_EQ(s2 + 3, srules::identifier(s2, s2 + 3));
-    ASSERT_EQ(s2 + 3, srules::identifier(s2, s2 + 4));
+    ASSERT_EQ(s2 + 2, srules::identifier()(s2, s2 + 2));
+    ASSERT_EQ(s2 + 3, srules::identifier()(s2, s2 + 3));
+    ASSERT_EQ(s2 + 3, srules::identifier()(s2, s2 + 4));
 
     const char* s3 = "1ab*";
-    ASSERT_EQ(s3, srules::identifier(s3, s3 + 2));
-    ASSERT_EQ(s3, srules::identifier(s3, s3 + 3));
-    ASSERT_EQ(s3, srules::identifier(s3, s3 + 4));
+    ASSERT_EQ(s3, srules::identifier()(s3, s3 + 2));
+    ASSERT_EQ(s3, srules::identifier()(s3, s3 + 3));
+    ASSERT_EQ(s3, srules::identifier()(s3, s3 + 4));
 
     const char* s4 = "*abc";
-    ASSERT_EQ(s4, srules::identifier(s4, s4 + 2));
-    ASSERT_EQ(s4, srules::identifier(s4, s4 + 3));
-    ASSERT_EQ(s4, srules::identifier(s4, s4 + 4));
+    ASSERT_EQ(s4, srules::identifier()(s4, s4 + 2));
+    ASSERT_EQ(s4, srules::identifier()(s4, s4 + 3));
+    ASSERT_EQ(s4, srules::identifier()(s4, s4 + 4));
 }
 
 TEST(SRules, Digits) {
     const char* s1 = "123*";
-    ASSERT_EQ(s1 + 2, srules::digits(s1, s1 + 2));
-    ASSERT_EQ(s1 + 3, srules::digits(s1, s1 + 3));
-    ASSERT_EQ(s1 + 3, srules::digits(s1, s1 + 4));
+    ASSERT_EQ(s1 + 2, srules::digits()(s1, s1 + 2));
+    ASSERT_EQ(s1 + 3, srules::digits()(s1, s1 + 3));
+    ASSERT_EQ(s1 + 3, srules::digits()(s1, s1 + 4));
 
     const char* s2 = "a23*";
-    ASSERT_EQ(s2, srules::digits(s2, s2 + 2));
-    ASSERT_EQ(s2, srules::digits(s2, s2 + 3));
-    ASSERT_EQ(s2, srules::digits(s2, s2 + 4));
+    ASSERT_EQ(s2, srules::digits()(s2, s2 + 2));
+    ASSERT_EQ(s2, srules::digits()(s2, s2 + 3));
+    ASSERT_EQ(s2, srules::digits()(s2, s2 + 4));
 }
 
 TEST(SRules, RealNum) {
     const char* s1 = "123*";
-    ASSERT_EQ(s1 + 2, srules::realnum(s1, s1 + 2));
-    ASSERT_EQ(s1 + 3, srules::realnum(s1, s1 + 3));
-    ASSERT_EQ(s1 + 3, srules::realnum(s1, s1 + 4));
+    ASSERT_EQ(s1 + 2, srules::realnum()(s1, s1 + 2));
+    ASSERT_EQ(s1 + 3, srules::realnum()(s1, s1 + 3));
+    ASSERT_EQ(s1 + 3, srules::realnum()(s1, s1 + 4));
 
     const char* s2 = "123.x";
-    ASSERT_EQ(s2 + 4, srules::realnum(s2, s2 + 5));
+    ASSERT_EQ(s2 + 4, srules::realnum()(s2, s2 + 5));
 
     const char* s3 = ".54x";
-    ASSERT_EQ(s3 + 3, srules::realnum(s3, s3 + 4));
+    ASSERT_EQ(s3 + 3, srules::realnum()(s3, s3 + 4));
 
     const char* s4 = "12.345x";
-    ASSERT_EQ(s4 + 6, srules::realnum(s4, s4 + 7));
+    ASSERT_EQ(s4 + 6, srules::realnum()(s4, s4 + 7));
 
     const char* s5 = "-123.45x";
-    ASSERT_EQ(s5 + 7, srules::realnum(s5, s5 + 8));
+    ASSERT_EQ(s5 + 7, srules::realnum()(s5, s5 + 8));
 
     const char* s6 = "3.45e";
-    ASSERT_EQ(s6 + 4, srules::realnum(s6, s6 + 5));
+    ASSERT_EQ(s6 + 4, srules::realnum()(s6, s6 + 5));
 
     const char* s7 = "3.45e12e";
-    ASSERT_EQ(s7 + 7, srules::realnum(s7, s7 + 8));
+    ASSERT_EQ(s7 + 7, srules::realnum()(s7, s7 + 8));
 
     const char* s8 = "3.45e+12e";
-    ASSERT_EQ(s8 + 8, srules::realnum(s8, s8 + 9));
+    ASSERT_EQ(s8 + 8, srules::realnum()(s8, s8 + 9));
 
     const char* s9 = "-3.4e-12e";
-    ASSERT_EQ(s9 + 8, srules::realnum(s9, s9 + 9));
+    ASSERT_EQ(s9 + 8, srules::realnum()(s9, s9 + 9));
 }
 
 TEST(SRules, EitherOf) {
@@ -162,7 +162,7 @@ TEST(SRules, EitherOf) {
     ASSERT_EQ("xy",  string_range("xya").accept(r1).to_string());
     ASSERT_EQ("",    string_range("abx").accept(r1).to_string());
 
-    auto r2 = either_of<char>(str_eq("abc"), str_eq("xy"), srules::digits);
+    auto r2 = either_of<char>(str_eq("abc"), str_eq("xy"), srules::digits());
     ASSERT_EQ("abc", string_range("abcx").accept(r2).to_string());
     ASSERT_EQ("xy",  string_range("xya").accept(r2).to_string());
     ASSERT_EQ("123", string_range("123.").accept(r2).to_string());

@@ -21,8 +21,9 @@ private:
     const CharT* r_;
 
 public:
-    using view_t = basic_string_view<CharT>;
-    using string_t = std::basic_string<CharT>;
+    using value_type = CharT;
+    using view_type = basic_string_view<CharT>;
+    using string_type = std::basic_string<CharT>;
 
     basic_string_range() noexcept
         : l_(nullptr), r_(nullptr) {}
@@ -30,13 +31,13 @@ public:
     basic_string_range(const CharT* l, const CharT* r) noexcept
         : l_(l), r_(r) {}
 
-    basic_string_range(view_t sv) noexcept
+    basic_string_range(view_type sv) noexcept
         : l_(sv.begin()), r_(sv.end()) {}
 
     basic_string_range(const CharT* s)
-        : basic_string_range(view_t(s)) {}
+        : basic_string_range(view_type(s)) {}
 
-    basic_string_range(const string_t& s) noexcept
+    basic_string_range(const string_type& s) noexcept
         : l_(s.data()), r_(s.data() + s.size()) {}
 
     bool empty() const noexcept {
@@ -67,20 +68,16 @@ public:
         return {l_, p};
     }
 
-    basic_string_range before(const basic_string_range& r) const noexcept {
-        return {l_, r.l_};
-    }
-
     basic_string_range from(const CharT* p) const noexcept {
         return {p, r_};
     }
 
-    view_t to_view() const noexcept {
-        return view_t(begin(), size());
+    view_type to_view() const noexcept {
+        return view_type(begin(), size());
     }
 
-    string_t to_string() const noexcept {
-        return string_t(begin(), size());
+    string_type to_string() const {
+        return string_type(begin(), size());
     }
 
 public:
@@ -93,12 +90,12 @@ public:
         return starts_with(eq(c));
     }
 
-    bool starts_with(view_t sv) const noexcept {
-        return size() >= sv.size() && view_t(l_, sv.size()) == sv;
+    bool starts_with(view_type sv) const noexcept {
+        return size() >= sv.size() && view_type(l_, sv.size()) == sv;
     }
 
     bool starts_with(const CharT* s) const noexcept {
-        return starts_with(view_t(s));
+        return starts_with(view_type(s));
     }
 
     basic_string_range no_skip() const noexcept {
@@ -141,12 +138,12 @@ public:
         return skip_to(p);
     }
 
-    basic_string_range accept(view_t sv) {
+    basic_string_range accept(view_type sv) {
         return starts_with(sv) ? skip_by(sv.size()) : no_skip();
     }
 
     basic_string_range accept(const CharT* s) {
-        return accept(view_t(s));
+        return accept(view_type(s));
     }
 
     template<class Rule>
@@ -191,8 +188,13 @@ struct identifier_t {
     }
 };
 
-constexpr identifier_t<char> identifier{};
-constexpr identifier_t<wchar_t> widentifier{};
+inline identifier_t<char> identifier() {
+    return identifier_t<char>{};
+}
+
+inline identifier_t<wchar_t> widentifier() {
+    return identifier_t<wchar_t>{};
+}
 
 
 template<typename CharT>
@@ -203,8 +205,13 @@ struct digits_t {
     }
 };
 
-constexpr digits_t<char> digits{};
-constexpr digits_t<wchar_t> wdigits{};
+inline digits_t<char> digits() {
+    return digits_t<char>{};
+}
+
+inline digits_t<wchar_t> wdigits() {
+    return digits_t<wchar_t>{};
+}
 
 template<typename CharT>
 struct realnum_t {
@@ -235,8 +242,13 @@ struct realnum_t {
     }
 };
 
-constexpr realnum_t<char> realnum{};
-constexpr realnum_t<wchar_t> wrealnum{};
+inline realnum_t<char> realnum() {
+    return realnum_t<char>{};
+}
+
+inline realnum_t<wchar_t> wrealnum() {
+    return realnum_t<wchar_t>{};
+}
 
 
 template<typename CharT, class R0, class R1>

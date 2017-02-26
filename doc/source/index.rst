@@ -49,6 +49,7 @@ String and text processing
 
    string_view.rst
    stringex.rst
+   string_range.rst
    sformat.rst
    stemplate.rst
    textio.rst

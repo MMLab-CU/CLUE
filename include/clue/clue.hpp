@@ -12,6 +12,7 @@
 
 // string and formatting
 #include <clue/string_view.hpp>
+#include <clue/string_range.hpp>
 #include <clue/stringex.hpp>
 #include <clue/sformat.hpp>
 

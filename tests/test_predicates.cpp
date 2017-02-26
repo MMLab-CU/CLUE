@@ -56,6 +56,17 @@ TEST(GenericPreds, In) {
     ASSERT_EQ(true,  f(5));
 }
 
+TEST(GenericPreds, CharEq) {
+    auto f = eq('a');
+    ASSERT_EQ(false, f('A'));
+    ASSERT_EQ(true,  f('a'));
+    ASSERT_EQ(false, f('x'));
+
+    ASSERT_EQ(false, f(wchar_t('A')));
+    ASSERT_EQ(true,  f(wchar_t('a')));
+    ASSERT_EQ(false, f(wchar_t('x')));
+}
+
 TEST(GenericPreds, CharsIn) {
     auto f = in("123456789");
     ASSERT_EQ(true,  f('1'));
@@ -63,6 +74,12 @@ TEST(GenericPreds, CharsIn) {
     ASSERT_EQ(true,  f('9'));
     ASSERT_EQ(false, f('0'));
     ASSERT_EQ(false, f('a'));
+
+    ASSERT_EQ(true,  f(wchar_t('1')));
+    ASSERT_EQ(true,  f(wchar_t('3')));
+    ASSERT_EQ(true,  f(wchar_t('9')));
+    ASSERT_EQ(false, f(wchar_t('0')));
+    ASSERT_EQ(false, f(wchar_t('a')));
 }
 
 TEST(GenericPreds, InRange) {

@@ -157,14 +157,14 @@ TEST(SRules, EitherOf) {
     using srules::either_of;
     using srules::str_eq;
 
-    auto r1 = either_of<char>(str_eq("abc"), str_eq("xy"));
-    ASSERT_EQ("abc", string_range("abcx").accept(r1).to_string());
-    ASSERT_EQ("xy",  string_range("xya").accept(r1).to_string());
-    ASSERT_EQ("",    string_range("abx").accept(r1).to_string());
-
-    auto r2 = either_of<char>(str_eq("abc"), str_eq("xy"), srules::digits());
+    auto r2 = either_of(str_eq("abc"), str_eq("xy"));
     ASSERT_EQ("abc", string_range("abcx").accept(r2).to_string());
     ASSERT_EQ("xy",  string_range("xya").accept(r2).to_string());
-    ASSERT_EQ("123", string_range("123.").accept(r2).to_string());
-    ASSERT_EQ("",    string_range("x12").accept(r2).to_string());
+    ASSERT_EQ("",    string_range("abx").accept(r2).to_string());
+
+    auto r3 = either_of(str_eq("abc"), str_eq("xy"), srules::digits());
+    ASSERT_EQ("abc", string_range("abcx").accept(r3).to_string());
+    ASSERT_EQ("xy",  string_range("xya").accept(r3).to_string());
+    ASSERT_EQ("123", string_range("123.").accept(r3).to_string());
+    ASSERT_EQ("",    string_range("x12").accept(r3).to_string());
 }

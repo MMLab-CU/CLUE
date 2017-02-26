@@ -31,7 +31,7 @@ void parse_call(const char* ex) {
     string_range sr(ex);
 
     auto id = srules::identifier();
-    auto term = srules::either_of<char>(
+    auto term = srules::either_of(
         srules::identifier(),
         srules::realnum());
 

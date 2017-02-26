@@ -177,9 +177,8 @@ inline str_eq_t<CharT> str_eq(const CharT* s) {
     return str_eq_t<CharT>{string_view(s)};
 }
 
-
-template<typename CharT>
-struct identifier_t {
+struct identifier {
+    template<typename CharT>
     const CharT* operator()(const CharT* l, const CharT* r) const {
         if (l == r || !( chars::is_alpha(*l) || *l == CharT('_') )) return l;
         ++l;
@@ -188,33 +187,16 @@ struct identifier_t {
     }
 };
 
-inline identifier_t<char> identifier() {
-    return identifier_t<char>{};
-}
-
-inline identifier_t<wchar_t> widentifier() {
-    return identifier_t<wchar_t>{};
-}
-
-
-template<typename CharT>
-struct digits_t {
+struct digits {
+    template<typename CharT>
     const CharT* operator()(const CharT* l, const CharT* r) const {
         while (l != r && chars::is_digit(*l)) ++l;
         return l;
     }
 };
 
-inline digits_t<char> digits() {
-    return digits_t<char>{};
-}
-
-inline digits_t<wchar_t> wdigits() {
-    return digits_t<wchar_t>{};
-}
-
-template<typename CharT>
-struct realnum_t {
+struct realnum {
+    template<typename CharT>
     const CharT* operator()(const CharT* l, const CharT* r) const {
         if (l == r) return l;
         basic_string_range<CharT> sr(l, r);
@@ -224,9 +206,9 @@ struct realnum_t {
 
         // main
         if ( sr.accept(CharT('.')) ) {
-            if (!sr.accept(digits_t<CharT>{})) return l;
-        } else if (sr.accept(digits_t<CharT>{})) {
-            sr.accept(CharT('.')) && sr.accept(digits_t<CharT>{});
+            if (!sr.accept(digits())) return l;
+        } else if (sr.accept(digits())) {
+            sr.accept(CharT('.')) && sr.accept(digits());
         } else {
             return l;
         }
@@ -235,35 +217,72 @@ struct realnum_t {
         const CharT* a = sr.begin();
         if ( sr.accept(CharT('E')) || sr.accept(CharT('e')) ) {
             sr.accept(CharT('+')) || sr.accept(CharT('-'));
-            if (sr.accept(digits_t<CharT>{})) a = sr.begin();
+            if (sr.accept(digits())) a = sr.begin();
         }
 
         return a;
     }
 };
 
-inline realnum_t<char> realnum() {
-    return realnum_t<char>{};
+
+namespace details {
+
+template<class R0, class R1>
+class either_of_impl {
+private:
+    R0 r0_;
+    R1 r1_;
+
+public:
+    either_of_impl(const R0& r0, const R1& r1)
+        : r0_(r0), r1_(r1) {}
+
+    template<typename CharT>
+    const CharT* operator()(const CharT* l, const CharT* r) const {
+        const CharT* p = r0_(l, r);
+        return p == l ? r1_(l, r) : p;
+    }
+};
+
+template<class... Rs>
+struct _either_of;
+
+template<class R0>
+struct _either_of<R0> {
+    using type = R0;
+};
+
+template<class R0, class R1>
+struct _either_of<R0, R1> {
+    using type = either_of_impl<R0, R1>;
+};
+
+template<class R0, class R1, class... Rest>
+struct _either_of<R0, R1, Rest...> {
+    using type = either_of_impl<R0,
+        typename _either_of<R1, Rest...>::type>;
+};
+
+} // end namespace details
+
+template<class... Rs>
+using either_of_t = typename details::_either_of<Rs...>::type;
+
+
+template<class R0>
+inline R0 either_of(const R0& r0) {
+    return r0;
 }
 
-inline realnum_t<wchar_t> wrealnum() {
-    return realnum_t<wchar_t>{};
+template<class R0, class R1>
+inline either_of_t<R0, R1> either_of(const R0& r0, const R1& r1) {
+    return {r0, r1};
 }
 
-
-template<typename CharT, class R0, class R1>
-inline std::function<const CharT*(const CharT*, const CharT*)>
-either_of(const R0& r0, const R1& r1) {
-    return [r0, r1](const CharT* l, const CharT* r) {
-        const CharT* p = r0(l, r);
-        return p == l ? r1(l, r) : p;
-    };
-}
-
-template<typename CharT, class R0, class R1, class... Rest>
-inline std::function<const CharT*(const CharT*, const CharT*)>
+template<class R0, class R1, class... Rest>
+inline either_of_t<R0, R1, Rest...>
 either_of(const R0& r0, const R1& r1, const Rest&... rest) {
-    return either_of<CharT>(r0, either_of<CharT>(r1, rest...));
+    return either_of(r0, either_of(r1, rest...));
 }
 
 } // end namespace srules

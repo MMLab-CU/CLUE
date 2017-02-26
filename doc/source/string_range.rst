@@ -324,24 +324,24 @@ All these rules are in the name space ``clue::srules``.
 
     Equivalent to ``str_eq(basic_string_view<CharT>(s))``.
 
-.. cpp:function:: srule::identifier<CharT>()
+.. cpp:function:: srule::identifier()
 
     Returns a rule that matches a typical identifier.
 
     A typical identifier should starts with `_` or an alphabetic character,
     which is then followed by `_`, alphabetic characters, or digits.
 
-.. cpp:function:: srule::digits<CharT>()
+.. cpp:function:: srule::digits()
 
     Returns a rule that matches a sequence of digits.
 
-.. cpp:function:: srule::realnum<CharT>()
+.. cpp:function:: srule::realnum()
 
     Returns a rule that matches a string that representing a real number
     with decimal or scientific notation, *e.g.* ``12``, ``-12.34``,
     or ``3.45e+10``.
 
-.. cpp:function:: srule::either_of<CharT>(R0&& r0, R1&& r1, ...)
+.. cpp:function:: srule::either_of(R0&& r0, ...)
 
     It returns a combined rule, which first tries to match ``r0``.
     If no match is found, then it tries to match ``r1``.

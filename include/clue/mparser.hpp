@@ -52,16 +52,16 @@ public:
     explicit basic_mparser(const CharT* s)
         : basic_mparser(view_type(s)) {}
 
-    explicit basic_mparser(view_type v, size_t pos)
+    explicit basic_mparser(view_type v, size_type pos)
         : anchor_(v.begin() + pos), beg_(anchor_), end_(v.end()) {
         if (pos > v.size())
             throw std::out_of_range("basic_mparser: pos out of range.");
     }
 
-    explicit basic_mparser(const CharT* s, size_t pos)
+    explicit basic_mparser(const CharT* s, size_type pos)
         : basic_mparser(view_type(s), pos) {}
 
-    explicit basic_mparser(const string_type& s, size_t pos)
+    explicit basic_mparser(const string_type& s, size_type pos)
         : basic_mparser(view_type(s), pos) {}
 
 public:
@@ -111,7 +111,7 @@ public:
         return *beg_;
     }
 
-    view_type matched_view() const {
+    view_type matched_view() const noexcept {
         return view_type(anchor_, matched_size());
     }
 
@@ -127,7 +127,7 @@ public:
         return !failed() && remain() && front() == c;
     }
 
-    bool next_is(view_type sv) const {
+    bool next_is(view_type sv) const noexcept {
         size_t n = sv.size();
         return !failed() &&
                remain_size() >= n &&
@@ -177,7 +177,7 @@ public:
         return {anchor_, p, end_, failed_};
     }
 
-    basic_mparser fail() const {
+    basic_mparser fail() const noexcept {
         return {anchor_, beg_, end_, true};
     }
 
@@ -353,7 +353,7 @@ inline chs_t<chars::is_blank_t> blanks() {
 }
 
 inline chs_t<chars::is_blank_t> blanks(int lb) {
-    return {chars::is_blank, 0};
+    return {chars::is_blank, lb};
 }
 
 template<typename CharT>

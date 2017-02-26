@@ -77,12 +77,12 @@ public:
         return end_;
     }
 
-    bool failed() const noexcept {
-        return failed_;
+    operator bool() const noexcept {
+        return !failed_;
     }
 
-    bool matched() const noexcept {
-        return !failed_ && beg_ != anchor_;
+    bool failed() const noexcept {
+        return failed_;
     }
 
     size_type matched_size() const noexcept {
@@ -123,8 +123,28 @@ public:
         return view_type(beg_, remain_size());
     }
 
-    basic_mparser set_anchor() const {
-        return {beg_, beg_, end_, false};
+    bool next_is(CharT c) const noexcept {
+        return !failed() && remain() && front() == c;
+    }
+
+    bool next_is(view_type sv) const {
+        size_t n = sv.size();
+        return !failed() &&
+               remain_size() >= n &&
+               view_type(beg_, n) == sv;
+    }
+
+    bool next_is(const char* s) const {
+        return next_is(view_type(s));
+    }
+
+    basic_mparser pop() const noexcept {
+        return {beg_, beg_, end_, failed_};
+    }
+
+    basic_mparser pop_to(string_view& dst) const noexcept {
+        if (!failed_) dst = matched_view();
+        return pop();
     }
 
     basic_mparser skip_to(iterator p) const {
@@ -181,6 +201,27 @@ using wmparser = basic_mparser<wchar_t>;
 
 
 namespace mpar {
+
+struct pop {
+    template<class CharT>
+    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const noexcept {
+        return m.pop();
+    }
+};
+
+template<typename CharT>
+struct pop_to_t {
+    basic_string_view<CharT>& dst;
+    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const noexcept {
+        return m.pop_to(dst);
+    }
+};
+
+template<typename CharT>
+inline pop_to_t<CharT> pop_to(basic_string_view<CharT>& dst) noexcept {
+    return pop_to_t<CharT>{dst};
+}
+
 
 template<class Pred>
 struct skip_t {
@@ -312,12 +353,15 @@ inline chs_t<chars::is_blank_t> blanks() {
     return {chars::is_blank};
 }
 
+inline chs_t<chars::is_blank_t> blanks(int lb) {
+    return {chars::is_blank, 0};
+}
+
 template<typename CharT>
 struct term_t {
     basic_string_view<CharT> term_;
     basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        return starts_with(m.remain_view(), term_) ?
-            m.skip_by(term_.size()) : m.fail();
+        return m.next_is(term_) ? m.skip_by(term_.size()) : m.fail();
     }
 };
 

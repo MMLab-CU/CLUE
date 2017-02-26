@@ -113,7 +113,7 @@ set(EXAMPLES
     ex_stopwatch
     ex_timing
     ex_strings
-    ex_lex
+    ex_mparser
 )
 
 set(THREAD_EXAMPLES

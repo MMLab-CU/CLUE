@@ -6,6 +6,7 @@ using std::string;
 
 void verify_mparser(const mparser& m, const char* a, size_t bn, size_t en, bool failed) {
     ASSERT_EQ(failed, m.failed());
+    ASSERT_EQ(!failed, (bool)m);
 
     ASSERT_EQ(a, m.anchor());
     ASSERT_EQ(a + bn, m.begin());
@@ -25,9 +26,6 @@ void verify_mparser(const mparser& m, const char* a, size_t bn, size_t en, bool 
     if (!failed) {
         ASSERT_EQ(string_view(a, bn), m.matched_view());
         ASSERT_EQ(string(a, bn), m.matched_string());
-        ASSERT_EQ((bn > 0), m.matched());
-    } else {
-        ASSERT_FALSE(m.matched());
     }
 }
 
@@ -61,14 +59,43 @@ TEST(MParser, Skips) {
     verify_mparser(m.skip_until(chars::is_digit), s, 6, 9, false);
 }
 
-TEST(MParser, SetAnchor) {
+TEST(MParser, NextIs) {
+    const char* s1 = "abcde";
+    mparser m(s1);
+
+    ASSERT_TRUE(m.next_is('a'));
+    ASSERT_TRUE(m.next_is("a"));
+    ASSERT_TRUE(m.next_is("abc"));
+    ASSERT_TRUE(m.next_is("abcde"));
+
+    ASSERT_FALSE(m.next_is('b'));
+    ASSERT_FALSE(m.next_is("bc"));
+
+    ASSERT_TRUE(m.skip_by(2).next_is('c'));
+    ASSERT_TRUE(m.skip_by(2).next_is("cd"));
+    ASSERT_FALSE(m.skip_by(2).next_is("a"));
+    ASSERT_FALSE(m.fail().next_is("a"));
+}
+
+TEST(MParser, Pop) {
     const char* s = "1234567";
     mparser m(s);
 
-    verify_mparser(m.set_anchor(), s, 0, 7, false);
-    verify_mparser(m.fail().set_anchor(), s, 0, 7, false);
+    verify_mparser(m.pop(), s, 0, 7, false);
+    verify_mparser(m.fail().pop(), s, 0, 7, true);
 
-    verify_mparser(m.skip_by(3).set_anchor(), s + 3, 0, 4, false);
+    verify_mparser(m.skip_by(3).pop(), s + 3, 0, 4, false);
+
+    string_view sv1;
+    verify_mparser(m.skip_by(3).pop_to(sv1), s + 3, 0, 4, false);
+    ASSERT_EQ(s, sv1.data());
+    ASSERT_EQ(3, sv1.size());
+
+    verify_mparser(m.skip_by(3).fail().pop(), s + 3, 0, 4, true);
+
+    string_view sv2;
+    verify_mparser(m.skip_by(3).fail().pop_to(sv2), s + 3, 0, 4, true);
+    ASSERT_TRUE(sv2.empty());
 }
 
 
@@ -85,6 +112,18 @@ TEST(MParRules, Skips) {
                      >> mpar::skip(chars::is_digit),
                    s, 7, 7, false);
     verify_mparser(m.fail() >> mpar::skip_by(3), s, 0, 7, true);
+}
+
+TEST(MParRules, Pop) {
+    const char* s = "123*";
+    mparser m(s);
+
+    string_view sv;
+    verify_mparser(m >> mpar::digits() >> mpar::pop(), s+3, 0, 1, false);
+    verify_mparser(m >> mpar::digits() >> mpar::pop_to(sv), s+3, 0, 1, false);
+
+    ASSERT_EQ(s, sv.data());
+    ASSERT_EQ(3, sv.size());
 }
 
 TEST(MParRules, Ch) {

@@ -65,7 +65,6 @@ set(UNIT_TESTS
     test_optional
     test_string_view
     test_stringex
-    test_string_range
     test_mparser
     test_sformat
     test_stemplate

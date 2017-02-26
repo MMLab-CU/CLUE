@@ -44,9 +44,6 @@ using clue::reindexed_view;
 // string_view
 using clue::string_view;
 
-// string_range
-using clue::string_range;
-
 // mparser
 using clue::mparser;
 

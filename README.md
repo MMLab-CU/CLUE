@@ -37,7 +37,7 @@ Below is a list of components available in the library.
 
 - Class template ``string_view``: light-weight wrapper of sub-strings. **(backport from CELF)**
 - Extensions of string functionalities (*e.g.* trimming, value parsing, tokenizers).
-- Class template ``string_range``: specifically designed to facilitate string parsing.
+- Class template ``mparser``: a light-weight generic parser combinator to facilitate string parsing.
 - A light-weight string template engine.
 - In-memory string formatting and extensible formatter systems.
 - Text I/O functionalities (*e.g.* read file into a string and wrap string into a stream of lines).

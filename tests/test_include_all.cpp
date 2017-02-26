@@ -8,6 +8,8 @@
 // misc
 using clue::_;
 using clue::pass;
+using clue::index_sequence;
+using clue::apply;
 
 // predicates
 using clue::eq;
@@ -41,6 +43,9 @@ using clue::reindexed_view;
 
 // string_view
 using clue::string_view;
+
+// string_range
+using clue::string_range;
 
 // fast_vector
 using clue::fast_vector;

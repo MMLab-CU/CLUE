@@ -47,6 +47,9 @@ using clue::string_view;
 // string_range
 using clue::string_range;
 
+// mparser
+using clue::mparser;
+
 // fast_vector
 using clue::fast_vector;
 

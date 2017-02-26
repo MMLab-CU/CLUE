@@ -16,6 +16,9 @@
 #define CLUE_REQUIRE_CHAR_PRED(P) \
     CLUE_REQUIRE(std::is_same<typename std::result_of<P(char)>::type, bool>::value)
 
+#define CLUE_REQUIRE_MPAR_RULE(Rule) \
+    CLUE_REQUIRE(std::is_same<typename std::result_of<Rule(mparser)>::type, mparser>::value)
+
 
 namespace clue {
 
@@ -338,7 +341,8 @@ struct maybe_t {
     }
 };
 
-template<class Rule>
+template<class Rule,
+         CLUE_REQUIRE_MPAR_RULE(Rule)>
 inline maybe_t<Rule> maybe(const Rule& rule) {
     return {rule};
 }
@@ -399,12 +403,15 @@ struct _either_of<R1, R2, Rest...> {
 template<class... Rs>
 using either_of_t = typename details::_either_of<Rs...>::type;
 
-template<class R>
+template<class R,
+         CLUE_REQUIRE_MPAR_RULE(R)>
 inline either_of_t<R> either_of(const R& r) {
     return {r};
 }
 
-template<class R1, class R2>
+template<class R1, class R2,
+         CLUE_REQUIRE_MPAR_RULE(R1),
+         CLUE_REQUIRE_MPAR_RULE(R2)>
 inline either_of_t<R1, R2> either_of(const R1& r1, const R2& r2) {
     return {r1, r2};
 }
@@ -457,12 +464,15 @@ struct _chain<R1, R2, Rest...> {
 template<class... Rs>
 using chain_t = typename details::_chain<Rs...>::type;
 
-template<class R>
+template<class R,
+         CLUE_REQUIRE_MPAR_RULE(R)>
 inline chain_t<R> chain(const R& r) {
     return {r};
 }
 
-template<class R1, class R2>
+template<class R1, class R2,
+         CLUE_REQUIRE_MPAR_RULE(R1),
+         CLUE_REQUIRE_MPAR_RULE(R2)>
 inline chain_t<R1, R2> chain(const R1& r1, const R2& r2) {
     return {r1, r2};
 }

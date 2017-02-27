@@ -22,6 +22,18 @@
 
 namespace clue {
 
+
+//===============================================
+//
+//  Class definition
+//
+//===============================================
+
+template<typename CharT> class basic_mparser;
+
+using mparser = basic_mparser<char>;
+using wmparser = basic_mparser<wchar_t>;
+
 // a light-weight monadic parser
 template<typename CharT>
 class basic_mparser {
@@ -188,24 +200,19 @@ public:
 
 }; // end class mparser
 
-using mparser = basic_mparser<char>;
-using wmparser = basic_mparser<wchar_t>;
-
 namespace mpar {
 
-struct pop {
-    template<class CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const noexcept {
-        return m.pop();
-    }
-};
+//===============================================
+//
+//  Manipulators
+//
+//===============================================
+
+struct pop {};
 
 template<typename CharT>
 struct pop_to_t {
     basic_string_view<CharT>& dst;
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const noexcept {
-        return m.pop_to(dst);
-    }
 };
 
 template<typename CharT>
@@ -213,14 +220,17 @@ inline pop_to_t<CharT> pop_to(basic_string_view<CharT>& dst) noexcept {
     return pop_to_t<CharT>{dst};
 }
 
+struct skip_by_t {
+    size_t n;
+};
+
+inline skip_by_t skip_by(size_t n) {
+    return skip_by_t{n};
+}
 
 template<class Pred>
 struct skip_t {
     Pred pred;
-    template<class CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        return m.skip(pred);
-    }
 };
 
 template<class Pred,
@@ -233,25 +243,9 @@ inline skip_t<chars::is_space_t> skip_spaces() {
     return skip(chars::is_space);
 }
 
-struct skip_by_t {
-    size_t n;
-    template<class CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        return m.skip_by(n);
-    }
-};
-
-inline skip_by_t skip_by(size_t n) {
-    return skip_by_t{n};
-}
-
 template<class Pred>
 struct skip_until_t {
     Pred pred;
-    template<class CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        return m.skip_until(pred);
-    }
 };
 
 template<class Pred,
@@ -259,6 +253,13 @@ template<class Pred,
 inline skip_until_t<Pred> skip_until(const Pred& pred) {
     return skip_until_t<Pred>{pred};
 }
+
+
+//===============================================
+//
+//  Matching rules
+//
+//===============================================
 
 template<class Pred>
 struct ch_t {
@@ -560,12 +561,44 @@ struct realnum {
 } // end namespace mpar
 
 
+//===============================================
+//
+//  External functions
+//
+//===============================================
+
+
 template<typename CharT, class Rule,
          CLUE_REQUIRE(std::is_same<
                       typename std::result_of<Rule(basic_mparser<CharT>)>::type,
                       basic_mparser<CharT>>::value)>
 inline basic_mparser<CharT> operator>>(const basic_mparser<CharT>& m, Rule&& rule) {
     return m ? rule(m) : m;
+}
+
+template<typename CharT>
+inline basic_mparser<CharT> operator>>(const basic_mparser<CharT>& m, const mpar::pop) {
+    return m ? m.pop() : m;
+}
+
+template<typename CharT>
+inline basic_mparser<CharT> operator>>(const basic_mparser<CharT>& m, const mpar::pop_to_t<CharT>& s) {
+    return m ? m.pop_to(s.dst) : m;
+}
+
+template<typename CharT>
+inline basic_mparser<CharT> operator>>(const basic_mparser<CharT>& m, const mpar::skip_by_t& s) {
+    return m ? m.skip_by(s.n) : m;
+}
+
+template<typename CharT, class Pred>
+inline basic_mparser<CharT> operator>>(const basic_mparser<CharT>& m, const mpar::skip_t<Pred>& s) {
+    return m ? m.skip(s.pred) : m;
+}
+
+template<typename CharT, class Pred>
+inline basic_mparser<CharT> operator>>(const basic_mparser<CharT>& m, const mpar::skip_until_t<Pred>& s) {
+    return m ? m.skip_until(s.pred) : m;
 }
 
 

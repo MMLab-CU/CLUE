@@ -487,7 +487,7 @@ using chain_t = typename details::_chain<Rs...>::type;
 template<class R,
          CLUE_REQUIRE_MPAR_RULE(R)>
 inline chain_t<R> chain(const R& r) {
-    return {r};
+    return r;
 }
 
 template<class R1, class R2,

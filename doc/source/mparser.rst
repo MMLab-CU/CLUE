@@ -294,50 +294,78 @@ instead, they return the manipulated m-parser as a new one.
 
     Tag the m-parser as failed.
 
-.. cpp:function:: basic_mparser operator>>(Rule&& rule) const
+
+We also provide a set of *manipulators*, which can be used
+with the insertion operator, to accomplish similar functionalities.
+The advantage of such manipulators is that they can be
+used in a way similar to a matching rule. These manipulators
+are defined within the namespace ``clue::mpar``.
+
+.. cpp:function:: mpar::pop()
+
+    Get a manipulator that pops the matched part, moving ``anchor`` to ``begin``.
+
+    :note: ``m >> mpar::pop()`` is equivalent to ``m.pop()``.
+
+.. cpp:function:: mpar::pop_to(string_view& dst)
+
+    Get a manipulator that pops the matched part, and stores it to ``dst``.
+
+    :note: ``m >> mpar::pop_to(dst)`` is equivalent to ``m.pop_to(dst)``.
+
+.. cpp:function:: mpar::skip_by(size_t n)
+
+    Get a manipulator that skips ``n`` characters.
+
+    :note: ``m >> mpar::skip_by(n)`` is equivalent to ``m.skip(n)``.
+
+.. cpp:function:: mpar::skip(const Pred& pred)
+
+    Get a manipulator that skips all characters that satisfy ``pred``.
+
+    :note: ``m >> mpar::skip(pred)`` is equivalent to ``m.skip(pred)``.
+
+.. cpp:function:: mpar::skip_until(const Pred& pred)
+
+    Get a manipulator that skips until it reaches the end or hits a
+    character that satisfies ``pred``.
+
+    :note: ``m >> mpar::skip_until(pred)`` is equivalent to ``m.skip_until(pred)``.
+
+
+Matching Rules
+----------------
+
+.. cpp:function:: basic_mparser operator>>(basic_mparser& m, Rule&& rule) const
 
     Monadic binding with a given rule.
 
     Generally, ``rule`` is a function that tries to match a pattern
-    with the remaining part (of its leading sub-string).
-    It should return a forwarded m-parser when it matches successfully,
-    otherwise it should return the original m-parser tagged as failed.
+    with the remaining part (or a leading sub-string thereof).
+    Specifically, ``rule`` takes as input the beginning pointer ``b``
+    and pass-by-end pointer ``e`` and returns a m-parser
+    (of class ``basic_mparser<CharT>``) that indciates the parsing results.
 
-    ``rule`` can also be some function that manipulates
-    the input m-parser, *e.g.* skip some characters, etc.
+    The returned parser ``rm`` should satisfy the following requirement:
 
-    For this binding function, it simply returns ``*this`` if ``failed()``,
-    otherwise it invokes ``rule`` and returns ``rule(*this)``.
+    - ``rm.anchor() == b``
+    - ``rm.end() == e``
+    - ``rm.begin()`` indicates the pass-by-end of the matched part.
+    - ``rm.failed()`` indicates whether the matching failed.
 
+    This binding operator ``>>`` works as follows:
 
-Predefined Rules and Combinators
----------------------------------
+    - If ``m.failed()``, it returns ``m`` immediately.
+    - Otherwise, it tries to match the remaining part by calling
+      ``rm = rule(m.begin(), m.end())``. If ``rm.failed()``,
+      it returns ``m.fail()``, otherwise it forwards the
+      beginning pointer of the remaining part to ``rm.begin()``,
+      namely, returning ``m.skip_to(rm.begin())``.
 
 We provide a series of pre-defined rules and combinators.
 By combining these facilities in different ways, one can derive
 parsers for different purposes.
 All such facilities are within the namespace ``clue::mpar``.
-
-.. cpp:function:: pop()
-
-    Get a rule that pops the matched part, moving ``anchor`` to ``begin``.
-
-.. cpp:function:: pop_to(string_view& dst)
-
-    Get a rule that pops the matched part, and stores it to ``dst``.
-
-.. cpp:function:: skip(const Pred& pred)
-
-    Get a rule that skips all characters that satisfy ``pred``.
-
-.. cpp:function:: skip_by(size_t n)
-
-    Get a rule that skips ``n`` characters.
-
-.. cpp:function:: skip_until(const Pred& pred)
-
-    Get a rule that skips until it reaches the end or hits a
-    character that satisfies ``pred``.
 
 .. cpp:function:: ch(const Pred& pred)
 

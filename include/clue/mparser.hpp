@@ -17,7 +17,7 @@
     CLUE_REQUIRE(std::is_same<typename std::result_of<P(char)>::type, bool>::value)
 
 #define CLUE_REQUIRE_MPAR_RULE(Rule) \
-    CLUE_REQUIRE(std::is_same<typename std::result_of<Rule(mparser)>::type, mparser>::value)
+    CLUE_REQUIRE(std::is_same<typename std::result_of<Rule(const char*, const char*)>::type, mparser>::value)
 
 
 namespace clue {
@@ -193,11 +193,6 @@ public:
         return {anchor_, beg_, end_, true};
     }
 
-public:
-    basic_mparser ret(const basic_mparser& r) const {
-        return r.failed() ? fail() : r;
-    }
-
 }; // end class mparser
 
 namespace mpar {
@@ -207,6 +202,16 @@ namespace mpar {
 //  Manipulators
 //
 //===============================================
+
+template<typename CharT>
+inline basic_mparser<CharT> wrap(const CharT* b, const CharT* e) {
+    return {b, b, e, false};
+}
+
+template<typename CharT>
+inline basic_mparser<CharT> failed(const CharT* b, const CharT* e) {
+    return {b, b, e, true};
+}
 
 struct pop {};
 
@@ -265,8 +270,9 @@ template<class Pred>
 struct ch_t {
     Pred pred;
     template<typename CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        return (m.remain() && pred(m.front())) ? m.skip_by(1) : m.fail();
+    basic_mparser<CharT> operator()(const CharT* b, const CharT* e) const {
+        auto m = wrap(b, e);
+        return (b != e && pred(*b)) ? m.skip_by(1) : m.fail();
     }
 };
 
@@ -295,9 +301,10 @@ struct chs_t {
         : pred(p), lb(l), ub(u) {}
 
     template<typename CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        auto p = m.begin();
-        auto pe = ub < 0 ? m.end() : std::min(m.end(), m.begin() + ub);
+    basic_mparser<CharT> operator()(const CharT* b, const CharT* e) const {
+        auto m = wrap(b, e);
+        auto p = b;
+        auto pe = ub < 0 ? e : std::min(e, b + ub);
         while (p != pe && pred(*p)) ++p;
         return p < m.begin() + lb ? m.fail() : m.skip_to(p);
     }
@@ -352,7 +359,8 @@ inline chs_t<chars::is_blank_t> blanks(int lb) {
 template<typename CharT>
 struct term_t {
     basic_string_view<CharT> term_;
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
+    basic_mparser<CharT> operator()(const CharT* b, const CharT* e) const {
+        auto m = wrap(b, e);
         return m.next_is(term_) ? m.skip_by(term_.size()) : m.fail();
     }
 };
@@ -371,9 +379,9 @@ template<class Rule>
 struct maybe_t {
     Rule rule;
     template<typename CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        auto rm = rule(m);
-        return rm.failed() ? m : rm;
+    basic_mparser<CharT> operator()(const CharT* b, const CharT* e) const {
+        auto rm = rule(b, e);
+        return rm ? rm : wrap(b, e);
     }
 };
 
@@ -386,33 +394,15 @@ inline maybe_t<Rule> maybe(const Rule& rule) {
 
 namespace details {
 
-template<class R>
-struct single_wrap {
-    R r_;
-
-    single_wrap(const R& r): r_(r) {}
-
-    template<typename CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        auto m1 = m >> r_;
-        return m1.failed() ? m.fail() : m1;
-    }
-};
-
 template<class R1, class R2>
 struct either_of_rule {
     R1 r1_;
     R2 r2_;
 
     template<typename CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        auto m1 = m >> r1_;
-        if (m1.failed()) {
-            auto m2 = m >> r2_;
-            return m2.failed() ? m.fail() : m2;
-        } else {
-            return m1;
-        }
+    basic_mparser<CharT> operator()(const CharT* b, const CharT* e) const {
+        basic_mparser<CharT> m1 = r1_(b, e);
+        return m1 ? m1 : r2_(b, e);
     }
 };
 
@@ -420,7 +410,7 @@ template<class... Rs> struct _either_of;
 
 template<class R>
 struct _either_of<R> {
-    using type = single_wrap<R>;
+    using type = R;
 };
 
 template<class R1, class R2>
@@ -442,7 +432,7 @@ using either_of_t = typename details::_either_of<Rs...>::type;
 template<class R,
          CLUE_REQUIRE_MPAR_RULE(R)>
 inline either_of_t<R> either_of(const R& r) {
-    return {r};
+    return r;
 }
 
 template<class R1, class R2,
@@ -466,14 +456,8 @@ struct chain_rule {
     R2 r2_;
 
     template<typename CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        auto m1 = m >> r1_;
-        if (m1.failed()) {
-            return m.fail();
-        } else {
-            auto m2 = m1 >> r2_;
-            return m2.failed() ? m.fail() : m2;
-        }
+    basic_mparser<CharT> operator()(const CharT* b, const CharT* e) const {
+        return wrap(b, e) >> r1_ >> r2_;
     }
 };
 
@@ -481,7 +465,7 @@ template<class... Rs> struct _chain;
 
 template<class R>
 struct _chain<R> {
-    using type = single_wrap<R>;
+    using type = R;
 };
 
 template<class R1, class R2>
@@ -521,31 +505,30 @@ inline chain_t<R1, R2, Rest...> chain(const R1& r1, const R2& r2, const Rest&...
 
 struct identifier {
     template<typename CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
-        return m >> ch(or_(eq('_'), chars::is_alpha))
-                 >> chs(or_(eq('_'), chars::is_alnum), 0, -1);
+    basic_mparser<CharT> operator()(const CharT* b, const CharT* e) const {
+        return wrap(b, e) >> ch(or_(eq('_'), chars::is_alpha))
+                          >> chs(or_(eq('_'), chars::is_alnum), 0, -1);
     }
 };
 
 struct integer {
     template<typename CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
+    basic_mparser<CharT> operator()(const CharT* b, const CharT* e) const {
         auto sign = or_(eq('-'), eq('+'));
-        return m.ret(m >> maybe(ch(sign)) >> digits());
+        return wrap(b, e) >> maybe(ch(sign)) >> digits();
     }
 };
 
 struct realnum {
     template<typename CharT>
-    basic_mparser<CharT> operator()(const basic_mparser<CharT>& m) const {
+    basic_mparser<CharT> operator()(const CharT* b, const CharT* e) const {
         auto sign = ch(or_(eq('-'), eq('+')));
         auto dot = ch('.');
         auto ds = digits();
-        auto e = ch(or_(eq('e'), eq('E')));
 
         // signs
-        auto m1 = m >> maybe(sign);
-        if (!m1.remain()) return m.fail();
+        auto m1 = wrap(b, e) >> maybe(sign);
+        if (!m1.remain()) return failed(b, e);
 
         // main parts
         auto m2 = (m1.front() == CharT('.')) ?
@@ -553,8 +536,8 @@ struct realnum {
             m1 >> ds >> maybe(chain(dot, maybe(ds)));
 
         // exponent part
-        auto m3 = m2 >> maybe(chain(e, maybe(sign), ds));
-        return m.ret(m3);
+        auto ec = ch(or_(eq('e'), eq('E')));
+        return m2 >> maybe(chain(ec, maybe(sign), ds));
     }
 };
 
@@ -570,10 +553,22 @@ struct realnum {
 
 template<typename CharT, class Rule,
          CLUE_REQUIRE(std::is_same<
-                      typename std::result_of<Rule(basic_mparser<CharT>)>::type,
+                      typename std::result_of<Rule(const CharT*, const CharT*)>::type,
                       basic_mparser<CharT>>::value)>
 inline basic_mparser<CharT> operator>>(const basic_mparser<CharT>& m, Rule&& rule) {
-    return m ? rule(m) : m;
+    if (m) {
+        auto rm = rule(m.begin(), m.end());
+        if (rm.anchor() != m.begin())
+            throw std::runtime_error("mparser binding: unexpected anchor position.");
+        if (rm.end() != m.end())
+            throw std::runtime_error("mparser binding: unexpected ending position.");
+        return {m.anchor(),
+                rm ? rm.begin() : m.begin(),
+                m.end(),
+                rm.failed()};
+    } else {
+        return m;
+    }
 }
 
 template<typename CharT>

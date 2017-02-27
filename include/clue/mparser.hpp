@@ -182,14 +182,6 @@ public:
     }
 
 public:
-    template<class Rule,
-             CLUE_REQUIRE(std::is_same<
-                          typename std::result_of<Rule(basic_mparser)>::type,
-                          basic_mparser>::value)>
-    basic_mparser operator>>(Rule&& rule) const {
-        return failed_ ? *this : rule(*this);
-    }
-
     basic_mparser ret(const basic_mparser& r) const {
         return r.failed() ? fail() : r;
     }
@@ -566,6 +558,15 @@ struct realnum {
 };
 
 } // end namespace mpar
+
+
+template<typename CharT, class Rule,
+         CLUE_REQUIRE(std::is_same<
+                      typename std::result_of<Rule(basic_mparser<CharT>)>::type,
+                      basic_mparser<CharT>>::value)>
+inline basic_mparser<CharT> operator>>(const basic_mparser<CharT>& m, Rule&& rule) {
+    return m ? rule(m) : m;
+}
 
 
 template<typename CharT, class Term, class Sep, class F>

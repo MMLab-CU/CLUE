@@ -2,6 +2,7 @@
 #define CLUE_MEMORY__
 
 #include <clue/common.hpp>
+#include <new>  // for std::bad_alloc
 
 #if (defined(_WIN32) || defined(_WIN64)) && defined(_MSC_VER)
 #include <malloc.h>

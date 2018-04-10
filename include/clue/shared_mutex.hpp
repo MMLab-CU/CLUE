@@ -356,24 +356,26 @@ public:
 
     void lock() {
         mut_->lock_shared();
+        owns_ = true;
     }
 
-    void try_lock() {
-        mut_->try_lock_shared();
+    bool try_lock() {
+        return owns_ = mut_->try_lock_shared();
     }
 
     template<class Rep, class Period>
     bool try_lock_for(const ::std::chrono::duration<Rep,Period>& duration) {
-        return mut_->try_lock_shared_for(duration);
+        return owns_ = mut_->try_lock_shared_for(duration);
     }
 
     template<class Clock, class Duration>
     bool try_lock_until(const ::std::chrono::time_point<Clock, Duration>& due_time) {
-        return mut_->try_lock_shared_until(due_time);
+        return owns_ = mut_->try_lock_shared_until(due_time);
     }
 
     void unlock() {
         mut_->unlock_shared();
+        owns_ = false;
     }
 
 }; // end class shared_lock

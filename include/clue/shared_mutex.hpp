@@ -332,9 +332,11 @@ public:
         swap(owns_, other.owns_);
     }
 
-    void release() {
+    mutex_type* release() {
+        auto ret = mut_;
         mut_ = nullptr;
         owns_ = false;
+        return ret;
     }
 
 public:

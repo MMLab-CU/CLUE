@@ -161,9 +161,21 @@ void test_shared_lock() {
     assert(correct);
 }
 
+void test_shared_unlock() {
+    using mutex_t = shared_mutex;
+    mutex_t mut;
+    shared_lock<mutex_t> lk1(mut);
+    lk1.unlock();
+    assert(!lk1.owns_lock());
+    lk1.~shared_lock();
+    shared_lock<mutex_t> lk2(mut, std::defer_lock_t());
+    assert(lk2.try_lock());
+}
+
 int main() {
     test_exclusive_lock();
     test_shared_lock();
+    test_shared_unlock();
     return 0;
 }
 

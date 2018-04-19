@@ -332,9 +332,11 @@ public:
         swap(owns_, other.owns_);
     }
 
-    void release() {
+    mutex_type* release() {
+        auto ret = mut_;
         mut_ = nullptr;
         owns_ = false;
+        return ret;
     }
 
 public:
@@ -356,24 +358,29 @@ public:
 
     void lock() {
         mut_->lock_shared();
+        owns_ = true;
     }
 
-    void try_lock() {
-        mut_->try_lock_shared();
+    bool try_lock() {
+        owns_ = mut_->try_lock_shared();
+        return owns_;
     }
 
     template<class Rep, class Period>
     bool try_lock_for(const ::std::chrono::duration<Rep,Period>& duration) {
-        return mut_->try_lock_shared_for(duration);
+        owns_ = mut_->try_lock_shared_for(duration);
+        return owns_;
     }
 
     template<class Clock, class Duration>
     bool try_lock_until(const ::std::chrono::time_point<Clock, Duration>& due_time) {
-        return mut_->try_lock_shared_until(due_time);
+        owns_ = mut_->try_lock_shared_until(due_time);
+        return owns_;
     }
 
     void unlock() {
         mut_->unlock_shared();
+        owns_ = false;
     }
 
 }; // end class shared_lock

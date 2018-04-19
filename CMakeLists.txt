@@ -23,6 +23,8 @@ endif()
 set(CMAKE_CXX_FLAGS ${NEWCXX_ENABLED_FLAG})
 message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 
+set(CMAKE_EXE_LINKER_FLAGS  "-Wl,--no-as-needed ${CMAKE_EXE_LINKER_FLAGS}")
+
 enable_testing()
 
 ###################################

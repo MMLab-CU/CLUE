@@ -162,17 +162,14 @@ void test_shared_lock() {
 }
 
 void test_shared_unlock() {
-    std::puts("Testing shared unlocking ...");
     using mutex_t = shared_mutex;
     mutex_t mut;
     shared_lock<mutex_t> lk1(mut);
     lk1.unlock();
     assert(!lk1.owns_lock());
-    std::puts("  lk1 unlocked");
     lk1.~shared_lock();
     shared_lock<mutex_t> lk2(mut, std::defer_lock_t());
     assert(lk2.try_lock());
-    std::puts("  lk2 locked");
 }
 
 int main() {

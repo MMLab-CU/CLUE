@@ -55,6 +55,12 @@ class provides the following member functions:
     If the queue is already non-empty, it pops the front element and returns it
     immediately.
 
+.. cpp:function:: void wait_empty()
+
+	Wait until the queue is empty and return.
+
+	If the queue is already empty, it returns immediately.
+
 .. note::
 
     All updating methods, including ``push``, ``emplace``, ``try_pop``, and

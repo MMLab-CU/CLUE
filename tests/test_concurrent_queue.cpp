@@ -51,38 +51,53 @@ void test_push_then_pop(size_t nt) {
     assert(total == expect_total);
 }
 
+void test_concurrent_push_and_pop(size_t nt) {
+    std::printf("testing concurrent_push_and_pop with %lu threads ...\n", nt);
 
-void test_concurrent_push_and_pop() {
-    std::printf("testing concurrent_push_and_pop ...\n");
+    assert(nt > 0);
 
     clue::concurrent_queue<int> Q;
-    int N = 1000;
+    int N = 100;
 
-    std::thread producer([&Q,N](){
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        for (int i = 0; i < N; ++i) {
-            Q.push(i + 1);
-        }
-    });
+    std::vector<std::thread> producers;
+    for (size_t t = 0; t < nt; ++t) {
+        producers.emplace_back([&Q,N](){
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            for (int i = 0; i < N; ++i) {
+                Q.push(i + 1);
+            }
+        });
+    }
 
-    int sum = 0;
-    std::thread consumer([&Q,N,&sum](){
-        for (int i = 0; i < N; ++i) {
-            int v = Q.wait_pop();
-            sum += v;
-        }
-    });
+    std::vector<std::thread> consumers;
+    std::vector<int> sums(nt, 0);
+    for (size_t t = 0; t < nt; ++t) {
+        int& s = sums[t];
+        consumers.emplace_back([&Q,N,&s]{
+            for (int i = 0; i < N; ++i) {
+                int v = Q.wait_pop();
+                s += v;
+            }
+        });
+    }
 
-    producer.join();
-    consumer.join();
+    for (size_t t = 0; t < nt; ++t) {
+        producers.at(t).join();
+    }
 
-    int expect_sum = N * (N + 1) / 2;
-    assert(sum == expect_sum);
+    int total = 0;
+    for (size_t t = 0; t < nt; ++t) {
+        consumers.at(t).join();
+        total += sums.at(t);
+    }
+
+    int expect_total = nt * (N * (N + 1) / 2);
+    assert(total == expect_total);
 }
-
 
 int main() {
     size_t nt = 4;
     test_push_then_pop(nt);
-    test_concurrent_push_and_pop();
+    test_concurrent_push_and_pop(nt);
+    return 0;
 }

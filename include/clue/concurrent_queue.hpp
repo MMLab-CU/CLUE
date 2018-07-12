@@ -41,28 +41,22 @@ public:
     }
 
     void push(const T& x) {
-        {
-            std::lock_guard<mutex_type> lk(mut_);
-            queue_.push(x);
-        }
-        if (size() == 1) cv1_.notify_one();
+        std::lock_guard<mutex_type> lk(mut_);
+        queue_.push(x);
+        if (size() == 1) cv1_.notify_all();
     }
 
     void push(T&& x) {
-        {
-            std::lock_guard<mutex_type> lk(mut_);
-            queue_.push(std::move(x));
-        }
-        if (size() == 1) cv1_.notify_one();
+        std::lock_guard<mutex_type> lk(mut_);
+        queue_.push(std::move(x));
+        if (size() == 1) cv1_.notify_all();
     }
 
     template<class... Args>
     void push(Args&&... args) {
-        {
-            std::lock_guard<mutex_type> lk(mut_);
-            queue_.emplace(std::forward<Args>(args)...);
-        }
-        if (size() == 1) cv1_.notify_one();
+        std::lock_guard<mutex_type> lk(mut_);
+        queue_.emplace(std::forward<Args>(args)...);
+        if (size() == 1) cv1_.notify_all();
     }
 
     // If it is non empty, pop and write the front element to dst,

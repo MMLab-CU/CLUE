@@ -94,6 +94,7 @@ set(THREADING_TESTS
     test_shared_mutex
     test_concurrent_counter
     test_concurrent_queue
+    test_bounded_mpmc_queue
     test_thread_pool
 )
 

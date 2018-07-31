@@ -36,7 +36,7 @@ public:
         }
         for (size_t i = 0; i < capacity_; ++i) {
             new (slots_ + i) Slot();
-            slots_[i].sequence = i;
+            slots_[i].sequence.store(i, std::memory_order_relaxed);
         }
     }
 
@@ -45,11 +45,13 @@ public:
     }
 
     bool empty() const noexcept {
-        return head_ == tail_;
+        return head_.load(std::memory_order_relaxed) ==
+               tail_.load(std::memory_order_relaxed);
     }
 
     bool full() const noexcept {
-        return head_ == tail_ + capacity_;
+        return head_.load(std::memory_order_relaxed) ==
+               tail_.load(std::memory_order_relaxed) + capacity_;
     }
 
     size_t capacity() const noexcept {
@@ -58,11 +60,11 @@ public:
 
     template <typename... Args>
     void emplace(Args&&... args) noexcept {
-        for (size_t head = head_++; ;) {
+        for (size_t head = head_.fetch_add(1, std::memory_order_relaxed); ;) {
             auto& slot = slots_[index(head)];
-            if (slot.sequence == head) {
+            if (slot.sequence.load(std::memory_order_acquire) == head) {
                 slot.data = T(std::forward<Args>(args)...);
-                slot.sequence = head + 1;
+                slot.sequence.store(head + 1, std::memory_order_release);
                 break;
             }
         }
@@ -70,17 +72,18 @@ public:
 
     template <typename... Args>
     bool try_emplace(Args&&... args) noexcept {
-        for (size_t head = head_; ;) {
+        for (size_t head = head_.load(std::memory_order_relaxed); ;) {
             auto& slot = slots_[index(head)];
-            size_t seq = slot.sequence;
+            size_t seq = slot.sequence.load(std::memory_order_acquire);
             if (seq < head) {
                 return false;
             } else if (seq > head) {
-                head = head_;
+                head = head_.load(std::memory_order_relaxed);
             } else {
-                if (head_.compare_exchange_weak(head, head + 1)) {
+                if (head_.compare_exchange_weak(head, head + 1,
+                                                std::memory_order_relaxed)) {
                     slot.data = T(std::forward<Args>(args)...);
-                    slot.sequence = head + 1;
+                    slot.sequence.store(head + 1, std::memory_order_release);
                     return true;
                 }
             }
@@ -97,28 +100,29 @@ public:
     }
 
     void pop(T& data) noexcept {
-        for (size_t tail = tail_++; ;) {
+        for (size_t tail = tail_.fetch_add(1, std::memory_order_relaxed); ;) {
             auto& slot = slots_[index(tail)];
-            if (slot.sequence == tail + 1) {
+            if (slot.sequence.load(std::memory_order_acquire) == tail + 1) {
                 data = std::move(slot.data);
-                slot.sequence = tail + capacity_;
+                slot.sequence.store(tail + capacity_, std::memory_order_release);
                 break;
             }
         }
     }
 
     bool try_pop(T& data) noexcept {
-        for (size_t tail = tail_; ;) {
+        for (size_t tail = tail_.load(std::memory_order_relaxed); ;) {
             auto& slot = slots_[index(tail)];
-            size_t seq = slot.sequence;
+            size_t seq = slot.sequence.load(std::memory_order_acquire);
             if (seq < tail + 1) {
                 return false;
             } else if (seq > tail + 1){
-                tail = tail_;
+                tail = tail_.load(std::memory_order_relaxed);
             } else {
-                if (tail_.compare_exchange_weak(tail, tail + 1)) {
+                if (tail_.compare_exchange_weak(tail, tail + 1,
+                                                std::memory_order_relaxed)) {
                     data = std::move(slot.data);
-                    slot.sequence = tail + capacity_;
+                    slot.sequence.store(tail + capacity_, std::memory_order_release);
                     return true;
                 }
             }

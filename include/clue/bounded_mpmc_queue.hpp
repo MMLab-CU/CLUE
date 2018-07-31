@@ -42,11 +42,13 @@ private:
         }
     };
 
-    const size_t capacity_;
-    alignas(kCacheLineSize) std::atomic_size_t head_;
-    alignas(kCacheLineSize) std::atomic_size_t tail_;
+    size_t capacity_;
     Slot* slots_;
 
+    alignas(kCacheLineSize) std::atomic_size_t head_;
+    alignas(kCacheLineSize) std::atomic_size_t tail_;
+
+private:
     size_t index(size_t x) const noexcept {
         return x % capacity_;
     }
@@ -67,6 +69,28 @@ public:
             new (slots_ + i) Slot();
             slots_[i].sequence.store(i, std::memory_order_relaxed);
         }
+    }
+
+    bounded_mpmc_queue(const bounded_mpmc_queue&) = delete;
+
+    bounded_mpmc_queue(bounded_mpmc_queue&& rhs) noexcept
+        : capacity_(rhs.capacity_)
+        , slots_(rhs.slots_)
+        , head_(rhs.head_.load(std::memory_order_relaxed))
+        , tail_(rhs.tail_.load(std::memory_order_relaxed)) {}
+
+    bounded_mpmc_queue&& operator =(const bounded_mpmc_queue&) = delete;
+
+    bounded_mpmc_queue&& operator =(bounded_mpmc_queue&& rhs) noexcept {
+        rhs.swap(*this);
+        return *this;
+    }
+
+    void swap(bounded_mpmc_queue& other) noexcept {
+        std::swap(capacity_, other.capacity_);
+        std::swap(slots_, other.slots_);
+        head_.exchange(other.head_, std::memory_order_relaxed);
+        tail_.exchange(other.tail_, std::memory_order_relaxed);
     }
 
     ~bounded_mpmc_queue() {
@@ -188,6 +212,10 @@ public:
     }
 };
 
+template<typename T>
+inline void swap(bounded_mpmc_queue<T>& lhs, bounded_mpmc_queue<T>& rhs) noexcept {
+    lhs.swap(rhs);
+}
 
 } // end namespace clue
 

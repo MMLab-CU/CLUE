@@ -10,15 +10,16 @@ namespace clue {
 template <typename T>
 class bounded_mpmc_queue final {
 private:
+    static constexpr size_t kCacheLineSize = 128;
+
     struct Slot {
-        std::atomic_size_t sequence;
+        alignas(kCacheLineSize) std::atomic_size_t sequence;
         T data;
     };
 
-    static constexpr size_t kCacheLineSize = 128;
-
     const size_t capacity_;
-    std::atomic_size_t head_, tail_;
+    alignas(kCacheLineSize) std::atomic_size_t head_;
+    alignas(kCacheLineSize) std::atomic_size_t tail_;
     Slot* slots_;
 
     size_t index(size_t x) const noexcept {
@@ -26,7 +27,10 @@ private:
     }
 
 public:
-    bounded_mpmc_queue(size_t capacity) : capacity_(capacity), head_(0), tail_(0) {
+    explicit bounded_mpmc_queue(size_t capacity)
+        : capacity_(capacity)
+        , head_(0)
+        , tail_(0) {
         if (capacity < 1) {
             throw std::invalid_argument("capacity must be greater than 0");
         }

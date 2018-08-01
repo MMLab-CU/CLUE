@@ -1,6 +1,4 @@
-#define private public
 #include <clue/bounded_mpmc_queue.hpp>
-#undef private
 
 #include <utility>
 #include <gtest/gtest.h>

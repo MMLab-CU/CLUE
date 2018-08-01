@@ -10,8 +10,30 @@ a MPMC queue class, in header file ``<clue/bounded_mpmc_queue.hpp>``.
 
     MPMC queue class. ``T`` is the element type.
 
-This class has a default constructor, but it is not copyable or movable. The
-class provides the following member functions:
+This class has a move constructor, but it is not copyable. The class provides
+the following member functions:
+
+Construction
+-------------
+.. cpp:function:: explicit bounded_mpmc_queue(size_t capacity)
+	Construct a ``bounded_mpmc_queue`` with capacity ``capacity``.
+
+.. cpp:function:: bounded_mpmc_queue(bounded_mpmc_queue&& other)
+	Move constructor. Constructs with the contents of ``other`` using
+	move semantics. After the move, ``other`` is guaranteed to be ``empty()``.
+
+.. cpp:function:: bounded_mpmc_queue(const bounded_mpmc_queue&) = delete
+	Copy constructor is disabled.
+
+.. cpp:function:: bounded_mpmc_queue(bounded_mpmc_queue&& other)
+	Move assignment operator. Replaces the contents with those of ``other``
+	using move semantics.
+
+.. cpp:function::  bounded_mpmc_queue(const bounded_mpmc_queue&) = delete
+	Copy assignment operator is disabled.
+
+Capacity
+---------
 
 .. cpp:function:: size_t capacity() const
 
@@ -25,11 +47,17 @@ class provides the following member functions:
 
     Get whether the queue is full (has no space left).
 
+
+Modifiers
+---------
+
 .. cpp:function:: void push(const T& x)
+.. cpp:function:: void push(T&& x)
 
     Spin till the queue is non-full, and push an element ``x`` to the back
     of the queue.
 
+.. cpp:function:: bool try_push(const T& x)
 .. cpp:function:: bool try_push(T&& x)
 
     If the queue is not full, push an element ``x`` to the back of the queue
@@ -59,6 +87,6 @@ class provides the following member functions:
 
 .. note::
 
-    All updating methods, including ``push``, ``emplace``, ``pop``,
+    All modifiers, including ``push``, ``emplace``, ``pop``,
     ``try_push``, ``try_emplace`` and ``try_pop``, are thread-safe.
     It is safe to call these methods in concurrent threads.

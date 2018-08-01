@@ -1,5 +1,6 @@
 #include <clue/bounded_mpmc_queue.hpp>
 
+#include <memory>
 #include <utility>
 #include <gtest/gtest.h>
 
@@ -85,4 +86,35 @@ TEST(BoundedMpmcQueue, Pop) {
     EXPECT_TRUE(pop_que.empty());
     int x;
     EXPECT_FALSE(pop_que.try_pop(x));
+}
+
+struct MovableItem {
+    int x;
+    explicit MovableItem(int x) noexcept : x(x) {}
+    MovableItem(const MovableItem&) = delete;
+    MovableItem(MovableItem&& other) noexcept : x(other.x) {}
+
+    MovableItem& operator =(const MovableItem&) = delete;
+    MovableItem& operator =(MovableItem&& rhs) noexcept {
+        x = rhs.x;
+        return *this;
+    }
+};
+
+TEST(BoundedMpmcQueue, Move) {
+    using item_queue = bounded_mpmc_queue<MovableItem>;
+    const size_t n = 64;
+    item_queue que(n);
+    que.emplace(1);
+    MovableItem item(2);
+    que.push(std::move(item));
+    item.x = 3;
+    que.try_push(std::move(item));
+
+    que.pop(item);
+    EXPECT_EQ(item.x, 1);
+    que.pop(item);
+    EXPECT_EQ(item.x, 2);
+    que.try_pop(item);
+    EXPECT_EQ(item.x, 3);
 }

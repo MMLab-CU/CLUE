@@ -80,6 +80,7 @@ set(UNIT_TESTS
     test_meta
     test_meta_seq
     test_textio
+    test_bounded_mpmc_queue
     test_include_all
 )
 
@@ -94,7 +95,7 @@ set(THREADING_TESTS
     test_shared_mutex
     test_concurrent_counter
     test_concurrent_queue
-    test_bounded_mpmc_queue
+    test_bounded_mpmc_queue_threading
     test_thread_pool
 )
 

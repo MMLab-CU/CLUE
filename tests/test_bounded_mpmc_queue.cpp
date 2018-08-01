@@ -1,106 +1,90 @@
+#define private public
 #include <clue/bounded_mpmc_queue.hpp>
-#include <thread>
-#include <vector>
-#include <cstdio>
+#undef private
 
-void test_push_then_pop(size_t nt) {
-    std::printf("testing push_then_pop ...\n");
-    assert(nt > 0);
+#include <utility>
+#include <gtest/gtest.h>
 
-    int N = 10000;
-    clue::bounded_mpmc_queue<int> Q(nt * N);
+using clue::bounded_mpmc_queue;
 
-    assert(Q.capacity() == nt * N);
-    assert(Q.empty());
-
-    std::vector<std::thread> producers;
-    for (size_t t = 0; t < nt; ++t) {
-        producers.emplace_back([&Q,N](){
-            for (int i = 0; i < N; ++i) {
-                assert(Q.try_push(i + 1));
-            }
-        });
-    }
-
-    for (size_t t = 0; t < nt; ++t) {
-        producers.at(t).join();
-    }
-
-    assert(!Q.empty());
-    assert(Q.full());
-
-    std::vector<std::thread> consumers;
-    std::vector<int> sums(nt, 0);
-    for (size_t t = 0; t < nt; ++t) {
-        int& s = sums[t];
-        consumers.emplace_back([&Q,&s]{
-            int v = 0;
-            while (Q.try_pop(v)) {
-                s += v;
-            }
-        });
-    }
-
-    int total = 0;
-    for (size_t t = 0; t < nt; ++t) {
-        consumers.at(t).join();
-        total += sums.at(t);
-    }
-
-    int expect_total = nt * (N * (N + 1) / 2);
-    assert(total == expect_total);
+TEST(BoundedMpmcQueue, Construct) {
+    using int_queue = bounded_mpmc_queue<int>;
+    
+    EXPECT_THROW(int_queue(0), std::invalid_argument);
+    int_queue que1(64);
+    EXPECT_EQ(que1.capacity(), 64);
+    EXPECT_TRUE(que1.empty());
+    int_queue que2(std::move(que1));
+    EXPECT_EQ(que2.capacity(), 64);
+    EXPECT_TRUE(que2.empty());
+    int_queue que3(128);
+    que3 = std::move(que2);
+    EXPECT_EQ(que3.capacity(), 64);
+    EXPECT_TRUE(que3.empty());
+    int_queue que4(128);
+    clue::swap(que3, que4);
+    EXPECT_EQ(que3.capacity(), 128);
+    EXPECT_EQ(que4.capacity(), 64);
 }
 
-void test_push_and_pop(size_t nt) {
-    std::printf("push_and_pop with %lu threads ...\n", nt);
+struct Item {
+    int x, y;
+    Item(int x, int y) noexcept : x(x), y(y) {}
+};
 
-    assert(nt > 0);
+TEST(BoundedMpmcQueue, Emplace) {
+    using item_queue = bounded_mpmc_queue<Item>;
+    item_queue que(64);
+    EXPECT_TRUE(que.empty());
+    int x = 0, y = 0;
+    que.emplace(x++, y--);
+    while (que.try_emplace(x++, y--)) continue;    
+    EXPECT_TRUE(que.full());
+    EXPECT_FALSE(que.try_push(Item(x, y)));
 
-    clue::bounded_mpmc_queue<int> Q(100);
-    int N = 100;
-
-    std::vector<std::thread> producers;
-    for (size_t t = 0; t < nt; ++t) {
-        producers.emplace_back([&Q,N](){
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            for (int i = 0; i < N; ++i) {
-                Q.push(i + 1);
-            }
-        });
-    }
-
-    std::vector<std::thread> consumers;
-    std::vector<int> sums(nt, 0);
-    for (size_t t = 0; t < nt; ++t) {
-        int& s = sums[t];
-        consumers.emplace_back([&Q,N,&s]{
-            for (int i = 0; i < N; ++i) {
-                int v;
-                Q.pop(v);
-                s += v;
-            }
-        });
-    }
-
-    for (size_t t = 0; t < nt; ++t) {
-        producers.at(t).join();
-    }
-
-    int total = 0;
-    for (size_t t = 0; t < nt; ++t) {
-        consumers.at(t).join();
-        total += sums.at(t);
-    }
-
-    assert(Q.empty());
-
-    int expect_total = nt * (N * (N + 1) / 2);
-    assert(total == expect_total);
+    item_queue swap_que(128);
+    EXPECT_TRUE(swap_que.empty());
+    swap_que.swap(que);
+    EXPECT_TRUE(que.empty());
+    EXPECT_TRUE(swap_que.full());
 }
 
-int main() {
-    size_t nt = 4;
-    test_push_then_pop(nt);
-    test_push_and_pop(nt);
-    return 0;
+TEST(BoundedMpmcQueue, Push) {
+    using item_queue = bounded_mpmc_queue<Item>;
+    item_queue que(64);
+    EXPECT_TRUE(que.empty());
+    int x = 0, y = 0;
+    que.push(Item(x++, y--));
+    while (que.try_push(Item(x++, y--))) continue;    
+    EXPECT_TRUE(que.full());
+    EXPECT_FALSE(que.try_emplace(x, y));
+
+    item_queue swap_que(128);
+    EXPECT_TRUE(swap_que.empty());
+    swap_que.swap(que);
+    EXPECT_TRUE(que.empty());
+    EXPECT_TRUE(swap_que.full());
+}
+
+TEST(BoundedMpmcQueue, Pop) {
+    using int_queue = bounded_mpmc_queue<int>;
+    const size_t n = 64;
+    int_queue push_que(n);
+    EXPECT_TRUE(push_que.empty());
+    for (size_t i = 0; i < n; ++i) {
+        push_que.push(i);
+    }
+    EXPECT_TRUE(push_que.full());
+    EXPECT_FALSE(push_que.try_push(n));
+
+    int_queue pop_que(std::move(push_que));
+    EXPECT_TRUE(push_que.full());
+    for (size_t i = 0; i < n; ++i) {
+        int x;
+        pop_que.pop(x);
+        EXPECT_EQ(x, i);
+    }
+    EXPECT_TRUE(pop_que.empty());
+    int x;
+    EXPECT_FALSE(pop_que.try_pop(x));
 }

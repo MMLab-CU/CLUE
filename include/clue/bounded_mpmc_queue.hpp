@@ -73,15 +73,20 @@ public:
 
     bounded_mpmc_queue(const bounded_mpmc_queue&) = delete;
 
-    bounded_mpmc_queue(bounded_mpmc_queue&& rhs) noexcept
-        : capacity_(rhs.capacity_)
-        , slots_(rhs.slots_)
-        , head_(rhs.head_.load(std::memory_order_relaxed))
-        , tail_(rhs.tail_.load(std::memory_order_relaxed)) {}
+    bounded_mpmc_queue(bounded_mpmc_queue&& other) noexcept
+        : capacity_(other.capacity_)
+        , slots_(other.slots_)
+        , head_(other.head_.load(std::memory_order_relaxed))
+        , tail_(other.tail_.load(std::memory_order_relaxed)) {
+            other.capacity_ = 0;
+            other.slots_ = nullptr;
+            other.head_.store(0, std::memory_order_relaxed);
+            other.tail_.store(0, std::memory_order_relaxed);
+        }
 
-    bounded_mpmc_queue&& operator =(const bounded_mpmc_queue&) = delete;
+    bounded_mpmc_queue& operator =(const bounded_mpmc_queue&) = delete;
 
-    bounded_mpmc_queue&& operator =(bounded_mpmc_queue&& rhs) noexcept {
+    bounded_mpmc_queue& operator =(bounded_mpmc_queue&& rhs) noexcept {
         rhs.swap(*this);
         return *this;
     }
@@ -89,8 +94,10 @@ public:
     void swap(bounded_mpmc_queue& other) noexcept {
         std::swap(capacity_, other.capacity_);
         std::swap(slots_, other.slots_);
-        head_.exchange(other.head_, std::memory_order_relaxed);
-        tail_.exchange(other.tail_, std::memory_order_relaxed);
+        other.head_.store(head_.exchange(other.head_, std::memory_order_relaxed),
+                          std::memory_order_relaxed);
+        other.tail_.store(tail_.exchange(other.tail_, std::memory_order_relaxed),
+                          std::memory_order_relaxed);
     }
 
     ~bounded_mpmc_queue() {

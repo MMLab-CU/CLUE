@@ -116,8 +116,8 @@ public:
     }
 
     bool full() const noexcept {
-        return head_.load(std::memory_order_relaxed) ==
-               tail_.load(std::memory_order_relaxed) + capacity_;
+        return head_.load(std::memory_order_relaxed) + capacity_ ==
+                tail_.load(std::memory_order_relaxed);
     }
 
     size_t capacity() const noexcept {
@@ -128,11 +128,11 @@ public:
     void emplace(Args&&... args) noexcept {
         static_assert(std::is_nothrow_constructible<T, Args&&...>::value,
                   "T must be nothrow constructible with Args&&...");
-        for (size_t head = head_.fetch_add(1, std::memory_order_relaxed); ;) {
-            auto& slot = slots_[index(head)];
-            if (slot.sequence.load(std::memory_order_acquire) == head) {
+        for (size_t tail = tail_.fetch_add(1, std::memory_order_relaxed); ;) {
+            auto& slot = slots_[index(tail)];
+            if (slot.sequence.load(std::memory_order_acquire) == tail) {
                 slot.construct(std::forward<Args>(args)...);
-                slot.sequence.store(head + 1, std::memory_order_release);
+                slot.sequence.store(tail + 1, std::memory_order_release);
                 break;
             }
         }
@@ -142,18 +142,18 @@ public:
     bool try_emplace(Args&&... args) noexcept {
         static_assert(std::is_nothrow_constructible<T, Args&&...>::value,
                   "T must be nothrow constructible with Args&&...");
-        for (size_t head = head_.load(std::memory_order_relaxed); ;) {
-            auto& slot = slots_[index(head)];
+        for (size_t tail = tail_.load(std::memory_order_relaxed); ;) {
+            auto& slot = slots_[index(tail)];
             size_t seq = slot.sequence.load(std::memory_order_acquire);
-            if (seq < head) {
+            if (seq < tail) {
                 return false;
-            } else if (seq > head) {
-                head = head_.load(std::memory_order_relaxed);
+            } else if (seq > tail) {
+                tail = tail_.load(std::memory_order_relaxed);
             } else {
-                if (head_.compare_exchange_weak(head, head + 1,
+                if (tail_.compare_exchange_weak(tail, tail + 1,
                                                 std::memory_order_relaxed)) {
                     slot.construct(std::forward<Args>(args)...);
-                    slot.sequence.store(head + 1, std::memory_order_release);
+                    slot.sequence.store(tail + 1, std::memory_order_release);
                     return true;
                 }
             }
@@ -186,31 +186,31 @@ public:
     }
 
     void pop(T& data) noexcept {
-        for (size_t tail = tail_.fetch_add(1, std::memory_order_relaxed); ;) {
-            auto& slot = slots_[index(tail)];
-            if (slot.sequence.load(std::memory_order_acquire) == tail + 1) {
+        for (size_t head = head_.fetch_add(1, std::memory_order_relaxed); ;) {
+            auto& slot = slots_[index(head)];
+            if (slot.sequence.load(std::memory_order_acquire) == head + 1) {
                 data = slot.move();
                 slot.destroy();
-                slot.sequence.store(tail + capacity_, std::memory_order_release);
+                slot.sequence.store(head + capacity_, std::memory_order_release);
                 break;
             }
         }
     }
 
     bool try_pop(T& data) noexcept {
-        for (size_t tail = tail_.load(std::memory_order_relaxed); ;) {
-            auto& slot = slots_[index(tail)];
+        for (size_t head = head_.load(std::memory_order_relaxed); ;) {
+            auto& slot = slots_[index(head)];
             size_t seq = slot.sequence.load(std::memory_order_acquire);
-            if (seq < tail + 1) {
+            if (seq < head + 1) {
                 return false;
-            } else if (seq > tail + 1){
-                tail = tail_.load(std::memory_order_relaxed);
+            } else if (seq > head + 1){
+                head = head_.load(std::memory_order_relaxed);
             } else {
-                if (tail_.compare_exchange_weak(tail, tail + 1,
+                if (head_.compare_exchange_weak(head, head + 1,
                                                 std::memory_order_relaxed)) {
                     data = slot.move();
                     slot.destroy();
-                    slot.sequence.store(tail + capacity_, std::memory_order_release);
+                    slot.sequence.store(head + capacity_, std::memory_order_release);
                     return true;
                 }
             }

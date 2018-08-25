@@ -15,6 +15,7 @@ private:
     std::queue<T, Container> queue_;
     mutex_type mut_;
     std::condition_variable cv1_; // notify when the queue becomes non-empty
+    std::condition_variable cv2_; // notify when the queue becomes empty
 
 public:
     ~concurrent_queue() {
@@ -41,28 +42,22 @@ public:
     }
 
     void push(const T& x) {
-        {
-            std::lock_guard<mutex_type> lk(mut_);
-            queue_.push(x);
-        }
-        if (size() == 1) cv1_.notify_one();
+        std::lock_guard<mutex_type> lk(mut_);
+        queue_.push(x);
+        if (size() == 1) cv1_.notify_all();
     }
 
     void push(T&& x) {
-        {
-            std::lock_guard<mutex_type> lk(mut_);
-            queue_.push(std::move(x));
-        }
-        if (size() == 1) cv1_.notify_one();
+        std::lock_guard<mutex_type> lk(mut_);
+        queue_.push(std::move(x));
+        if (size() == 1) cv1_.notify_all();
     }
 
     template<class... Args>
     void push(Args&&... args) {
-        {
-            std::lock_guard<mutex_type> lk(mut_);
-            queue_.emplace(std::forward<Args>(args)...);
-        }
-        if (size() == 1) cv1_.notify_one();
+        std::lock_guard<mutex_type> lk(mut_);
+        queue_.emplace(std::forward<Args>(args)...);
+        if (size() == 1) cv1_.notify_all();
     }
 
     // If it is non empty, pop and write the front element to dst,
@@ -72,6 +67,7 @@ public:
         if (empty()) return false;
         dst = std::move(queue_.front());
         queue_.pop();
+        if (empty()) cv2_.notify_all();
         return true;
     }
 
@@ -81,7 +77,14 @@ public:
         cv1_.wait(lk, [this](){ return !empty(); });
         T x = std::move(queue_.front());
         queue_.pop();
+        if (empty()) cv2_.notify_all();
         return std::move(x);
+    }
+
+    // Wait until empty
+    void wait_empty() {
+        std::unique_lock<mutex_type> lk(mut_);
+        cv2_.wait(lk, [this](){ return empty(); });
     }
 };
 

@@ -18,7 +18,7 @@ This library requires C++11-compliant compiler. Particularly, it is tested on th
 
 Below is a list of components available in the library.
 
-#### Basic Utilites
+#### Basic Utilities
 
 - Generic function ``make_unique``: for creating ``unique_ptr``. **(backport from C++14)**
 - Class template ``optional``: for representing nullable values. **(backport from CELF)**

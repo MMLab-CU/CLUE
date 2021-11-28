@@ -58,13 +58,15 @@ template<typename T>
 struct relocate_policy<T, false> {
     static void move_disjoint(T* dst, T* src, T* src_end) {
         while (src != src_end) {
-            new(dst++) T( std::move(*src++) );
+            new(dst++) T( std::move(*src) );
+            (src++)->~T();
         }
     }
 
     static void move_fwd(T* dst, T* src, T* src_end) {
         while (src != src_end) {
-            new(dst++) T( std::move(*src++) );
+            new(dst++) T( std::move(*src) );
+            (src++)->~T();
         }
     }
 
@@ -75,7 +77,8 @@ struct relocate_policy<T, false> {
             src += (n - 1);
             dst += (n - 1);
             while (src != src_rend) {
-                new(dst--) T( std::move(*src--) );
+                new(dst--) T( std::move(*src) );
+                (src--)->~T();
             }
         }
     }
@@ -352,7 +355,6 @@ public:
                     relocater::move_disjoint(pb_, other.begin(), other.end());
                     pn_ = pb_ + n;
                 }
-                other.destroy();
                 other.reset();
             }
         }
@@ -591,7 +593,7 @@ public:
                 relocater::move_disjoint(ss_.begin(), pb_, pn_);
 
                 // release memory
-                alloc_.deallocate(pb_, n);
+                alloc_.deallocate(pb_, cur_cap);
 
                 // set pointers on static array
                 reset();
@@ -616,14 +618,13 @@ private:
         // move elements to tmp
         size_type n = size();
         if (n > 0) {
-            pe_ = pb_;
             relocater::move_disjoint(tmp.begin(), pb_, pb_ + n);
             tmp.pn_ = tmp.pb_ + n;
         }
 
         // release own memory
         if (use_dynamic()) {
-            alloc_.deallocate(pb_, n);
+            alloc_.deallocate(pb_, capacity());
         }
         reset();
 
@@ -651,6 +652,7 @@ private:
     // 2. move the elements in range [pos, end) towards back
     // 3. set end() <- end() + n
     // 4. return a non-const version of pos
+    // after move_back, the elements/iterators in [pos, pos + n) are invalid.
     iterator move_back(const_iterator pos, size_type n) {
         iterator p = const_cast<iterator>(pos);
         if (n > 0) {

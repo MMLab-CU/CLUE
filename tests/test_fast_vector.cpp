@@ -14,7 +14,9 @@ public:
 public:
     long* pv_;
 
-    explicit Val(std::nullptr_t) : pv_(nullptr) {}
+    explicit Val(std::nullptr_t) : pv_(nullptr) {
+        count_object++;
+    }
 
     explicit Val() : pv_(new long(init)) {
         count_object++;
@@ -28,14 +30,16 @@ public:
 
     explicit Val(Val&& r) noexcept : pv_(r.pv_) {
         r.pv_ = nullptr;
+        count_object++;
     }
 
     ~Val() {
         if (pv_) {
-            CLUE_ASSERT(count_object > 0);
+            
             delete pv_;
-            count_object--;
         }
+        CLUE_ASSERT(count_object > 0);
+        count_object--;
     }
 
     long get() const { return *pv_; }
